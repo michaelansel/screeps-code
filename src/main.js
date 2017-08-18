@@ -4,6 +4,14 @@ var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
 var roleLinker = require('role.linker');
 
+var behaviors = {
+  builder: roleBuilder,
+  harvester: roleHarvester,
+  hauler: roleHauler,
+  linker: roleLinker,
+  upgrader: roleUpgrader,
+};
+
 module.exports.loop = function() {
   for (var name in Memory.creeps) {
     if (!Game.creeps[name]) {
@@ -42,11 +50,17 @@ module.exports.loop = function() {
   //   "claim": 600
   // },
   var creepConfig = {
+    // Cheap and versatile
     recovery: [WORK, CARRY, MOVE], // Max cost of 300, smaller is better
+    // Move fast when empty; don't care when full; maximize work speed
     harvester: [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE],
+    // Move fast when full; never work
     hauler: [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE], // Max cost of 300, smaller is better
+    // Move fast when full; maximize work speed
     upgrader: [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE],
+    // Move fast when full and off roads; maximize work speed
     builder: [WORK, WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE],
+    // Move fast when empty; maximize carry
     linker: [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE],
   };
 
@@ -163,6 +177,7 @@ module.exports.loop = function() {
 
   for (var name in Game.creeps) {
     var creep = Game.creeps[name];
+
     var droppedEnergy = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {
       filter: function (resource) {
         return resource.resourceType == RESOURCE_ENERGY;
@@ -172,20 +187,11 @@ module.exports.loop = function() {
         creep.pickup(droppedEnergy[ei]);
       }
     }
-    if (creep.memory.role == 'harvester') {
-      roleHarvester.run(creep);
-    }
-    if (creep.memory.role == 'hauler') {
-      roleHauler.run(creep);
-    }
-    if (creep.memory.role == 'upgrader') {
-      roleUpgrader.run(creep);
-    }
-    if (creep.memory.role == 'builder') {
-      roleBuilder.run(creep);
-    }
-    if (creep.memory.role == 'linker') {
-      roleLinker.run(creep);
+
+    if (Object.keys(behaviors).includes(creep.memory.role)) {
+      behaviors[creep.memory.role].run(creep);
+    } else {
+      console.log(creep.name, "unknown role", creep.memory.role);
     }
   }
 }
