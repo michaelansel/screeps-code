@@ -105,14 +105,22 @@ module.exports.loop = function() {
   if(!Memory.repairLevel) Memory.repairLevel = 0.75;
 
 
-  Object.keys(Memory.desiredCreepCounts).forEach(function(role) {
-    var roleCreeps = _.filter(Game.creeps, (creep) => creep.memory.role == role);
-    if (roleCreeps.length < Memory.desiredCreepCounts[role]) {
-      Game.spawns['Spawn1'].createCreep(creepConfig[role], undefined, {
-        role: role
-      });
-    }
-  });
+  // Don't do anything else until there are at least 2 harvesters
+  if (creepsWithRole('harvester').length < 2) {
+    var role = 'harvester';
+    Game.spawns['Spawn1'].createCreep(creepConfig[role], undefined, {
+      role: role
+    });
+  } else {
+    Object.keys(Memory.desiredCreepCounts).forEach(function(role) {
+      var roleCreeps = _.filter(Game.creeps, (creep) => creep.memory.role == role);
+      if (roleCreeps.length < Memory.desiredCreepCounts[role]) {
+        Game.spawns['Spawn1'].createCreep(creepConfig[role], undefined, {
+          role: role
+        });
+      }
+    });
+  }
 
   if (Game.spawns['Spawn1'].spawning) {
     var spawningCreep = Game.creeps[Game.spawns['Spawn1'].spawning.name];
