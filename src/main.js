@@ -30,7 +30,7 @@ module.exports.loop = function() {
     return counts;
   },{});
   if (!Memory.desiredCreepCounts) {
-    Memory.creepCounts = {
+    Memory.desiredCreepCounts = {
       harvester: 3,
       hauler: 1,
       upgrader: 1,
