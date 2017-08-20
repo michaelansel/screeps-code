@@ -65,10 +65,11 @@ module.exports.loop = function() {
   };
 
   // Scale up builders if there is construction to do or damage to repair
-  if(Game.rooms["W28N29"].find(FIND_CONSTRUCTION_SITES).length > 0) {
+  var room = Game.rooms[Object.keys(Game.rooms)[0]];
+  if(room.find(FIND_CONSTRUCTION_SITES).length > 0) {
     Memory.desiredCreepCounts['builder'] = Math.max(Memory.desiredCreepCounts['builder'], 3);
   }
-  var targets = Game.rooms["W28N29"].find(FIND_STRUCTURES, {
+  var targets = room.find(FIND_STRUCTURES, {
     filter: (structure) => {
       if (structure.structureType == STRUCTURE_RAMPART ||
           structure.structureType == STRUCTURE_WALL) {
@@ -90,7 +91,7 @@ module.exports.loop = function() {
   }
 
   // Convert harvester to upgrader if controller is at risk of downgrading
-  if (Game.rooms["W28N29"].controller.ticksToDowngrade < 4000) {
+  if (room.controller.ticksToDowngrade < 4000) {
     if(creepsWithRole('upgrader').length == 0) {
       var harvesters = creepsWithRole('harvester');
       if(harvesters.length > 0) {
