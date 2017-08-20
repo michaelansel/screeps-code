@@ -105,11 +105,10 @@ module.exports.loop = function() {
   if(!Memory.repairLevel) Memory.repairLevel = 0.75;
 
 
-  // Don't do anything else until there are at least 2 harvesters
   if (creepsWithRole('harvester').length < 2) {
-    var role = 'harvester';
-    Game.spawns['Spawn1'].createCreep(creepConfig[role], undefined, {
-      role: role
+    console.log('Ensuring at least 2 harvesters before anything else');
+    Game.spawns['Spawn1'].createCreep(creepConfig['harvester'], undefined, {
+      role: 'harvester'
     });
   } else {
     Object.keys(Memory.desiredCreepCounts).forEach(function(role) {
@@ -133,9 +132,18 @@ module.exports.loop = function() {
       });
   } else {
     if (creepsWithRole('harvester').length == 0) {
+      console.log('All harvester creeps died! Spawing a recovery creep');
       Game.notify('All harvester creeps died! Spawing a recovery creep', 10);
       Game.spawns['Spawn1'].createCreep(creepConfig['recovery'], undefined, {
         role: 'harvester'
+      });
+    }
+    var extensions = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_EXTENSION;}});
+    if (creepsWithRole('builder').length == 0 && extensions.length == 0) {
+      console.log('Bootstrapping building with a recovery builder');
+      Game.notify('Bootstrapping building with a recovery builder', 10);
+      Game.spawns['Spawn1'].createCreep(creepConfig['recovery'], undefined, {
+        role: 'builder'
       });
     }
   }
