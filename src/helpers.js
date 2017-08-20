@@ -8,7 +8,14 @@ module.exports = {
       if (target) {
         this.getEnergyFromTarget(creep, target);
       } else {
-        creep.moveTo(Game.flags['RallyWhenLost']);
+        var containers = creep.room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_CONTAINER;}});
+        if (containers.length == 0) {
+          creep.memory.returnToRole = creep.memory.role;
+          creep.memory.role = 'harvester';
+          console.log(creep.name, 'No containers to pull from, harvesting instead');
+        } else {
+          creep.moveTo(Game.flags['RallyWhenLost']);
+        }
       }
     }
   },

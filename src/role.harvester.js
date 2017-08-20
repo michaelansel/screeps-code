@@ -31,6 +31,11 @@ var roleHarvester = {
       }
     } else {
       creep.memory.target = null;
+      if (creep.memory.returnToRole) {
+        creep.memory.role = creep.memory.returnToRole;
+        creep.memory.returnToRole = null;
+        return;
+      }
       var structureSelectors = [
         // function(structure) {
         //   return structure.structureType == STRUCTURE_TOWER && structure.energy < structure.energyCapacity;
