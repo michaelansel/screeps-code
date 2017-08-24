@@ -224,4 +224,14 @@ module.exports.loop = function() {
       console.log(creep.name, "unknown role", creep.memory.role);
     }
   }
+
+  room.find(FIND_SOURCES, {
+    filter: function(source) {
+      return source.ticksToRegeneration == 1 && source.energy > 0;
+    },
+  }).forEach(function(source){
+    var message = [Game.time, source.id, "leaving some energy uncollected", source.energy].join(" ");
+    console.log(message);
+    Game.notify(message, 60);
+  })
 }
