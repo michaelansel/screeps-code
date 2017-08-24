@@ -6,15 +6,30 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
 
   grunt.initConfig({
-    // Upload code to screeps.com
     screeps: {
-      options: {
-        email: config.email,
-        password: config.password,
-        branch: 'default',
-        ptr: false
+      // Upload code to screeps.com
+      dotcom: {
+        options: {
+          email: config.email,
+          password: config.password,
+          branch: 'default',
+          ptr: false
+        },
+        src: ['dist/*.js']
       },
-      dist: {
+      // Upload code to local private server
+      "local": {
+        options: {
+          server: {
+            host: '127.0.0.1',
+            port: 21025,
+            http: true
+          },
+          email: 'mansel',
+          password: 'mansel',
+          branch: 'default',
+          ptr: false
+        },
         src: ['dist/*.js']
       }
     },
@@ -43,5 +58,5 @@ module.exports = function(grunt) {
     },
   });
 
-  grunt.registerTask('default',  ['clean', 'copy:screeps', 'screeps']);
+  grunt.registerTask('default', ['clean', 'copy:screeps', 'screeps']);
 }
