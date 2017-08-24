@@ -39,6 +39,12 @@ module.exports.loop = function() {
     };
   }
 
+  function creepCost(body) {
+    return body.reduce(function(total, part){
+      return total + BODYPART_COST[part];
+    }, 0);
+  }
+
   // BODYPART_COST: {
   //   "move": 50,
   //   "work": 100,
@@ -108,9 +114,16 @@ module.exports.loop = function() {
 
   if (creepsWithRole('harvester').length < 2) {
     console.log('Ensuring at least 2 harvesters before anything else');
-    Game.spawns['Spawn1'].createCreep(creepConfig['harvester'], undefined, {
-      role: 'harvester'
-    });
+    if (creepCost(creepConfig['harvester']) <= room.energyCapacityAvailable) {
+      Game.spawns['Spawn1'].createCreep(creepConfig['harvester'], undefined, {
+        role: 'harvester'
+      });
+    } else {
+      console.log('Normal harvester too expensive; spawning recovery harvester instead');
+      Game.spawns['Spawn1'].createCreep(creepConfig['recovery'], undefined, {
+        role: 'harvester'
+      });
+    }
   } else {
     Object.keys(Memory.desiredCreepCounts).forEach(function(role) {
       var roleCreeps = _.filter(Game.creeps, (creep) => creep.memory.role == role);
@@ -140,7 +153,7 @@ module.exports.loop = function() {
       });
     }
     var extensions = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_EXTENSION;}});
-    if (creepsWithRole('builder').length == 0 && extensions.length == 0) {
+    if (creepsWithRole('builder').length == 0 && creepCost(creepConfig['builder']) > room.energyCapacityAvailable) {
       console.log('Bootstrapping building with a recovery builder');
       Game.notify('Bootstrapping building with a recovery builder', 10);
       Game.spawns['Spawn1'].createCreep(creepConfig['recovery'], undefined, {
