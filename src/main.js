@@ -108,7 +108,7 @@ module.exports.loop = function() {
     }
   }
 
-  if(!Memory.fortifyLevel) Memory.fortifyLevel = 20000;
+  if(!Memory.fortifyLevel) Memory.fortifyLevel = 150000;
   if(!Memory.repairLevel) Memory.repairLevel = 0.75;
 
 

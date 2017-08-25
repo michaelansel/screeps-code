@@ -30,7 +30,7 @@ var roleBuilder = {
         }
       });
       if (targets.length) {
-        Memory.fortifyLevel = Math.max(Memory.fortifyLevel, 20000);
+        Memory.fortifyLevel = Math.max(Memory.fortifyLevel, 150000);
         Memory.repairLevel = Math.max(Memory.repairLevel, 0.75);
         var target = creep.pos.findClosestByPath(targets);
         if (!target) {
@@ -45,7 +45,7 @@ var roleBuilder = {
           });
         }
       } else {
-        Memory.fortifyLevel = Math.min(Memory.fortifyLevel, 10000);
+        Memory.fortifyLevel = Math.min(Memory.fortifyLevel, 50000);
         Memory.repairLevel = Math.min(Memory.repairLevel, 0.5);
         targets = creep.room.find(FIND_CONSTRUCTION_SITES);
         if (targets.length) {
