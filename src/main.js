@@ -112,7 +112,11 @@ module.exports.loop = function() {
   if(!Memory.repairLevel) Memory.repairLevel = 0.75;
 
 
-  if (creepsWithRole('harvester').length < 2) {
+  if (creepsWithRole('hauler').length < 1) {
+    Game.spawns['Spawn1'].createCreep(creepConfig['hauler'], undefined, {
+      role: 'hauler'
+    });
+  } else if (creepsWithRole('harvester').length < 2) {
     console.log('Ensuring at least 2 harvesters before anything else');
     if (creepCost(creepConfig['harvester']) <= room.energyCapacityAvailable) {
       Game.spawns['Spawn1'].createCreep(creepConfig['harvester'], undefined, {
