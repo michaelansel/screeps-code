@@ -166,7 +166,8 @@ module.exports.loop = function() {
     }
   }
 
-  var tower = Game.getObjectById('598eacc5cc9f9c73282f8c76');
+  var tower = null, towers = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_TOWER;}});
+  if (towers.length > 0) tower = towers[0];
   if(tower) {
     var hostiles = [];
     var hostileSelectors = [
