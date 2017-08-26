@@ -8,6 +8,14 @@ function creepsWithRole(role) {
 }
 
 var roleLinker = {
+  locateStorageLink: function(room) {
+    if(!room.storage) return;
+    var link = room.storage.pos.findInRange(FIND_STRUCTURES, 5, {filter: function(structure) {
+        return structure.structureType == STRUCTURE_LINK;
+    }})[0];
+    if(!Memory.storageLink) Memory.storageLink = {};
+    Memory.storageLink[room.name] = link.id;
+  },
 
   /** @param {Creep} creep **/
   run: function(creep) {
@@ -23,7 +31,7 @@ var roleLinker = {
         var linkers = creepsWithRole('linker');
         for (var ci in linkers) {
           var c = linkers[ci];
-          if(c != creep && c.pos.inRangeTo(l, 2)) {
+          if(c != creep && c.pos.inRangeTo(l, 5)) {
             console.log(creep.name, c.name, l.id, "occupied");
             skip = true;
             break;
@@ -41,8 +49,43 @@ var roleLinker = {
       console.log(creep.name, "unable to find a link to associate with", creep.memory.link);
       return;
     }
-    // Remote link
-    if(creep.memory.link == "59939e142780f21a69f38533") {
+    if(!Memory.storageLink) {
+      this.locateStorageLink(creep.room);
+    }
+    if(creep.memory.link == Memory.storageLink[creep.room.name]) {
+      // Core link
+      if(link.energy > 0) {
+        if (creep.withdraw(link, RESOURCE_ENERGY) != 0) {
+          creep.moveTo(link, {
+            visualizePathStyle: {
+              stroke: '#ffffff'
+            }
+          });
+        }
+      } else {
+        // Find the nearest link without a linker nearby
+        var links = creep.room.find(FIND_STRUCTURES, {filter: function(structure) {
+            return structure.structureType == STRUCTURE_LINK;
+        }});
+        for (var li in links) {
+          var l = links[li];
+          if (l.energy >= creep.carryCapacity) {
+            l.transferEnergy(link);
+          }
+          if (l.energy == l.energyCapacity) break;
+        }
+      }
+      if (creep.carry.energy > 0) {
+        if (creep.transfer(creep.room.storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+          creep.moveTo(creep.room.storage, {
+            visualizePathStyle: {
+              stroke: '#ffffff'
+            }
+          });
+        }
+      }
+    } else {
+      // Remote links
       if (creep.carry.energy < creep.carryCapacity) {
         var containers = link.pos.findInRange(FIND_STRUCTURES, 5, {filter: function(structure) {
             return structure.structureType == STRUCTURE_CONTAINER &&
@@ -64,33 +107,6 @@ var roleLinker = {
       } else {
         if (creep.transfer(link, RESOURCE_ENERGY) != 0) {
           creep.moveTo(link, {
-            visualizePathStyle: {
-              stroke: '#ffffff'
-            }
-          });
-        }
-      }
-    }
-    // Core link
-    if(creep.memory.link == "599487796e119e65e2cc65f1") {
-      if(link.energy > 0) {
-        if (creep.withdraw(link, RESOURCE_ENERGY) != 0) {
-          creep.moveTo(link, {
-            visualizePathStyle: {
-              stroke: '#ffffff'
-            }
-          });
-        }
-      } else {
-        var remoteLink = Game.getObjectById("59939e142780f21a69f38533");
-        if (remoteLink.energy >= creep.carryCapacity) {
-          remoteLink.transferEnergy(link);
-        }
-      }
-      if (creep.carry.energy > 0) {
-        var storage = Game.getObjectById("598f921ba3729f14af2b5c9a");
-        if (creep.transfer(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(storage, {
             visualizePathStyle: {
               stroke: '#ffffff'
             }
