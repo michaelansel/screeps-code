@@ -71,7 +71,7 @@ module.exports.loop = function() {
   };
 
   // Scale up builders if there is construction to do or damage to repair
-  var room = Game.rooms[Object.keys(Game.rooms)[0]];
+  var room = Game.spawns[Object.keys(Game.spawns)[0]].room;
   if(room.find(FIND_CONSTRUCTION_SITES).length > 0) {
     Memory.desiredCreepCounts['builder'] = Math.max(Memory.desiredCreepCounts['builder'], 3);
   }
