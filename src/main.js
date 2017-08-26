@@ -12,6 +12,16 @@ var behaviors = {
   upgrader: roleUpgrader,
 };
 
+module.exports.buildMode = function() {
+  Memory.desiredCreepCounts.builder = Math.max(Memory.desiredCreepCounts.builder, Memory.desiredCreepCounts.upgrader);
+  Memory.desiredCreepCounts.upgrader = 0;
+  for (var name in Game.creeps) {
+    if (Game.creeps[name].memory.role == 'upgrader') {
+      Game.creeps[name].memory.role = 'builder';
+    }
+  }
+}
+
 module.exports.loop = function() {
   for (var name in Memory.creeps) {
     if (!Game.creeps[name]) {
