@@ -5,21 +5,21 @@ var roleHauler = {
 
   /** @param {Creep} creep **/
   run: function(creep) {
-    if (!creep.memory.hauling && creep.memory.rebalancing && creep.carry.energy == creep.carryCapacity) {
+    if (!creep.memory.working && creep.memory.rebalancing && creep.carry.energy == creep.carryCapacity) {
       // Just picked up from a max-full container; double check where it needs to go
       creep.memory.rebalancing = false;
     }
     if (creep.carry.energy == creep.carryCapacity) {
-      creep.memory.hauling = true;
+      creep.memory.working = true;
     }
     if (creep.carry.energy == 0) {
-      creep.memory.hauling = false;
+      creep.memory.working = false;
     }
     // if (Game.time % 20 == 0) {
     //   creep.memory.rebalancing = false;
     // }
 
-    if (!creep.memory.hauling) {
+    if (!creep.memory.working) {
       if(creep.memory.rebalancing) {
         // now that link is active, instead of rebalancing, move to the flag
         creep.moveTo(Game.flags['RallyWhenLost']);

@@ -4,20 +4,19 @@ var roleBuilder = {
 
   /** @param {Creep} creep **/
   run: function(creep) {
-
-    if (creep.memory.building && creep.carry.energy == 0) {
-      creep.memory.building = false;
+    if (creep.memory.working && creep.carry.energy == 0) {
+      creep.memory.working = false;
       creep.memory.target = null;
       creep.say('🔄 harvest');
     }
-    if (!creep.memory.building && creep.carry.energy == creep.carryCapacity) {
-      creep.memory.building = true;
+    if (!creep.memory.working && creep.carry.energy == creep.carryCapacity) {
+      creep.memory.working = true;
       creep.memory.target = null;
       creep.say('🚧 build');
     }
 
     var targets = [];
-    if (creep.memory.building) {
+    if (creep.memory.working) {
       // Prioritize critical repairs/fortification
       targets = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
