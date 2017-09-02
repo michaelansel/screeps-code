@@ -17,102 +17,120 @@ var roleLinker = {
     Memory.storageLink[room.name] = link.id;
   },
 
-  /** @param {Creep} creep **/
-  run: function(creep) {
-    var link = Game.getObjectById(creep.memory.link);
-    if(!link) {
-      // Find the nearest link without a linker nearby
+  selectLink: function (creep) {
+    // Find the nearest link without a linker assigned
+    var links = creep.room.find(FIND_STRUCTURES, {filter: function(structure) {
+        return structure.structureType == STRUCTURE_LINK;
+    }});
+    for (var li in links) {
+      var l = links[li];
+      var done = false;
+      var linkers = creepsWithRole('linker');
+      for (var ci in linkers) {
+        var c = linkers[ci];
+        if (c.id == creep.id) continue;
+        if (c.memory.link == l.id) {
+          console.log(creep.name, c.name, l.id, "occupied");
+          continue;
+        } else {
+          console.log(creep.name, c.name, l.id, "available");
+          done = true;
+          break;
+        }
+      }
+      if (done) {
+        creep.memory.link = l.id;
+        break;
+      }
+    }
+  },
+
+  collectFromLink: function(creep, link) {
+    if(link.energy > 0) {
+      if (creep.withdraw(link, RESOURCE_ENERGY) != 0) {
+        creep.moveTo(link, {
+          visualizePathStyle: {
+            stroke: '#ffffff'
+          }
+        });
+      }
+    } else {
       var links = creep.room.find(FIND_STRUCTURES, {filter: function(structure) {
           return structure.structureType == STRUCTURE_LINK;
       }});
       for (var li in links) {
+        if (link.id == li) continue;
         var l = links[li];
-        var skip = false;
-        var linkers = creepsWithRole('linker');
-        for (var ci in linkers) {
-          var c = linkers[ci];
-          if(c != creep && c.pos.inRangeTo(l, 5)) {
-            console.log(creep.name, c.name, l.id, "occupied");
-            skip = true;
-            break;
-          } else {
-            console.log(creep.name, c.name, l.id, "available");
-          }
+        if (l.energy >= creep.carryCapacity) {
+          l.transferEnergy(link);
         }
-        if (skip) continue;
-        creep.memory.link = l.id;
-        break;
+        // If my link is full, stop trying
+        if (link.energy == link.energyCapacity) break;
       }
+    }
+    if (creep.carry.energy > 0) {
+      if (creep.transfer(creep.room.storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(creep.room.storage, {
+          visualizePathStyle: {
+            stroke: '#ffffff'
+          }
+        });
+      }
+    }
+  },
+
+  populateLink: function(creep, link) {
+    if (creep.carry.energy < creep.carryCapacity) {
+      var containers = link.pos.findInRange(FIND_STRUCTURES, 5, {filter: function(structure) {
+          return structure.structureType == STRUCTURE_CONTAINER &&
+                 structure.store[RESOURCE_ENERGY] > 0;
+      }});
+      var container = creep.pos.findClosestByPath(containers);
+      if(containers.length > 0 && !container) {
+        console.log(creep.name, "unable to reach a container", containers);
+        creep.moveTo(Game.flags["RallyWhenLost"]);
+        return;
+      }
+      if (creep.withdraw(container, RESOURCE_ENERGY) != 0) {
+        creep.moveTo(container, {
+          visualizePathStyle: {
+            stroke: '#ffaa00'
+          }
+        });
+      }
+    } else {
+      if (creep.transfer(link, RESOURCE_ENERGY) != 0) {
+        creep.moveTo(link, {
+          visualizePathStyle: {
+            stroke: '#ffffff'
+          }
+        });
+      }
+    }
+  },
+
+  /** @param {Creep} creep **/
+  run: function(creep) {
+    var link = Game.getObjectById(creep.memory.link);
+    if(!link) {
+      console.log(creep.name, "locating a link for", creep.room.name);
+      this.selectLink(creep);
     }
     link = Game.getObjectById(creep.memory.link);
     if(!link) {
       console.log(creep.name, "unable to find a link to associate with", creep.memory.link);
       return;
     }
-    if(!Memory.storageLink) {
+    if(!Memory.storageLink[creep.room.name]) {
+      console.log(creep.name, "locating the storage link for", creep.room.name);
       this.locateStorageLink(creep.room);
     }
     if(creep.memory.link == Memory.storageLink[creep.room.name]) {
-      // Core link
-      if(link.energy > 0) {
-        if (creep.withdraw(link, RESOURCE_ENERGY) != 0) {
-          creep.moveTo(link, {
-            visualizePathStyle: {
-              stroke: '#ffffff'
-            }
-          });
-        }
-      } else {
-        // Find the nearest link without a linker nearby
-        var links = creep.room.find(FIND_STRUCTURES, {filter: function(structure) {
-            return structure.structureType == STRUCTURE_LINK;
-        }});
-        for (var li in links) {
-          var l = links[li];
-          if (l.energy >= creep.carryCapacity) {
-            l.transferEnergy(link);
-          }
-          if (l.energy == l.energyCapacity) break;
-        }
-      }
-      if (creep.carry.energy > 0) {
-        if (creep.transfer(creep.room.storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(creep.room.storage, {
-            visualizePathStyle: {
-              stroke: '#ffffff'
-            }
-          });
-        }
-      }
+      // console.log(creep.name, "withdrawing from link");
+      this.collectFromLink(creep, link);
     } else {
-      // Remote links
-      if (creep.carry.energy < creep.carryCapacity) {
-        var containers = link.pos.findInRange(FIND_STRUCTURES, 5, {filter: function(structure) {
-            return structure.structureType == STRUCTURE_CONTAINER &&
-                   structure.store[RESOURCE_ENERGY] > 0;
-        }});
-        var container = creep.pos.findClosestByPath(containers);
-        if(containers.length > 0 && !container) {
-          console.log(creep.name, "unable to reach a container", containers);
-          creep.moveTo(Game.flags["RallyWhenLost"]);
-          return;
-        }
-        if (creep.withdraw(container, RESOURCE_ENERGY) != 0) {
-          creep.moveTo(container, {
-            visualizePathStyle: {
-              stroke: '#ffaa00'
-            }
-          });
-        }
-      } else {
-        if (creep.transfer(link, RESOURCE_ENERGY) != 0) {
-          creep.moveTo(link, {
-            visualizePathStyle: {
-              stroke: '#ffffff'
-            }
-          });
-        }
-      }
+      // console.log(creep.name, "collecting for link");
+      this.populateLink(creep, link);
     }
   }
 };
