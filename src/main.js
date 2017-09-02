@@ -176,9 +176,9 @@ module.exports.loop = function() {
     }
   }
 
-  var tower = null, towers = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_TOWER;}});
-  if (towers.length > 0) tower = towers[0];
-  if(tower) {
+  var towers = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_TOWER;}});
+  for (var ti in towers) {
+    var tower = towers[ti];
     var hostiles = [];
     var hostileSelectors = [
       function (hostile) {
