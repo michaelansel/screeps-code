@@ -9,7 +9,7 @@ module.exports = {
         this.getEnergyFromTarget(creep, target);
       } else {
         var containers = creep.room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_CONTAINER;}});
-        if (containers.length == 0) {
+        if (containers.length == 0 && creep.body.includes(WORK)) {
           creep.memory.returnToRole = creep.memory.role;
           creep.memory.role = 'harvester';
           console.log(creep.name, 'No containers to pull from, harvesting instead');
