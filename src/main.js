@@ -3,6 +3,7 @@ var roleHauler = require('role.hauler');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
 var roleLinker = require('role.linker');
+var towerLogic = require('tower');
 
 var behaviors = {
   builder: roleBuilder,
@@ -22,7 +23,7 @@ module.exports.buildMode = function() {
   }
 }
 
-module.exports.loop = function() {
+module.exports._maintenance = function() {
   for (var name in Memory.creeps) {
     if (!Game.creeps[name]) {
       delete Memory.creeps[name];
@@ -39,22 +40,35 @@ module.exports.loop = function() {
     counts[creep.memory.role]+=1;
     return counts;
   },{});
+
+  // Initialize defaults
   if (!Memory.desiredCreepCounts) {
     Memory.desiredCreepCounts = {
       harvester: 3,
       hauler: 1,
-      upgrader: 1,
-      builder: 3,
-      linker: 2,
+      upgrader: 0,
+      builder: 0,
+      linker: 0,
     };
   }
+  if(!Memory.fortifyLevel) Memory.fortifyLevel = 150000;
+  if(!Memory.repairLevel) Memory.repairLevel = 0.75;
+}
 
-  function creepCost(body) {
-    return body.reduce(function(total, part){
-      return total + BODYPART_COST[part];
-    }, 0);
-  }
+function allCreeps() {
+  return Object.keys(Game.creeps).map(function(creepName){return Game.creeps[creepName];});
+}
+function creepsWithRole(role) {
+  return allCreeps().filter(function(creep){return creep.memory.role == role;});
+}
 
+function creepCost(body) {
+  return body.reduce(function(total, part){
+    return total + BODYPART_COST[part];
+  }, 0);
+}
+
+module.exports._spawnCreeps = function(room) {
   // BODYPART_COST: {
   //   "move": 50,
   //   "work": 100,
@@ -81,7 +95,6 @@ module.exports.loop = function() {
   };
 
   // Scale up builders if there is construction to do or damage to repair
-  var room = Game.spawns[Object.keys(Game.spawns)[0]].room;
   if(room.find(FIND_CONSTRUCTION_SITES).length > 0) {
     Memory.desiredCreepCounts['builder'] = Math.max(Memory.desiredCreepCounts['builder'], 3);
   }
@@ -99,13 +112,6 @@ module.exports.loop = function() {
     Memory.desiredCreepCounts['builder'] = Math.max(Memory.desiredCreepCounts['builder'], Math.min(3,targets.length));
   }
 
-  function allCreeps() {
-    return Object.keys(Game.creeps).map(function(creepName){return Game.creeps[creepName];});
-  }
-  function creepsWithRole(role) {
-    return allCreeps().filter(function(creep){return creep.memory.role == role;});
-  }
-
   // Convert harvester to upgrader if controller is at risk of downgrading
   if (room.controller.ticksToDowngrade < 4000) {
     if(creepsWithRole('upgrader').length == 0) {
@@ -117,9 +123,6 @@ module.exports.loop = function() {
       }
     }
   }
-
-  if(!Memory.fortifyLevel) Memory.fortifyLevel = 150000;
-  if(!Memory.repairLevel) Memory.repairLevel = 0.75;
 
 
   if (creepsWithRole('hauler').length < 1) {
@@ -175,49 +178,29 @@ module.exports.loop = function() {
       });
     }
   }
+}
+
+module.exports.loop = function() {
+  var room = Game.spawns[Object.keys(Game.spawns)[0]].room;
+
+  this._maintenance();
+  this._spawnCreeps(room);
+
+  // Report harvesting inefficiency
+  room.find(FIND_SOURCES, {
+    filter: function(source) {
+      return source.ticksToRegeneration == 1 && source.energy > 0;
+    },
+  }).forEach(function(source){
+    var message = [Game.time, source.id, "leaving some energy uncollected", source.energy].join(" ");
+    console.log(message);
+    Game.notify(message, 60);
+  })
 
   var towers = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_TOWER;}});
   for (var ti in towers) {
     var tower = towers[ti];
-    var hostiles = [];
-    var hostileSelectors = [
-      function (hostile) {
-        return hostile.body.some(function(part){
-          return part.type == HEAL;
-        });
-      },
-      function () {return true;},
-    ];
-    var i=0;
-    while(!hostiles.length && i<hostileSelectors.length) {
-      hostiles = tower.room.find(FIND_HOSTILE_CREEPS, {filter: hostileSelectors[i++]});
-    }
-    if (hostiles.length > 0) {
-      if (!Memory.underAttack) Game.notify("Hostiles detected at tick " + Game.time, 10);
-      Memory.underAttack = true;
-      var hostile = tower.pos.findClosestByRange(hostiles);
-      tower.attack(hostile);
-      console.log(tower, "attacking", hostile);
-    // var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-    // if(closestHostile) {
-    //   tower.attack(closestHostile);
-    //   Game.notify("Hostiles detected at tick " + Game.time, 10);
-    } else {
-      Memory.underAttack = false;
-      var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
-        filter: (structure) => {
-          if (structure.structureType == STRUCTURE_RAMPART ||
-              structure.structureType == STRUCTURE_WALL) {
-            return structure.hits < Math.min(Memory.fortifyLevel, structure.hitsMax);
-          } else {
-            return structure.hits < Memory.repairLevel*structure.hitsMax;
-          }
-        }
-      });
-      if(closestDamagedStructure) {
-          tower.repair(closestDamagedStructure);
-      }
-    }
+    towerLogic.run(tower);
   }
 
   for (var name in Game.creeps) {
@@ -239,14 +222,4 @@ module.exports.loop = function() {
       console.log(creep.name, "unknown role", creep.memory.role);
     }
   }
-
-  room.find(FIND_SOURCES, {
-    filter: function(source) {
-      return source.ticksToRegeneration == 1 && source.energy > 0;
-    },
-  }).forEach(function(source){
-    var message = [Game.time, source.id, "leaving some energy uncollected", source.energy].join(" ");
-    console.log(message);
-    Game.notify(message, 60);
-  })
 }
