@@ -193,8 +193,8 @@ module.exports.loop = function() {
       hostiles = tower.room.find(FIND_HOSTILE_CREEPS, {filter: hostileSelectors[i++]});
     }
     if (hostiles.length > 0) {
+      if (!Memory.underAttack) Game.notify("Hostiles detected at tick " + Game.time, 10);
       Memory.underAttack = true;
-      Game.notify("Hostiles detected at tick " + Game.time, 10);
       var hostile = tower.pos.findClosestByRange(hostiles);
       tower.attack(hostile);
       console.log(tower, "attacking", hostile);
