@@ -76,8 +76,10 @@ var roleHauler = {
           }
         }
         if (creep.memory.rebalancing) {
-          creep.moveTo(Game.flags['RallyWhenLost']); // ignore this now that we have a link
-          return;
+          if (creep.room.find(FIND_STRUCTURES, {filter: function(structure){return structure.structureType == STRUCTURE_LINK;}}).length > 0) {
+            creep.moveTo(Game.flags['RallyWhenLost']); // ignore this now that we have a link
+            return;
+          }
           console.log(creep.name, "rebalancing energy", targets);
           var t2 = targets.filter(function(t){
             if ([STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER].includes(t.structureType)) {
