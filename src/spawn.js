@@ -38,8 +38,21 @@ function sortCreep(body) {
 
 var roleCounts = {};
 
+function runLengthEncoding(data) {
+  return data.reduce(function(rle, element){
+    if (rle[rle.length-1][0] == element) {
+      rle[rle.length-1][1] += 1;
+    } else {
+      rle.push([element, 1]);
+    }
+    return rle;
+  }, [[null, 0]]).slice(1).map(function(entry){
+    return entry.reverse().join('x ');
+  }).join(',');
+}
+
 function doSpawn(body, memory) {
-  console.log('Attempting to spawn', memory.role, body, creepCost(body));
+  console.log('Attempting to spawn', memory.role, runLengthEncoding(body), creepCost(body));
   if (roleCounts[memory.role] == undefined) roleCounts[memory.role] = 0;
   Game.spawns['Spawn1'].createCreep(body, (memory.role + roleCounts[memory.role]++), memory);
 }
@@ -195,7 +208,7 @@ module.exports.run = function(room) {
       });
     var bodyParts = spawningCreep.body.map(function(bp){return bp.type;});
     console.log('Spawning', spawningCreep.memory.role, spawningCreep.name,
-                bodyParts, creepCost(bodyParts));
+                runLengthEncoding(bodyParts), creepCost(bodyParts));
   } else {
     if (harvesterWorkParts == 0) {
       console.log('All harvester creeps died! Spawing a recovery creep');
