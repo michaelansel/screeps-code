@@ -42,7 +42,7 @@ var roleHarvester = {
       } else {
         parts = workPartsPerSource[s.id];
       }
-      if (parts < 6) {
+      if (parts < 8) {
         candidates.push(s);
         console.log(creep.name, 'candidate source', s.id, parts);
       } else {

@@ -63,8 +63,8 @@ module.exports.run = function(room) {
     },
     harvester: function(available, capacity) {
       // Move fast when empty; don't care when full; maximize work speed
-      // Max of 6x WORK per harvester (enough to single handedly drain a source)
-      var maxCost = Math.min(3*creepCost([WORK, WORK, MOVE]), capacity - BODYPART_COST[CARRY]);
+      // Max of 8x WORK per harvester (enough to single handedly drain a source)
+      var maxCost = Math.min(4*creepCost([WORK, WORK, MOVE]), capacity - BODYPART_COST[CARRY]);
       return sortCreep(scaleCreep([WORK, WORK, MOVE], maxCost).concat([CARRY]));
     },
     hauler: function(available, capacity) {
@@ -158,7 +158,7 @@ module.exports.run = function(room) {
     // Harvest 2 energy per WORK per tick
     // Source has 3000 energy every 300 ticks
     // Max 5 WORK per source (plus 20% buffer to ensure 100% harvest)
-    if (harvesterWorkParts / 6 < room.find(FIND_SOURCES).length) {
+    if (harvesterWorkParts / 8 < room.find(FIND_SOURCES).length) {
       doSpawn(
         creepConfig['harvester'](available, capacity),
         {role: 'harvester'}
