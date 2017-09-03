@@ -8,13 +8,57 @@ function creepsWithRole(role) {
 }
 
 var roleHarvester = {
+  selectSource: function (creep) {
+    // Find the nearest source without enough WORK parts assigned
+    var sources = creep.room.find(FIND_SOURCES, {filter: function(source) {
+        return source.energy > 0;
+    }});
+    var workPartsPerSource = {};
+    var harvesters = creepsWithRole('harvester');
+    for (var ci in harvesters) {
+      var c = harvesters[ci];
+      if (c.id == creep.id) continue;
+      if (!Game.getObjectById(c.memory.target)) continue;
+      var parts = c.body.reduce(function(sum, bp){
+        if (bp.type == WORK) {
+          return sum + 1;
+        } else {
+          return sum;
+        }
+      }, 0);
+      if (workPartsPerSource[c.memory.target] == undefined) {
+        workPartsPerSource[c.memory.target] = 0;
+      }
+      workPartsPerSource[c.memory.target] += parts;
+      console.log(c.name, c.memory.target, parts, workPartsPerSource[c.memory.target]);
+    }
+    console.log(JSON.stringify(workPartsPerSource));
+    var candidates = [];
+    for (var si in sources) {
+      var s = sources[si];
+      var parts;
+      if (workPartsPerSource[s.id] == undefined) {
+        parts = 0;
+      } else {
+        parts = workPartsPerSource[s.id];
+      }
+      if (parts < 6) {
+        candidates.push(s);
+        console.log(creep.name, 'candidate source', s.id, parts);
+      } else {
+        console.log('source already full', s.id, parts);
+      }
+    }
+    return creep.pos.findClosestByPath(candidates);
+  },
 
   /** @param {Creep} creep **/
   run: function(creep) {
     if (creep.carry.energy < creep.carryCapacity) {
       var source = Game.getObjectById(creep.memory.target);
       if(!source) {
-        source = creep.pos.findClosestByPath(FIND_SOURCES, {filter: function(source){return source.energy > 0;}});
+        // source = creep.pos.findClosestByPath(FIND_SOURCES, {filter: function(source){return source.energy > 0;}});
+        source = this.selectSource(creep);
         if (!source) {
           console.log(creep.name, "No available sources");
           return;
@@ -30,8 +74,8 @@ var roleHarvester = {
         if (res == ERR_NO_PATH) creep.memory.target = null;
       }
     } else {
-      creep.memory.target = null;
       if (creep.memory.returnToRole) {
+        creep.memory.target = null;
         creep.memory.role = creep.memory.returnToRole;
         creep.memory.returnToRole = null;
         return;
