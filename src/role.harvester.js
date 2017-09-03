@@ -14,7 +14,7 @@ var roleHarvester = {
     if (creep.carry.energy < creep.carryCapacity) {
       var source = Game.getObjectById(creep.memory.target);
       if(!source) {
-        source = creep.pos.findClosestByPath(FIND_SOURCES);
+        source = creep.pos.findClosestByPath(FIND_SOURCES, {filter: function(source){return source.energy > 0;}});
         if (!source) {
           console.log(creep.name, "No available sources");
           return;
