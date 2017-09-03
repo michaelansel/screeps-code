@@ -61,7 +61,7 @@ var roleLinker = {
       for (var li in links) {
         if (link.id == li) continue;
         var l = links[li];
-        if (l.energy >= creep.carryCapacity) {
+        if (l.energy >= Math.min(l.energyCapacity, creep.carryCapacity)) {
           l.transferEnergy(link);
         }
         // If my link is full, stop trying
@@ -80,7 +80,7 @@ var roleLinker = {
   },
 
   populateLink: function(creep, link) {
-    if (creep.carry.energy < creep.carryCapacity) {
+    if (creep.carry.energy < Math.min(link.energyCapacity-link.energy, creep.carryCapacity)) {
       var containers = link.pos.findInRange(FIND_STRUCTURES, 5, {filter: function(structure) {
           return structure.structureType == STRUCTURE_CONTAINER &&
                  structure.store[RESOURCE_ENERGY] > 0;
