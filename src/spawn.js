@@ -141,7 +141,6 @@ module.exports.run = function(room) {
       }
     }, 0)
   }, 0);
-  console.log('harvester work parts', harvesterWorkParts);
 
   if (creepsWithRole('hauler').length < 1) {
     console.log('Ensuring at least one hauler at all times');
