@@ -80,8 +80,8 @@ module.exports.run = function(room) {
     },
     harvester: function(maxCost) {
       // Move fast when empty; don't care when full; maximize work speed
-      // Max of 8x WORK per harvester (enough to single handedly drain a source)
-      var maxCost = Math.min(4*creepCost([WORK, WORK, MOVE]), maxCost - BODYPART_COST[CARRY], MAX_CREEP_COST);
+      // Max of 4x WORK per harvester (almost enough to single handedly drain a source, but still work in pairs)
+      var maxCost = Math.min(2*creepCost([WORK, WORK, MOVE]), maxCost - BODYPART_COST[CARRY], MAX_CREEP_COST);
       return sortCreep(scaleCreep([WORK, WORK, MOVE], maxCost, true).concat([CARRY]));
     },
     hauler: function(maxCost) {
