@@ -59,7 +59,7 @@ function doSpawn(body, memory) {
   Game.spawns['Spawn1'].createCreep(body, (memory.role + roleCounts[memory.role]++), memory);
 }
 
-var MAX_CREEP_COST = 3000;
+var MAX_CREEP_COST = 2000;
 
 module.exports.run = function(room) {
   // BODYPART_COST: {
