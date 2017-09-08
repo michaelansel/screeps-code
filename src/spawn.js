@@ -22,8 +22,10 @@ var BODYPART_ORDER = [
   CARRY,
 ];
 
-function scaleCreep(body, maxCost) {
+function scaleCreep(body, maxCost, ensureNonEmpty) {
   var copies = Math.floor(maxCost / creepCost(body));
+  if (ensureNonEmpty) copies = Math.max(1,copies);
+  if (copies == 0) return [];
   return Array(copies).fill(body).reduce(
     function(a, b) { return a.concat(b); },
     []
@@ -71,48 +73,48 @@ module.exports.run = function(room) {
   //   "claim": 600
   // },
   var creepConfig = {
-    recovery: function(available, capacity) {
+    recovery: function(maxCost) {
       // Cheap and versatile
       // Max cost of 300, smaller is better
       return [WORK, CARRY, MOVE];
     },
-    harvester: function(available, capacity) {
+    harvester: function(maxCost) {
       // Move fast when empty; don't care when full; maximize work speed
       // Max of 8x WORK per harvester (enough to single handedly drain a source)
-      var maxCost = Math.min(4*creepCost([WORK, WORK, MOVE]), capacity - BODYPART_COST[CARRY], MAX_CREEP_COST);
-      return sortCreep(scaleCreep([WORK, WORK, MOVE], maxCost).concat([CARRY]));
+      var maxCost = Math.min(4*creepCost([WORK, WORK, MOVE]), maxCost - BODYPART_COST[CARRY], MAX_CREEP_COST);
+      return sortCreep(scaleCreep([WORK, WORK, MOVE], maxCost, true).concat([CARRY]));
     },
-    hauler: function(available, capacity) {
+    hauler: function(maxCost) {
       // Move fast when full; never work
       // Max carry of 500 (10x CARRY parts)
-      var maxCost = Math.min(5*creepCost([CARRY, CARRY, MOVE]), capacity, MAX_CREEP_COST);
-      return sortCreep(scaleCreep([CARRY, CARRY, MOVE], maxCost));
+      var maxCost = Math.min(5*creepCost([CARRY, CARRY, MOVE]), maxCost, MAX_CREEP_COST);
+      return sortCreep(scaleCreep([CARRY, CARRY, MOVE], maxCost, true));
     },
-    upgrader: function(available, capacity) {
+    upgrader: function(maxCost) {
       // Move fast when full on roads; maximize work speed
       var minimalCarryParts = [CARRY, MOVE];
-      var maxCost = Math.min(capacity, MAX_CREEP_COST);
-      var workParts = scaleCreep([WORK, WORK, MOVE], maxCost - creepCost(minimalCarryParts));
-      var carryParts = scaleCreep([CARRY, CARRY, MOVE], maxCost - creepCost(workParts));
+      var maxCost = Math.min(maxCost, MAX_CREEP_COST);
+      var workParts = scaleCreep([WORK, WORK, MOVE], maxCost - creepCost(minimalCarryParts), true);
+      var carryParts = scaleCreep([CARRY, CARRY, MOVE], maxCost - creepCost(workParts), false);
       if(carryParts.length == 0) carryParts = minimalCarryParts;
       return sortCreep(workParts.concat(carryParts));
     },
-    builder: function(available, capacity) {
+    builder: function(maxCost) {
       // Move fast when full off roads; maximize work speed
       // TODO think about this some more; ending up with not enough carry (can expend all energy in single tick)
-      // Looks like build is 2 energy per WORK per tick
+      // Looks like build is 2 energy per WORK per tick -- BUILD_POWER? But that is 5...
       var minimalCarryParts = [CARRY, MOVE];
-      var maxCost = Math.min(capacity, MAX_CREEP_COST);
-      var workParts = scaleCreep([WORK, MOVE], maxCost - creepCost(minimalCarryParts));
-      var carryParts = scaleCreep([CARRY, MOVE], maxCost - creepCost(workParts));
+      var maxCost = Math.min(maxCost, MAX_CREEP_COST);
+      var workParts = scaleCreep([WORK, MOVE], maxCost - creepCost(minimalCarryParts), true);
+      var carryParts = scaleCreep([CARRY, MOVE], maxCost - creepCost(workParts), false);
       if(carryParts.length == 0) carryParts = minimalCarryParts;
       return sortCreep(workParts.concat(carryParts));
     },
-    linker: function(available, capacity) {
+    linker: function(maxCost) {
       // Move fast when empty; maximize carry
       // Max carry 400 energy (8x CARRY), derived from size of link (800 energy)
-      var maxCost = Math.min(4*creepCost([CARRY, CARRY, MOVE]), capacity, MAX_CREEP_COST);
-      return sortCreep(scaleCreep([CARRY, CARRY, MOVE], maxCost));
+      var maxCost = Math.min(4*creepCost([CARRY, CARRY, MOVE]), maxCost, MAX_CREEP_COST);
+      return sortCreep(scaleCreep([CARRY, CARRY, MOVE], maxCost, true));
     },
   };
 
@@ -162,13 +164,13 @@ module.exports.run = function(room) {
   if (creepsWithRole('hauler').length < 1) {
     console.log('Ensuring at least one hauler at all times');
     doSpawn(
-      creepConfig['hauler'](available, available),
+      creepConfig['hauler'](available),
       {role: 'hauler'}
     );
   } else if (harvesterWorkParts < 2) {
     console.log('Ensuring at least 2 harvesters before anything else');
     doSpawn(
-      creepConfig['harvester'](available, available),
+      creepConfig['harvester'](available),
       {role: 'harvester'}
     );
   } else {
@@ -177,7 +179,7 @@ module.exports.run = function(room) {
     // Max 5 WORK per source (plus 20% buffer to ensure 100% harvest)
     if (harvesterWorkParts / 8 < room.find(FIND_SOURCES).length) {
       doSpawn(
-        creepConfig['harvester'](available, capacity),
+        creepConfig['harvester'](capacity),
         {role: 'harvester'}
       )
     }
@@ -190,7 +192,7 @@ module.exports.run = function(room) {
       var roleCreeps = _.filter(Game.creeps, (creep) => creep.memory.role == role);
       if (roleCreeps.length < Memory.desiredCreepCounts[role]) {
         doSpawn(
-          creepConfig[role](available, capacity),
+          creepConfig[role](capacity),
           {role: role}
         );
       }
@@ -213,15 +215,15 @@ module.exports.run = function(room) {
     if (harvesterWorkParts == 0) {
       console.log('All harvester creeps died! Spawing a recovery creep');
       Game.notify('All harvester creeps died! Spawing a recovery creep', 10);
-      Game.spawns['Spawn1'].createCreep(creepConfig['harvester'](available, available), undefined, {
+      Game.spawns['Spawn1'].createCreep(creepConfig['harvester'](available), undefined, {
         role: 'harvester'
       });
     }
     var extensions = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_EXTENSION;}});
-    if (creepsWithRole('builder').length == 0 && creepCost(creepConfig['builder'](available, capacity)) > room.energyCapacityAvailable) {
+    if (creepsWithRole('builder').length == 0 && creepCost(creepConfig['builder'](capacity)) > room.energyCapacityAvailable) {
       console.log('Bootstrapping building with a recovery builder');
       Game.notify('Bootstrapping building with a recovery builder', 10);
-      Game.spawns['Spawn1'].createCreep(creepConfig['builder'](available, available), undefined, {
+      Game.spawns['Spawn1'].createCreep(creepConfig['builder'](available), undefined, {
         role: 'builder'
       });
     }
