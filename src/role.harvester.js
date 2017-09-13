@@ -9,11 +9,14 @@ function creepsWithRole(role) {
 
 var roleHarvester = {
   selectSource: function (creep) {
-    // Find the nearest source without enough WORK parts assigned
+    // Find the nearest source without enough WORK parts assigned and space available
+
+    // Compute the current state of the world
     var sources = creep.room.find(FIND_SOURCES, {filter: function(source) {
         return source.energy > 0;
     }});
     var workPartsPerSource = {};
+    var workersPerSource = {};
     var harvesters = creepsWithRole('harvester');
     for (var ci in harvesters) {
       var c = harvesters[ci];
@@ -29,26 +32,47 @@ var roleHarvester = {
       if (workPartsPerSource[c.memory.target] == undefined) {
         workPartsPerSource[c.memory.target] = 0;
       }
+      if (workersPerSource[c.memory.target] == undefined) {
+        workersPerSource[c.memory.target] = 0;
+      }
       workPartsPerSource[c.memory.target] += parts;
-      console.log(c.name, c.memory.target, parts, workPartsPerSource[c.memory.target]);
+      workersPerSource[c.memory.target]++;
+      console.log(
+        c.name,
+        c.memory.target,
+        parts,
+        workPartsPerSource[c.memory.target],
+        workersPerSource[c.memory.target]
+      );
     }
     console.log(JSON.stringify(workPartsPerSource));
+    console.log(JSON.stringify(workersPerSource));
+
+    // Find all candidate sources (not enough WORK parts and space available)
     var candidates = [];
     for (var si in sources) {
       var s = sources[si];
-      var parts;
+      var parts, workers;
       if (workPartsPerSource[s.id] == undefined) {
         parts = 0;
       } else {
         parts = workPartsPerSource[s.id];
       }
-      if (parts < 8) {
+      if (workersPerSource[s.id] == undefined) {
+        workers = 0;
+      } else {
+        workers = workersPerSource[s.id];
+      }
+      if (parts < (SOURCE_ENERGY_CAPACITY / ENERGY_REGEN_TIME / HARVEST_POWER) &&
+          workers < s.room.memory.sources[s.id].spaces) {
         candidates.push(s);
         console.log(creep.name, 'candidate source', s.id, parts);
       } else {
-        console.log('source already full', s.id, parts);
+        console.log('source already full', s.id, parts, workersPerSource[s.id]);
       }
     }
+
+    // Select the nearest candidate
     return creep.pos.findClosestByPath(candidates);
   },
 
