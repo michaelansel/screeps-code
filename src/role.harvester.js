@@ -104,6 +104,18 @@ var roleHarvester = {
         creep.memory.returnToRole = null;
         return;
       }
+
+      // Bootstrap the per-source container
+      // This isn't terribly efficient (doesn't latch-on), but good enough for bootstrap
+      var constructionSites = creep.pos.findInRange(FIND_CONSTRUCTION_SITES, 1, {
+        filter: function(site) {
+          return site.structureType == STRUCTURE_CONTAINER;
+        },
+      });
+      if (constructionSites.length > 0) {
+        if(creep.build(constructionSites[0]) == OK) return;
+      }
+
       var structureSelectors = [
         // function(structure) {
         //   return structure.structureType == STRUCTURE_TOWER && structure.energy < structure.energyCapacity;
