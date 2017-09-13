@@ -110,15 +110,28 @@ var Main = {
   },
 
   loop: function() {
-    var room = Game.spawns[Object.keys(Game.spawns)[0]].room;
-
     this._maintenance();
-    spawnLogic.run(room);
 
-    var towers = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_TOWER;}});
-    for (var ti in towers) {
-      var tower = towers[ti];
-      towerLogic.run(tower);
+    for (var rn in Game.rooms) {
+      var room = Game.rooms[rn];
+      if(room.controller.my) {
+        var spawns = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_SPAWN;}});
+        // Only run spawn logic if we aren't already occupied spawning things
+        if(!spawns.every(function(spawn){return spawn.spawning;})) {
+          spawnLogic.run(room);
+        }
+        for(var spawn of spawns) {
+          spawnLogic.runAlways(spawn);
+        }
+      }
+
+      if(room.controller.my && room.controller.level > 2) {
+        var towers = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_TOWER;}});
+        for (var ti in towers) {
+          var tower = towers[ti];
+          if (tower.isActive()) towerLogic.run(tower);
+        }
+      }
     }
 
     for (var name in Game.creeps) {

@@ -61,6 +61,22 @@ function doSpawn(body, memory) {
 
 var MAX_CREEP_COST = 2000;
 
+module.exports.runAlways = function(spawn) {
+  if(spawn.spawning) {
+    var spawningCreep = Game.creeps[spawn.spawning.name];
+    spawn.room.visual.text(
+      '🛠️' + spawningCreep.memory.role,
+      spawn.pos.x + 1,
+      spawn.pos.y, {
+        align: 'left',
+        opacity: 0.8
+      });
+    var bodyParts = spawningCreep.body.map(function(bp){return bp.type;});
+    console.log('Spawning', spawningCreep.memory.role, spawningCreep.name,
+                runLengthEncoding(bodyParts), creepCost(bodyParts));
+  }
+}
+
 module.exports.run = function(room) {
   // BODYPART_COST: {
   //   "move": 50,
@@ -199,18 +215,7 @@ module.exports.run = function(room) {
     }
   }
 
-  if (Game.spawns['Spawn1'].spawning) {
-    var spawningCreep = Game.creeps[Game.spawns['Spawn1'].spawning.name];
-    Game.spawns['Spawn1'].room.visual.text(
-      '🛠️' + spawningCreep.memory.role,
-      Game.spawns['Spawn1'].pos.x + 1,
-      Game.spawns['Spawn1'].pos.y, {
-        align: 'left',
-        opacity: 0.8
-      });
-    var bodyParts = spawningCreep.body.map(function(bp){return bp.type;});
-    console.log('Spawning', spawningCreep.memory.role, spawningCreep.name,
-                runLengthEncoding(bodyParts), creepCost(bodyParts));
+  if (!Game.spawns['Spawn1'].spawning) {
   } else {
     if (harvesterWorkParts == 0) {
       console.log('All harvester creeps died! Spawing a recovery creep');
