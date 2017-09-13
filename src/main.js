@@ -24,12 +24,40 @@ module.exports.buildMode = function() {
   }
 }
 
-module.exports._maintenance = function() {
+module.exports._periodic_maintenance = function() {
   for (var name in Memory.creeps) {
     if (!Game.creeps[name]) {
       delete Memory.creeps[name];
       console.log('Clearing non-existing creep memory:', name);
     }
+  }
+
+  for (var name in Game.rooms) {
+    room = Game.rooms[name];
+    if (!room.memory.scanned) {
+      room.memory.sources = {};
+      const sources = room.find(FIND_SOURCES);
+      for (const source of sources) {
+        var sourceMemory = room.memory.sources[source.id] = {};
+        var spaces = 0;
+        for (const dx of [-1,0,1]) {
+          for (const dy of [-1,0,1]) {
+            const objs = room.lookAt(source.pos.x+dx, source.pos.y+dy);
+            if (!(objs.length == 1 && objs[0].type == 'terrain' && objs[0].terrain == 'wall')) {
+              spaces++;
+            }
+          }
+        }
+        sourceMemory.spaces = spaces;
+      }
+      room.memory.scanned = true;
+    }
+  }
+}
+
+module.exports._maintenance = function() {
+  if (Game.time % 10 == 0) {
+    this._periodic_maintenance();
   }
 
   Memory.creepCounts = Object.keys(Game.creeps).map(function(creepName){
