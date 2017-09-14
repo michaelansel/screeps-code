@@ -34,12 +34,20 @@ var roleHauler = {
         function(structure) {
           return Memory.underAttack &&
                  structure.structureType == STRUCTURE_TOWER &&
+                 structure.energy < structure.energyCapacity/10;
+        },
+        function(structure) {
+          return Memory.underAttack &&
+                 structure.structureType == STRUCTURE_TOWER &&
                  structure.energy < structure.energyCapacity;
         },
         function(structure) {
           return (structure.structureType == STRUCTURE_SPAWN ||
                   structure.structureType == STRUCTURE_EXTENSION) &&
                  structure.energy < structure.energyCapacity;
+        },
+        function(structure) {
+          return structure.structureType == STRUCTURE_TOWER && structure.energy < structure.energyCapacity/10;
         },
         function(structure) {
           return structure.structureType == STRUCTURE_TOWER && structure.energy < structure.energyCapacity;
