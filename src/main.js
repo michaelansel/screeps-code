@@ -23,7 +23,47 @@ var ConsoleHelpers = {
         Game.creeps[name].memory.role = 'builder';
       }
     }
-  }
+  },
+  largeNumberToString: function(num) {
+    var exp = 0;
+    while(num > 1000) {
+      num /= 1000;
+      exp += 3;
+    }
+    const suffixes = {0: "", 3: "K", 6: "M", 9: "G"};
+    return Math.round(10*num)/10+suffixes[exp];
+  },
+  stats: function() {
+    console.log("Game: ", "GCL"+Game.gcl.level, ConsoleHelpers.largeNumberToString(Game.gcl.progress)+"/"+ConsoleHelpers.largeNumberToString(Game.gcl.progressTotal));
+    for (var rn in Game.rooms) {
+      const room = Game.rooms[rn];
+      if (room.controller.my) {
+        console.log("Room: ", room.name);
+
+        console.log("Controller: ", "RCL"+room.controller.level, ConsoleHelpers.largeNumberToString(room.controller.progress)+"/"+ConsoleHelpers.largeNumberToString(room.controller.progressTotal));
+
+        const sources = room.find(FIND_SOURCES);
+        var sourceStats = [];
+        for (var source of sources) {
+          sourceStats.push([source.energy,source.ticksToRegeneration]);
+        }
+        console.log("Sources: ", sourceStats.map(function(ss){return ss.join("/");}).join(", "));
+
+        const containers = room.find(FIND_STRUCTURES, {filter: function(s){return s.structureType == STRUCTURE_CONTAINER;}});
+        var containerStats = [];
+        for (var container of containers) {
+          containerStats.push(container.store[RESOURCE_ENERGY]);
+        }
+        console.log("Containers: ", containerStats.join(", "));
+
+        if (room.storage) {
+          console.log("Storage: ", ConsoleHelpers.largeNumberToString(room.storage.store[RESOURCE_ENERGY]));
+        }
+
+        console.log(JSON.stringify(Memory.creepCounts));
+      }
+    }
+  },
 };
 
 var Main = {
@@ -73,6 +113,8 @@ var Main = {
   },
 
   _periodic_maintenance: function() {
+    ConsoleHelpers.stats();
+
     for (var name in Memory.creeps) {
       if (!Game.creeps[name]) {
         delete Memory.creeps[name];
