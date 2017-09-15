@@ -50,7 +50,7 @@ module.exports = {
       if (target.structureType == STRUCTURE_CONTAINER ||
           target.structureType == STRUCTURE_STORAGE) {
         if (target.store[RESOURCE_ENERGY] == 0) {
-          console.log(creep.name, "giving up on previous structure", creep.memory.target);
+          console.log(creep.name, "giving up on previous storage/container", creep.memory.target);
           creep.memory.target = null;
           return;
         }
