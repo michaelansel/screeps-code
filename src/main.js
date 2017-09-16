@@ -75,10 +75,9 @@ var ConsoleHelpers = {
           towerStats.push(tower.energy);
         }
         console.log("Towers: ", towerStats.join(", "));
-
-        console.log(JSON.stringify(Memory.creepCounts));
       }
     }
+    console.log(JSON.stringify(Memory.creepCounts));
   },
 };
 
