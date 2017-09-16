@@ -53,10 +53,15 @@ function runLengthEncoding(data) {
   }).join(',');
 }
 
-function doSpawn(body, memory) {
+function doSpawn(room, body, memory) {
   console.log('Attempting to spawn', memory.role, runLengthEncoding(body), creepCost(body));
   if (roleCounts[memory.role] == undefined) roleCounts[memory.role] = 0;
-  Game.spawns['Spawn1'].createCreep(body, (memory.role + roleCounts[memory.role]++), memory);
+  const spawns = room.find(FIND_STRUCTURES, {
+    filter: function (structure) {
+      return structure.structureType == STRUCTURE_SPAWN && !structure.spawning;
+    },
+  });
+  spawns[0].createCreep(body, (memory.role + roleCounts[memory.role]++), memory);
 }
 
 var MAX_CREEP_COST = 2000;
@@ -183,12 +188,14 @@ module.exports.run = function(room) {
   if (creepsWithRole('hauler').length < 1) {
     console.log('Ensuring at least one hauler at all times');
     doSpawn(
+      room,
       creepConfig['hauler'](available),
       {role: 'hauler'}
     );
   } else if (harvesterWorkParts < 2) {
     console.log('Ensuring at least 2 harvesters before anything else');
     doSpawn(
+      room,
       creepConfig['harvester'](available),
       {role: 'harvester'}
     );
@@ -198,6 +205,7 @@ module.exports.run = function(room) {
     // Max 5 WORK per source (plus 20% buffer to ensure 100% harvest)
     if (harvesterWorkParts / 8 < room.find(FIND_SOURCES).length) {
       doSpawn(
+        room,
         creepConfig['harvester'](capacity),
         {role: 'harvester'}
       )
@@ -211,6 +219,7 @@ module.exports.run = function(room) {
       var roleCreeps = _.filter(Game.creeps, (creep) => creep.memory.role == role);
       if (roleCreeps.length < room.memory.desiredCreepCounts[role]) {
         doSpawn(
+          room,
           creepConfig[role](capacity),
           {role: role}
         );
