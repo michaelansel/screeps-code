@@ -13,8 +13,7 @@ var roleLinker = {
     var link = room.storage.pos.findInRange(FIND_STRUCTURES, 5, {filter: function(structure) {
         return structure.structureType == STRUCTURE_LINK;
     }})[0];
-    if(!Memory.storageLink) Memory.storageLink = {};
-    Memory.storageLink[room.name] = link.id;
+    room.memory.storageLink = link.id;
   },
 
   selectLink: function (creep) {
@@ -121,11 +120,11 @@ var roleLinker = {
       console.log(creep.name, "unable to find a link to associate with", creep.memory.link);
       return;
     }
-    if(!Memory.storageLink[creep.room.name]) {
+    if(!creep.room.memory.storageLink) {
       console.log(creep.name, "locating the storage link for", creep.room.name);
       this.locateStorageLink(creep.room);
     }
-    if(creep.memory.link == Memory.storageLink[creep.room.name]) {
+    if(creep.memory.link == creep.room.memory.storageLink) {
       // console.log(creep.name, "withdrawing from link");
       this.collectFromLink(creep, link);
     } else {
