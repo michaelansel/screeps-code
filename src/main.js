@@ -194,6 +194,7 @@ var Main = {
 
     for (var name in Game.creeps) {
       var creep = Game.creeps[name];
+      if (creep.spawning) return; // no logic when spawning
 
       var droppedEnergy = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {
         filter: function (resource) {
