@@ -29,8 +29,7 @@ var roleHauler = {
       },
       function(structure) {
         return creep.memory.rebalancing &&
-               (structure.structureType == STRUCTURE_CONTAINER ||
-                structure.structureType == STRUCTURE_STORAGE) &&
+               structure.structureType == STRUCTURE_STORAGE &&
                _.sum(structure.store) < structure.storeCapacity;
       },
     ];
@@ -97,10 +96,18 @@ var roleHauler = {
         this.workTarget(creep, target);
       } else {
         console.log(creep.name, "lots of energy and nowhere to use it; entering rebalance mode");
-        // creep.memory.rebalancing = true;
+        creep.memory.rebalancing = true;
       }
     } else {
-      helpers.getEnergy(creep, creep.memory.rebalancing);
+      if (creep.memory.sleep > 0) {
+        creep.memory.sleep--;
+        creep.moveTo(Game.flags['RallyWhenLost']);
+      } else {
+        helpers.getEnergy(creep, creep.memory.rebalancing);
+        if(creep.memory.rebalancing && creep.pos.getRangeTo(creep.room.storage) == 1) {
+          creep.memory.sleep = 10;
+        }
+      }
     }
   },
 };
