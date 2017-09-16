@@ -1,13 +1,15 @@
+var roleBuilder = require('role.builder');
+var roleClaimer = require('role.claimer');
 var roleHarvester = require('role.harvester');
 var roleHauler = require('role.hauler');
 var roleUpgrader = require('role.upgrader');
-var roleBuilder = require('role.builder');
 var roleLinker = require('role.linker');
 var towerLogic = require('tower');
 var spawnLogic = require('spawn');
 
 var behaviors = {
   builder: roleBuilder,
+  claimer: roleClaimer,
   harvester: roleHarvester,
   hauler: roleHauler,
   linker: roleLinker,
@@ -24,6 +26,11 @@ var ConsoleHelpers = {
         Game.creeps[name].memory.role = 'builder';
       }
     }
+  },
+  claim: function(sourceRoom, targetRoom) {
+    sourceRoom = Game.rooms[sourceRoom];
+    if(!sourceRoom.memory.roomsToClaim) sourceRoom.memory.roomsToClaim = [];
+    sourceRoom.memory.roomsToClaim.push(targetRoom);
   },
   largeNumberToString: function(num) {
     var exp = 0;
@@ -175,6 +182,10 @@ var Main = {
       // Update desired number of linkers
       const links = room.find(FIND_STRUCTURES, {filter: function(structure){return structure.structureType == STRUCTURE_LINK;}});
       room.memory.desiredCreepCounts.linker = links.length;
+
+      if(!room.memory.roomsToClaim) room.memory.roomsToClaim = [];
+      room.memory.roomsToClaim = room.memory.roomsToClaim.filter(function(rn){return !(Game.rooms[rn] && Game.rooms[rn].controller.my);});
+      room.memory.desiredCreepCounts.claimer = room.memory.roomsToClaim.length;
     }
 
     // Tidy up leftover memory values (delete anything not protected)

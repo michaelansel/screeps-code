@@ -132,6 +132,9 @@ module.exports.run = function(room) {
       var maxCost = Math.min(4*creepCost([CARRY, CARRY, MOVE]), maxCost, MAX_CREEP_COST);
       return sortCreep(scaleCreep([CARRY, CARRY, MOVE], maxCost, true));
     },
+    claimer: function(maxCost) {
+      return [CLAIM, MOVE];
+    },
   };
 
   // Scale up builders if there is construction to do or damage to repair
