@@ -57,7 +57,11 @@ var ConsoleHelpers = {
         const containers = room.find(FIND_STRUCTURES, {filter: function(s){return s.structureType == STRUCTURE_CONTAINER;}});
         var containerStats = [];
         for (var container of containers) {
-          containerStats.push(container.store[RESOURCE_ENERGY]);
+          var stat = container.store[RESOURCE_ENERGY];
+          if (container.store[RESOURCE_ENERGY] == container.storeCapacity) {
+            stat += "!";
+          }
+          containerStats.push(stat);
         }
         console.log("Containers: ", containerStats.join(", "));
 
