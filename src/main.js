@@ -46,9 +46,13 @@ var ConsoleHelpers = {
         const sources = room.find(FIND_SOURCES);
         var sourceStats = [];
         for (var source of sources) {
-          sourceStats.push([source.energy,source.ticksToRegeneration]);
+          var stat = [source.energy,source.ticksToRegeneration].join("/");
+          if (source.ticksToRegeneration/ENERGY_REGEN_TIME < source.energy/SOURCE_ENERGY_CAPACITY) {
+            stat += "!";
+          }
+          sourceStats.push(stat);
         }
-        console.log("Sources: ", sourceStats.map(function(ss){return ss.join("/");}).join(", "));
+        console.log("Sources: ", sourceStats.join(", "));
 
         const containers = room.find(FIND_STRUCTURES, {filter: function(s){return s.structureType == STRUCTURE_CONTAINER;}});
         var containerStats = [];
