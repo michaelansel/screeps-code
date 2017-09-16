@@ -141,6 +141,8 @@ var Main = {
       room = Game.rooms[name];
       const sources = room.find(FIND_SOURCES);
       if (!room.memory.scanned) {
+
+        // Count spaces per source
         room.memory.sources = {};
         for (const source of sources) {
           var sourceMemory = room.memory.sources[source.id] = {};
@@ -155,6 +157,7 @@ var Main = {
           }
           sourceMemory.spaces = spaces;
         }
+
         room.memory.scanned = true;
       }
       // Periodically scan for non-empty sources nearing regeneration
