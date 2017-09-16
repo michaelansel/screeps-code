@@ -146,12 +146,12 @@ var Main = {
         room.memory.sources = {};
         for (const source of sources) {
           var sourceMemory = room.memory.sources[source.id] = {};
-          var spaces = 0;
+          var spaces = 8;
           for (const dx of [-1,0,1]) {
             for (const dy of [-1,0,1]) {
               const objs = room.lookAt(source.pos.x+dx, source.pos.y+dy);
-              if (!(objs.length == 1 && objs[0].type == 'terrain' && objs[0].terrain == 'wall')) {
-                spaces++;
+              if (objs.length == 1 && objs[0].type == 'terrain' && objs[0].terrain == 'wall') {
+                spaces--;
               }
             }
           }
