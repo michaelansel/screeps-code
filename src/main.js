@@ -41,6 +41,7 @@ var ConsoleHelpers = {
         console.log("Room: ", room.name);
 
         console.log("Controller: ", "RCL"+room.controller.level, ConsoleHelpers.largeNumberToString(room.controller.progress)+"/"+ConsoleHelpers.largeNumberToString(room.controller.progressTotal));
+        console.log("Energy: ", room.energyAvailable+"/"+room.energyCapacityAvailable);
 
         const sources = room.find(FIND_SOURCES);
         var sourceStats = [];
@@ -59,6 +60,13 @@ var ConsoleHelpers = {
         if (room.storage) {
           console.log("Storage: ", ConsoleHelpers.largeNumberToString(room.storage.store[RESOURCE_ENERGY]));
         }
+
+        const towers = room.find(FIND_STRUCTURES, {filter: function(s){return s.structureType == STRUCTURE_TOWER;}});
+        var towerStats = [];
+        for (var tower of towers) {
+          towerStats.push(tower.energy);
+        }
+        console.log("Towers: ", towerStats.join(", "));
 
         console.log(JSON.stringify(Memory.creepCounts));
       }
