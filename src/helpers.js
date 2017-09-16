@@ -85,7 +85,8 @@ module.exports = {
     if (targets.length > 0) {
       targets = targets.sort(function(a,b){return a.energy - b.energy}).reverse();
       for (t of targets) {
-        if (creep.pos.findPathTo(t)) {
+        const endOfPath = creep.pos.findPathTo(t).reverse()[0];
+        if (endOfPath.x == t.x && endOfPath.y == t.y) {
           console.log(creep.name, 'picking up dropped resource', t, t.energy);
           return t;
         }
