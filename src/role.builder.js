@@ -4,6 +4,8 @@ var roleBuilder = {
 
   /** @param {Creep} creep **/
   run: function(creep) {
+    const room = creep.room;
+
     if (creep.memory.working && creep.carry.energy == 0) {
       creep.memory.working = false;
       creep.memory.target = null;
@@ -22,15 +24,15 @@ var roleBuilder = {
         filter: (structure) => {
           if (structure.structureType == STRUCTURE_RAMPART ||
               structure.structureType == STRUCTURE_WALL) {
-            return structure.hits < Math.min(Memory.fortifyLevel, structure.hitsMax);
+            return structure.hits < Math.min(room.memory.fortifyLevel, structure.hitsMax);
           } else {
-            return structure.hits < Memory.repairLevel*structure.hitsMax;
+            return structure.hits < room.memory.repairLevel*structure.hitsMax;
           }
         }
       });
       if (targets.length) {
-        Memory.fortifyLevel = Math.max(Memory.fortifyLevel, 150000);
-        Memory.repairLevel = Math.max(Memory.repairLevel, 0.75);
+        room.memory.fortifyLevel = Math.max(room.memory.fortifyLevel, 150000);
+        room.memory.repairLevel = Math.max(room.memory.repairLevel, 0.75);
         var target = creep.pos.findClosestByPath(targets);
         if (!target) {
           // console.log(creep.name, "Unable to find a path?", target, targets);
@@ -44,8 +46,8 @@ var roleBuilder = {
           });
         }
       } else {
-        Memory.fortifyLevel = Math.min(Memory.fortifyLevel, 50000);
-        Memory.repairLevel = Math.min(Memory.repairLevel, 0.5);
+        room.memory.fortifyLevel = Math.min(room.memory.fortifyLevel, 50000);
+        room.memory.repairLevel = Math.min(room.memory.repairLevel, 0.5);
         targets = creep.room.find(FIND_CONSTRUCTION_SITES);
         if (targets.length) {
           var target = creep.pos.findClosestByPath(targets);
@@ -89,9 +91,9 @@ var roleBuilder = {
             // Builders are idle; notify every 60m
             // Game.notify("Builder is idle: "+creep.name, 60);
             console.log(creep.name, "has nothing to build or repair");
-            Memory.desiredCreepCounts['builder'] = 0;
+            room.memory.desiredCreepCounts['builder'] = 0;
             creep.memory.role = 'upgrader';
-            Memory.desiredCreepCounts['upgrader'] = Math.min(Memory.desiredCreepCounts['upgrader'] + 1, 5);
+            room.memory.desiredCreepCounts['upgrader'] = Math.min(room.memory.desiredCreepCounts['upgrader'] + 1, 5);
           }
         }
       }

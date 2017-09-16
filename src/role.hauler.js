@@ -5,12 +5,12 @@ var roleHauler = {
   selectTarget: function(creep) {
     var structureSelectors = [
       function(structure) {
-        return Memory.underAttack &&
+        return creep.room.memory.underAttack &&
                structure.structureType == STRUCTURE_TOWER &&
                structure.energy < structure.energyCapacity/10;
       },
       function(structure) {
-        return Memory.underAttack &&
+        return creep.room.memory.underAttack &&
                structure.structureType == STRUCTURE_TOWER &&
                structure.energy < structure.energyCapacity;
       },

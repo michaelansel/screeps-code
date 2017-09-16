@@ -1,5 +1,6 @@
 module.exports = {
   run: function(tower) {
+    const room = tower.room;
     var hostiles = [];
     var hostileSelectors = [
       function (hostile) {
@@ -14,8 +15,8 @@ module.exports = {
       hostiles = tower.room.find(FIND_HOSTILE_CREEPS, {filter: hostileSelectors[i++]});
     }
     if (hostiles.length > 0) {
-      if (!Memory.underAttack) Game.notify("Hostiles detected at tick " + Game.time, 10);
-      Memory.underAttack = true;
+      if (!room.memory.underAttack) Game.notify("Hostiles detected at tick " + Game.time, 10);
+      room.memory.underAttack = true;
       var hostile = tower.pos.findClosestByRange(hostiles);
       tower.attack(hostile);
       console.log(tower, "attacking", hostile);
@@ -24,14 +25,14 @@ module.exports = {
     //   tower.attack(closestHostile);
     //   Game.notify("Hostiles detected at tick " + Game.time, 10);
     } else {
-      Memory.underAttack = false;
+      room.memory.underAttack = false;
       var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
         filter: (structure) => {
           if (structure.structureType == STRUCTURE_RAMPART ||
               structure.structureType == STRUCTURE_WALL) {
-            return structure.hits < Math.min(Memory.fortifyLevel, structure.hitsMax);
+            return structure.hits < Math.min(room.memory.fortifyLevel, structure.hitsMax);
           } else {
-            return structure.hits < Memory.repairLevel*structure.hitsMax;
+            return structure.hits < room.memory.repairLevel*structure.hitsMax;
           }
         }
       });

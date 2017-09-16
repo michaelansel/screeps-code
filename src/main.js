@@ -15,9 +15,10 @@ var behaviors = {
 };
 
 var ConsoleHelpers = {
-  buildMode: function() {
-    Memory.desiredCreepCounts.builder = Math.max(Memory.desiredCreepCounts.builder, Memory.desiredCreepCounts.upgrader);
-    Memory.desiredCreepCounts.upgrader = 0;
+  buildMode: function(roomname) {
+    const room = Game.rooms[roomname];
+    room.memory.desiredCreepCounts.builder = Math.max(room.memory.desiredCreepCounts.builder, room.memory.desiredCreepCounts.upgrader);
+    room.memory.desiredCreepCounts.upgrader = 0;
     for (var name in Game.creeps) {
       if (Game.creeps[name].memory.role == 'upgrader') {
         Game.creeps[name].memory.role = 'builder';
@@ -75,6 +76,9 @@ var ConsoleHelpers = {
           towerStats.push(tower.energy);
         }
         console.log("Towers: ", towerStats.join(", "));
+
+        console.log("Build Config: ", (100*room.memory.repairLevel)+"%", ConsoleHelpers.largeNumberToString(room.memory.fortifyLevel));
+        console.log("Desired: ", JSON.stringify(room.memory.desiredCreepCounts));
       }
     }
     console.log(JSON.stringify(Memory.creepCounts));
@@ -113,17 +117,6 @@ var Main = {
     }
 
     // Initialize defaults
-    if (!Memory.desiredCreepCounts) {
-      Memory.desiredCreepCounts = {
-        harvester: 3,
-        hauler: 1,
-        upgrader: 0,
-        builder: 0,
-        linker: 0,
-      };
-    }
-    if(!Memory.fortifyLevel) Memory.fortifyLevel = 150000;
-    if(!Memory.repairLevel) Memory.repairLevel = 0.75;
     if(!Memory.inefficientSources) Memory.inefficientSources = {};
   },
 
@@ -160,12 +153,40 @@ var Main = {
 
         room.memory.scanned = true;
       }
+
+      if (!room.memory.desiredCreepCounts) {
+        room.memory.desiredCreepCounts = {
+          hauler: 1,
+          upgrader: 0,
+          builder: 0,
+          linker: 0,
+        };
+      }
+      if(!room.memory.fortifyLevel) room.memory.fortifyLevel = 150000;
+      if(!room.memory.repairLevel) room.memory.repairLevel = 0.75;
+
       // Periodically scan for non-empty sources nearing regeneration
       for (const source of sources) {
         if (source.ticksToRegeneration <= 10 && source.energy > 0) {
           Memory.inefficientSources[source.id] = true;
         }
       }
+
+      // Update desired number of linkers
+      const links = room.find(FIND_STRUCTURES, {filter: function(structure){return structure.structureType == STRUCTURE_LINK;}});
+      room.memory.desiredCreepCounts.linker = links.length;
+    }
+
+    // Tidy up leftover memory values (delete anything not protected)
+    const protected = [
+      "creepCounts",
+      "creeps",
+      "inefficientSources",
+      "rooms",
+    ];
+    for (var k in Memory) {
+      if (protected.includes(k)) continue;
+      delete Memory[k];
     }
   },
 

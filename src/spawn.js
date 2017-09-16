@@ -136,20 +136,20 @@ module.exports.run = function(room) {
 
   // Scale up builders if there is construction to do or damage to repair
   if(room.find(FIND_CONSTRUCTION_SITES).length > 0) {
-    Memory.desiredCreepCounts['builder'] = Math.max(Memory.desiredCreepCounts['builder'], 3);
+    room.memory.desiredCreepCounts['builder'] = Math.max(room.memory.desiredCreepCounts['builder'], 3);
   }
   var targets = room.find(FIND_STRUCTURES, {
     filter: (structure) => {
       if (structure.structureType == STRUCTURE_RAMPART ||
           structure.structureType == STRUCTURE_WALL) {
-        return structure.hits < Math.min(Memory.fortifyLevel, structure.hitsMax);
+        return structure.hits < Math.min(room.memory.fortifyLevel, structure.hitsMax);
       } else {
-        return structure.hits < Memory.repairLevel*structure.hitsMax;
+        return structure.hits < room.memory.repairLevel*structure.hitsMax;
       }
     }
   });
   if(targets.length > 0) {
-    Memory.desiredCreepCounts['builder'] = Math.max(Memory.desiredCreepCounts['builder'], Math.min(3,targets.length));
+    room.memory.desiredCreepCounts['builder'] = Math.max(room.memory.desiredCreepCounts['builder'], Math.min(3,targets.length));
   }
 
   // Convert harvester to upgrader if controller is at risk of downgrading
@@ -203,10 +203,10 @@ module.exports.run = function(room) {
     // Energy production == 2x harvesterWorkParts
     // Max harvesterWorkParts for both upgrader and builder
     // If too many consumption WORK parts, re-role to higher priority
-    for (var role in Memory.desiredCreepCounts) {
+    for (var role in room.memory.desiredCreepCounts) {
       if (role == 'harvester') continue; // handled separately
       var roleCreeps = _.filter(Game.creeps, (creep) => creep.memory.role == role);
-      if (roleCreeps.length < Memory.desiredCreepCounts[role]) {
+      if (roleCreeps.length < room.memory.desiredCreepCounts[role]) {
         doSpawn(
           creepConfig[role](capacity),
           {role: role}
