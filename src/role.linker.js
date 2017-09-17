@@ -87,7 +87,7 @@ var roleLinker = {
       var container = creep.pos.findClosestByPath(containers);
       if(containers.length > 0 && !container) {
         console.log(creep.name, "unable to reach a container", containers);
-        creep.moveTo(Game.flags["RallyWhenLost"]);
+        creep.moveTo(Game.flags['RallyWhenLost-'+creep.room.name]);
         return;
       }
       if (creep.withdraw(container, RESOURCE_ENERGY) != 0) {

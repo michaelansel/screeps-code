@@ -101,7 +101,7 @@ var roleHauler = {
     } else {
       if (creep.memory.sleep > 0) {
         creep.memory.sleep--;
-        creep.moveTo(Game.flags['RallyWhenLost']);
+        creep.moveTo(Game.flags['RallyWhenLost-'+creep.room.name]);
       } else {
         helpers.getEnergy(creep, creep.memory.rebalancing);
         if(creep.memory.rebalancing && creep.pos.getRangeTo(creep.room.storage) == 1) {

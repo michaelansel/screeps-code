@@ -14,7 +14,7 @@ module.exports = {
         creep.memory.role = 'harvester';
         console.log(creep.name, 'No containers to pull from, harvesting instead');
       } else {
-        creep.moveTo(Game.flags['RallyWhenLost']);
+        creep.moveTo(Game.flags['RallyWhenLost-'+creep.room.name]);
       }
     }
   },

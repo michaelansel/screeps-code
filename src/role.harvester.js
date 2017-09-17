@@ -161,7 +161,7 @@ var roleHarvester = {
         }
       } else {
         console.log(creep.name, "lots of energy and nowhere to use it");
-        creep.moveTo(Game.flags['RallyWhenLost']);
+        creep.moveTo(Game.flags['RallyWhenLost-'+creep.room.name]);
       }
     }
   }
