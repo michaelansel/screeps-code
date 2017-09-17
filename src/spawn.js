@@ -61,7 +61,9 @@ function doSpawn(room, body, memory) {
       return structure.structureType == STRUCTURE_SPAWN && !structure.spawning;
     },
   });
-  spawns[0].createCreep(body, (memory.role + roleCounts[memory.role]++), memory);
+  if (spawns.length == 0) return false;
+  const name = spawns[0].createCreep(body, (memory.role + roleCounts[memory.role]++), memory);
+  return !!Game.creeps[name];
 }
 
 var MAX_CREEP_COST = 2000;
@@ -184,6 +186,20 @@ module.exports.run = function(room) {
       }
     }, 0)
   }, 0);
+
+  if(room.memory.emergencySpawn) {
+    console.log("Emergency Spawn: ", JSON.stringify(room.memory.emergencySpawn));
+    const success = doSpawn(
+      room,
+      creepConfig[room.memory.emergencySpawn.config](capacity),
+      {
+        role: room.memory.emergencySpawn.role,
+        room: room.memory.emergencySpawn.room,
+      }
+    );
+    if (success) delete room.memory.emergencySpawn;
+    if (success) console.log("successfully spawned emergency creep!");
+  }
 
   if (creepsWithRole('hauler').length < 1) {
     console.log('Ensuring at least one hauler at all times');

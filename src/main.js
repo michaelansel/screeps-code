@@ -26,6 +26,16 @@ var behaviors = {
   upgrader: roleUpgrader,
 };
 
+function allCreeps() {
+  return Object.keys(Game.creeps).map(function(creepName){return Game.creeps[creepName];});
+}
+function allCreepsInRoom(room) {
+  return allCreeps().filter(function(creep){return creep.room == room;});
+}
+function creepsInRoomWithRole(room, role) {
+  return allCreepsInRoom(room).filter(function(creep){return creep.memory.role == role;});
+}
+
 var ConsoleHelpers = {
   buildMode: function(roomname) {
     const room = Game.rooms[roomname];
@@ -196,6 +206,37 @@ var Main = {
       if(!room.memory.roomsToClaim) room.memory.roomsToClaim = [];
       room.memory.roomsToClaim = room.memory.roomsToClaim.filter(function(rn){return !(Game.rooms[rn] && Game.rooms[rn].controller.my);});
       room.memory.desiredCreepCounts.claimer = room.memory.roomsToClaim.length;
+
+      if(room.find(FIND_STRUCTURES, {filter: function(s){return s.structureType == STRUCTURE_SPAWN;}}).length == 0) {
+        function emergencySpawn(params) {
+          console.log('EMERGENCY', room.name, 'is out of '+params.role+'s and spawns');
+          const helperSpawns = Object.keys(Game.spawns).map(function(k){return Game.spawns[k];}).filter(function(s){return !s.spawning;});
+          if (helperSpawns.length > 0) {
+            const lifesaver = helperSpawns.sort(function(a,b){
+              return Game.map.findRoute(room, a).length - Game.map.findRoute(room, b).length;
+            })[0];
+            console.log(room.name, "requesting spawn assistance from", lifesaver);
+            lifesaver.room.memory.emergencySpawn = params;
+          } else {
+            console.log("No spawns available to help", room.name);
+          }
+        }
+        // TODO this should just be the same spawn logic, but with emergencySpawn instead of doSpawn
+        // This requires a refactor of the spawn logic to isolate the decision-making process
+        if(creepsInRoomWithRole(room, 'harvester').length == 0) {
+          emergencySpawn({
+            config: 'harvester',
+            room: room.name,
+            role: 'harvester',
+          });
+        } else if(creepsInRoomWithRole(room, 'builder').length == 0) {
+          emergencySpawn({
+            config: 'builder',
+            room: room.name,
+            role: 'builder',
+          });
+        }
+      }
     }
 
     // Tidy up leftover memory values (delete anything not protected)
@@ -249,6 +290,12 @@ var Main = {
           creep.pickup(droppedEnergy[ei]);
         }
       }
+
+      if (creep.memory.room && creep.room.name != creep.memory.room) {
+        creep.moveTo(new RoomPosition(25, 25, creep.memory.room));
+        continue;
+      }
+      delete creep.memory.room;
 
       if (Object.keys(behaviors).includes(creep.memory.role)) {
         behaviors[creep.memory.role].run(creep);
