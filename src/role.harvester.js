@@ -10,6 +10,7 @@ function creepsWithRole(role) {
 var roleHarvester = {
   selectSource: function (creep) {
     // Find the nearest source without enough WORK parts assigned and space available
+    console.log(creep.name, 'selecting a source');
 
     // Compute the current state of the world
     var sources = creep.room.find(FIND_SOURCES, {filter: function(source) {
@@ -45,8 +46,8 @@ var roleHarvester = {
         workersPerSource[c.memory.target]
       );
     }
-    console.log(JSON.stringify(workPartsPerSource));
-    console.log(JSON.stringify(workersPerSource));
+    console.log(creep.name, 'workPartsPerSource', JSON.stringify(workPartsPerSource));
+    console.log(creep.name, 'workersPerSource', JSON.stringify(workersPerSource));
 
     // Find all candidate sources (not enough WORK parts and space available)
     var candidates = [];
@@ -124,13 +125,7 @@ var roleHarvester = {
           return (structure.structureType == STRUCTURE_CONTAINER ||
                   structure.structureType == STRUCTURE_STORAGE) &&
                  _.sum(structure.store) < structure.storeCapacity &&
-                 creep.pos.getRangeTo(structure) < 10;
-        },
-        function(structure) {
-          return (structure.structureType == STRUCTURE_CONTAINER ||
-                  structure.structureType == STRUCTURE_STORAGE) &&
-                 _.sum(structure.store) < structure.storeCapacity &&
-                 creep.pos.getRangeTo(structure) < 20;
+                 creep.pos.getRangeTo(structure) < 5;
         },
         // Emergency mode: no haulers available and local containers full
         function(structure) {
@@ -138,6 +133,12 @@ var roleHarvester = {
         },
         function(structure) {
           return creepsWithRole('hauler').length == 0 && structure.structureType == STRUCTURE_EXTENSION && structure.energy < structure.energyCapacity;
+        },
+        // Totally lost mode: just go to a container and deposit your energy
+        function(structure) {
+          return (structure.structureType == STRUCTURE_CONTAINER ||
+                  structure.structureType == STRUCTURE_STORAGE) &&
+                 _.sum(structure.store) < structure.storeCapacity;
         },
       ];
       var targets = [];
