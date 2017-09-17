@@ -68,6 +68,7 @@ var ConsoleHelpers = {
     console.log("Game: ", "GCL"+Game.gcl.level, ConsoleHelpers.largeNumberToString(Game.gcl.progress)+"/"+ConsoleHelpers.largeNumberToString(Game.gcl.progressTotal));
     for (var rn in Game.rooms) {
       const room = Game.rooms[rn];
+      if (!room.controller) continue;
       if (room.controller.my) {
         console.log("Room: ", room.name);
 
@@ -184,6 +185,8 @@ var Main = {
         room.memory.scanned = true;
       }
 
+      if (!room.controller || !room.controller.my) continue;
+
       if (!room.memory.desiredCreepCounts) {
         room.memory.desiredCreepCounts = {
           hauler: 1,
@@ -260,6 +263,8 @@ var Main = {
 
     for (var rn in Game.rooms) {
       var room = Game.rooms[rn];
+      if(!room.controller) continue;
+
       if(room.controller.my) {
         var spawns = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_SPAWN;}});
         // Only run spawn logic if we aren't already occupied spawning things
