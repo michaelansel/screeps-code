@@ -11,7 +11,7 @@ var roleClaimer = {
 
   /** @param {Creep} creep **/
   run: function(creep) {
-    if (!creep.memory.room) {
+    if (!creep.memory.initalized) {
       const assignedRooms = creepsWithRole('claimer').map(function(c){return c.memory.room;});
       for(var rn of creep.room.memory.roomsToClaim) {
         if (!assignedRooms.includes(rn)) {
@@ -19,14 +19,7 @@ var roleClaimer = {
           break;
         }
       }
-    }
-
-    if (creep.room.name != creep.memory.room) {
-      creep.moveTo(new RoomPosition(25, 25, creep.memory.room), {
-        visualizePathStyle: {
-          stroke: '#b999fe',
-        },
-      });
+      creep.memory.initalized = true;
       return;
     }
 

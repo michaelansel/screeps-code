@@ -47,8 +47,11 @@ var ConsoleHelpers = {
       }
     }
   },
-  claim: function(sourceRoom, targetRoom) {
-    sourceRoom = Game.rooms[sourceRoom];
+  claim: function(targetRoom) {
+    const lifesaver = Object.keys(Game.spawns).map(function(k){return Game.spawns[k];}).sort(function(a,b){
+      return Game.map.findRoute(a, targetRoom).length - Game.map.findRoute(b, targetRoom).length;
+    })[0];
+    const sourceRoom = lifesaver.room;
     if(!sourceRoom.memory.roomsToClaim) sourceRoom.memory.roomsToClaim = [];
     sourceRoom.memory.roomsToClaim.push(targetRoom);
   },
