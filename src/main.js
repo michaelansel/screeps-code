@@ -1,3 +1,4 @@
+var profiler = require('screeps-profiler');
 var roleBuilder = require('role.builder');
 var roleClaimer = require('role.claimer');
 var roleHarvester = require('role.harvester');
@@ -6,6 +7,15 @@ var roleUpgrader = require('role.upgrader');
 var roleLinker = require('role.linker');
 var towerLogic = require('tower');
 var spawnLogic = require('spawn');
+
+profiler.registerObject(roleBuilder, 'roleBuilder');
+profiler.registerObject(roleClaimer, 'roleClaimer');
+profiler.registerObject(roleHarvester, 'roleHarvester');
+profiler.registerObject(roleHauler, 'roleHauler');
+profiler.registerObject(roleUpgrader, 'roleUpgrader');
+profiler.registerObject(roleLinker, 'roleLinker');
+profiler.registerObject(towerLogic, 'towerLogic');
+profiler.registerObject(spawnLogic, 'spawnLogic');
 
 var behaviors = {
   builder: roleBuilder,
@@ -95,7 +105,7 @@ var ConsoleHelpers = {
 var Main = {
   _maintenance: function() {
     if (Game.time % 10 == 0) {
-      this._periodic_maintenance();
+      Main._periodic_maintenance();
     }
 
     Memory.creepCounts = Object.keys(Game.creeps).map(function(creepName){
@@ -202,7 +212,7 @@ var Main = {
   },
 
   loop: function() {
-    this._maintenance();
+    Main._maintenance();
 
     for (var rn in Game.rooms) {
       var room = Game.rooms[rn];
@@ -251,3 +261,7 @@ var Main = {
 
 Object.assign(Main, ConsoleHelpers);
 module.exports = Main;
+
+profiler.enable();
+module.exports._loop = module.exports.loop;
+module.exports.loop = function(){profiler.wrap(module.exports._loop)}.bind(module.exports);
