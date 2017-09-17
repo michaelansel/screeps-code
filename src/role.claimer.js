@@ -11,15 +11,18 @@ var roleClaimer = {
 
   /** @param {Creep} creep **/
   run: function(creep) {
-    if (!creep.memory.initalized) {
-      const assignedRooms = creepsWithRole('claimer').map(function(c){return c.memory.room;});
+    if (!creep.memory.assignedRoom) {
+      const assignedRooms = creepsWithRole('claimer').map(function(c){return c.memory.assignedRoom;});
       for(var rn of creep.room.memory.roomsToClaim) {
         if (!assignedRooms.includes(rn)) {
-          creep.memory.room = rn;
+          creep.memory.assignedRoom = rn;
           break;
         }
       }
-      creep.memory.initalized = true;
+    }
+
+    if (creep.room.name != creep.memory.assignedRoom) {
+      creep.memory.room = creep.memory.assignedRoom;
       return;
     }
 
@@ -28,6 +31,7 @@ var roleClaimer = {
     } else {
       if (creep.claimController(creep.room.controller) == ERR_NOT_IN_RANGE) {
         creep.moveTo(creep.room.controller, {
+          maxRooms: 1,
           visualizePathStyle: {
             stroke: '#ffffff'
           },
