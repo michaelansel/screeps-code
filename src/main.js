@@ -235,9 +235,9 @@ var Main = {
         }
       }
 
-      if (creep.memory.room && creep.room.name != creep.memory.room) {
+      if (creep.memory.room) {
         creep.moveTo(new RoomPosition(25, 25, creep.memory.room));
-        continue;
+        if (creep.room.name != creep.memory.room) continue;
       }
       delete creep.memory.room;
 
