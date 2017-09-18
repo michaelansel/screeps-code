@@ -1,4 +1,5 @@
 var profiler = require('screeps-profiler');
+var creepManager = require('creep_manager');
 var roleBuilder = require('role.builder');
 var roleClaimer = require('role.claimer');
 var roleHarvester = require('role.harvester');
@@ -18,15 +19,6 @@ profiler.registerObject(roleLinker,    'roleLinker');
 profiler.registerObject(roomManager,   'roomManager');
 profiler.registerObject(towerLogic,    'towerLogic');
 profiler.registerObject(spawnLogic,    'spawnLogic');
-
-var behaviors = {
-  builder: roleBuilder,
-  claimer: roleClaimer,
-  harvester: roleHarvester,
-  hauler: roleHauler,
-  linker: roleLinker,
-  upgrader: roleUpgrader,
-};
 
 var ConsoleHelpers = {
   buildMode: function(roomname) {
@@ -209,28 +201,7 @@ var Main = {
     for (var name in Game.creeps) {
       var creep = Game.creeps[name];
       if (creep.spawning) return; // no logic when spawning
-
-      var droppedEnergy = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {
-        filter: function (resource) {
-          return resource.resourceType == RESOURCE_ENERGY;
-        }});
-      if (droppedEnergy.length > 0) {
-        for (var ei in droppedEnergy) {
-          creep.pickup(droppedEnergy[ei]);
-        }
-      }
-
-      if (creep.memory.room) {
-        creep.moveTo(new RoomPosition(25, 25, creep.memory.room));
-        if (creep.room.name != creep.memory.room) continue;
-      }
-      delete creep.memory.room;
-
-      if (Object.keys(behaviors).includes(creep.memory.role)) {
-        behaviors[creep.memory.role].run(creep);
-      } else {
-        console.log(creep.name, "unknown role", creep.memory.role);
-      }
+      creepManager.run(creep);
     }
   },
 };
