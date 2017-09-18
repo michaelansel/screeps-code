@@ -26,16 +26,6 @@ var behaviors = {
   upgrader: roleUpgrader,
 };
 
-function allCreeps() {
-  return Object.keys(Game.creeps).map(function(creepName){return Game.creeps[creepName];});
-}
-function allCreepsInRoom(room) {
-  return allCreeps().filter(function(creep){return creep.room == room;});
-}
-function creepsInRoomWithRole(room, role) {
-  return allCreepsInRoom(room).filter(function(creep){return creep.memory.role == role;});
-}
-
 var ConsoleHelpers = {
   buildMode: function(roomname) {
     const room = Game.rooms[roomname];

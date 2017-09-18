@@ -1,12 +1,5 @@
 var helpers = require('helpers');
 
-function allCreeps() {
-  return Object.keys(Game.creeps).map(function(creepName){return Game.creeps[creepName];});
-}
-function creepsWithRole(role) {
-  return allCreeps().filter(function(creep){return creep.memory.role == role;});
-}
-
 var roleLinker = {
   locateStorageLink: function(room) {
     if(!room.storage) return;
@@ -24,7 +17,7 @@ var roleLinker = {
     for (var li in links) {
       var l = links[li];
       var done = false;
-      var linkers = creepsWithRole('linker');
+      var linkers = helpers.creepsWithRole('linker');
       for (var ci in linkers) {
         var c = linkers[ci];
         if (c.id == creep.id) continue;

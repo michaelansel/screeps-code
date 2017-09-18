@@ -1,4 +1,20 @@
 module.exports = {
+  allCreeps: function() {
+    return Object.keys(Game.creeps).map(function(creepName){return Game.creeps[creepName];});
+  },
+
+  creepsWithRole: function(role) {
+    return allCreeps().filter(function(creep){return creep.memory.role == role;});
+  },
+
+  allCreepsInRoom: function (room) {
+    return allCreeps().filter(function(creep){return creep.room == room;});
+  },
+
+  creepsInRoomWithRole: function (room, role) {
+    return allCreepsInRoom(room).filter(function(creep){return creep.memory.role == role;});
+  },
+
   getEnergy: function(creep, prioritizeFull=false) {
     var target = Game.getObjectById(creep.memory.target);
     // console.log(creep.name, 'looking for energy', creep.memory.target, target);
