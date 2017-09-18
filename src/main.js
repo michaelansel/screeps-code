@@ -55,6 +55,7 @@ var ConsoleHelpers = {
       const room = Game.rooms[rn];
       if (!room.controller) continue;
       if (room.controller.my) {
+        console.log();
         console.log("Room: ", room.name);
 
         console.log("Controller: ", "RCL"+room.controller.level, ConsoleHelpers.largeNumberToString(room.controller.progress)+"/"+ConsoleHelpers.largeNumberToString(room.controller.progressTotal));
@@ -104,7 +105,9 @@ var ConsoleHelpers = {
         console.log("Desired: ", JSON.stringify(room.memory.desiredCreepCounts));
       }
     }
+    console.log();
     console.log(JSON.stringify(Memory.creepCounts));
+    console.log();
   },
 };
 
