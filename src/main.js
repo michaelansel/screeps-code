@@ -203,36 +203,7 @@ var Main = {
       room.memory.roomsToClaim = room.memory.roomsToClaim.filter(function(rn){return !(Game.rooms[rn] && Game.rooms[rn].controller.my);});
       room.memory.desiredCreepCounts.claimer = room.memory.roomsToClaim.length;
 
-      if(room.find(FIND_STRUCTURES, {filter: function(s){return s.structureType == STRUCTURE_SPAWN;}}).length == 0) {
-        function emergencySpawn(params) {
-          console.log('EMERGENCY', room.name, 'is out of '+params.role+'s and spawns');
-          const helperSpawns = Object.keys(Game.spawns).map(function(k){return Game.spawns[k];}).filter(function(s){return !s.spawning;});
-          if (helperSpawns.length > 0) {
-            const lifesaver = helperSpawns.sort(function(a,b){
-              return Game.map.findRoute(room, a).length - Game.map.findRoute(room, b).length;
-            })[0];
-            console.log(room.name, "requesting spawn assistance from", lifesaver);
-            lifesaver.room.memory.emergencySpawn = params;
-          } else {
-            console.log("No spawns available to help", room.name);
-          }
-        }
-        // TODO this should just be the same spawn logic, but with emergencySpawn instead of doSpawn
-        // This requires a refactor of the spawn logic to isolate the decision-making process
-        if(creepsInRoomWithRole(room, 'harvester').length == 0) {
-          emergencySpawn({
-            config: 'harvester',
-            room: room.name,
-            role: 'harvester',
-          });
-        } else if(creepsInRoomWithRole(room, 'builder').length == 0) {
-          emergencySpawn({
-            config: 'builder',
-            room: room.name,
-            role: 'builder',
-          });
-        }
-      }
+      spawnLogic.bootstrap(room);
     }
 
     // Tidy up leftover memory values (delete anything not protected)
