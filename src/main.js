@@ -118,7 +118,7 @@ var ConsoleHelpers = {
       }
     }
     console.log();
-    console.log("Total: ", JSON.stringify(Memory.creepCounts));
+    console.log("Total: ", Object.keys(Game.creeps).length, JSON.stringify(Memory.creepCounts));
     console.log();
   },
 };
