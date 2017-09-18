@@ -96,9 +96,10 @@ var ConsoleHelpers = {
 
         const constructionSites = room.find(FIND_CONSTRUCTION_SITES);
         if (constructionSites.length > 0) {
-          var constructionStats = [];
-          constructionStats = constructionSites.map(function(cs){return cs.structureType;});
+          var constructionStats = constructionSites.map(function(cs){return cs.structureType;});
+          var totalConstructionEnergy = constructionSites.reduce(function(total, cs){return total + (cs.progressTotal-cs.progress);}, 0);
           console.log("Construction Sites: ", helpers.runLengthEncoding(constructionStats));
+          console.log("Energy to complete construction: ", totalConstructionEnergy);
         }
 
         console.log("Build Config: ", (100*room.memory.repairLevel)+"%", ConsoleHelpers.largeNumberToString(room.memory.fortifyLevel));
