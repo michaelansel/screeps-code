@@ -107,7 +107,7 @@ var ConsoleHelpers = {
         console.log("Build Config: ", (100*room.memory.repairLevel)+"%", ConsoleHelpers.largeNumberToString(room.memory.fortifyLevel));
         console.log("Desired: ", JSON.stringify(room.memory.desiredCreepCounts));
 
-        var creepCounts = helpers.allCreepsInRoom(room.name).reduce(function(counts,creep){
+        var creepCounts = helpers.allCreepsInRoom(room).reduce(function(counts,creep){
           if(!counts[creep.memory.role]){
             counts[creep.memory.role]=0
           };

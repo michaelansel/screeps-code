@@ -8,6 +8,7 @@ var Helpers = {
   },
 
   allCreepsInRoom: function (room) {
+    if (room instanceof Room) room = room.name;
     return Helpers.allCreeps().filter(function(creep){return creep.room.name == room;});
   },
 
