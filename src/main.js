@@ -207,7 +207,7 @@ var Main = {
 
     for (var name in Game.creeps) {
       var creep = Game.creeps[name];
-      if (creep.spawning) return; // no logic when spawning
+      if (creep.spawning) continue; // no logic when spawning
       creepManager.run(creep);
     }
   },
