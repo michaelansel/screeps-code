@@ -88,11 +88,13 @@ var ConsoleHelpers = {
         }
 
         const towers = room.find(FIND_STRUCTURES, {filter: function(s){return s.structureType == STRUCTURE_TOWER;}});
-        var towerStats = [];
-        for (var tower of towers) {
-          towerStats.push(tower.energy);
+        if (towers.length > 0) {
+          var towerStats = [];
+          for (var tower of towers) {
+            towerStats.push(tower.energy);
+          }
+          console.log("Towers: ", towerStats.join(", "));
         }
-        console.log("Towers: ", towerStats.join(", "));
 
         const constructionSites = room.find(FIND_CONSTRUCTION_SITES);
         if (constructionSites.length > 0) {
@@ -104,10 +106,19 @@ var ConsoleHelpers = {
 
         console.log("Build Config: ", (100*room.memory.repairLevel)+"%", ConsoleHelpers.largeNumberToString(room.memory.fortifyLevel));
         console.log("Desired: ", JSON.stringify(room.memory.desiredCreepCounts));
+
+        var creepCounts = helpers.allCreepsInRoom(room.name).reduce(function(counts,creep){
+          if(!counts[creep.memory.role]){
+            counts[creep.memory.role]=0
+          };
+          counts[creep.memory.role]+=1;
+          return counts;
+        },{});
+        console.log("Current: ", JSON.stringify(creepCounts));
       }
     }
     console.log();
-    console.log(JSON.stringify(Memory.creepCounts));
+    console.log("Total: ", JSON.stringify(Memory.creepCounts));
     console.log();
   },
 };
