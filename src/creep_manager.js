@@ -28,7 +28,7 @@ var CreepManager = {
 
     if (creep.memory.room) {
       creep.moveTo(new RoomPosition(25, 25, creep.memory.room));
-      if (creep.room.name != creep.memory.room) continue;
+      if (creep.room.name != creep.memory.room) return;
     }
     delete creep.memory.room;
 

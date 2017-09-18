@@ -171,6 +171,13 @@ var Main = {
       }
 
       if (room.controller && room.controller.my) {
+        // Periodically scan for non-empty sources nearing regeneration
+        for (const source of sources) {
+          if (source.ticksToRegeneration <= 10 && source.energy > 0) {
+            Memory.inefficientSources[source.id] = true;
+          }
+        }
+
         roomManager.runPeriodic(room);
       }
     }

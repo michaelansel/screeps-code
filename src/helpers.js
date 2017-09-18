@@ -1,18 +1,18 @@
-module.exports = {
+var Helpers = {
   allCreeps: function() {
     return Object.keys(Game.creeps).map(function(creepName){return Game.creeps[creepName];});
   },
 
   creepsWithRole: function(role) {
-    return allCreeps().filter(function(creep){return creep.memory.role == role;});
+    return Helpers.allCreeps().filter(function(creep){return creep.memory.role == role;});
   },
 
   allCreepsInRoom: function (room) {
-    return allCreeps().filter(function(creep){return creep.room == room;});
+    return Helpers.allCreeps().filter(function(creep){return creep.room == room;});
   },
 
   creepsInRoomWithRole: function (room, role) {
-    return allCreepsInRoom(room).filter(function(creep){return creep.memory.role == role;});
+    return Helpers.allCreepsInRoom(room).filter(function(creep){return creep.memory.role == role;});
   },
 
   getEnergy: function(creep, prioritizeFull=false) {
@@ -148,3 +148,5 @@ module.exports = {
     return null;
   },
 };
+
+module.exports = Helpers;

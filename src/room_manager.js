@@ -22,7 +22,7 @@ const RoomManager = {
   },
 
   runPeriodic: function(room) {
-    if (!room.controller || !room.controller.my) continue;
+    if (!room.controller || !room.controller.my) return;
 
     if (!room.memory.desiredCreepCounts) {
       room.memory.desiredCreepCounts = {
@@ -34,13 +34,6 @@ const RoomManager = {
     }
     if(!room.memory.fortifyLevel) room.memory.fortifyLevel = 150000;
     if(!room.memory.repairLevel) room.memory.repairLevel = 0.75;
-
-    // Periodically scan for non-empty sources nearing regeneration
-    for (const source of sources) {
-      if (source.ticksToRegeneration <= 10 && source.energy > 0) {
-        Memory.inefficientSources[source.id] = true;
-      }
-    }
 
     // Update desired number of linkers
     const links = room.find(FIND_STRUCTURES, {filter: function(structure){return structure.structureType == STRUCTURE_LINK;}});

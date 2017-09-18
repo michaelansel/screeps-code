@@ -38,40 +38,40 @@ const SpawnHelpers = {
     harvester: function(maxCost) {
       // Move fast when empty; don't care when full; maximize work speed
       // Max of 4x WORK per harvester (almost enough to single handedly drain a source, but still work in pairs)
-      var maxCost = Math.min(2*creepCost([WORK, WORK, MOVE]), maxCost - BODYPART_COST[CARRY], MAX_CREEP_COST);
-      return sortCreep(scaleCreep([WORK, WORK, MOVE], maxCost, true).concat([CARRY]));
+      var maxCost = Math.min(2*SpawnHelpers.creepCost([WORK, WORK, MOVE]), maxCost - BODYPART_COST[CARRY], SpawnConstants.MAX_CREEP_COST);
+      return SpawnHelpers.sortCreep(SpawnHelpers.scaleCreep([WORK, WORK, MOVE], maxCost, true).concat([CARRY]));
     },
     hauler: function(maxCost) {
       // Move fast when full; never work
       // Max carry of 500 (10x CARRY parts)
-      var maxCost = Math.min(5*creepCost([CARRY, CARRY, MOVE]), maxCost, MAX_CREEP_COST);
-      return sortCreep(scaleCreep([CARRY, CARRY, MOVE], maxCost, true));
+      var maxCost = Math.min(5*SpawnHelpers.creepCost([CARRY, CARRY, MOVE]), maxCost, SpawnConstants.MAX_CREEP_COST);
+      return SpawnHelpers.sortCreep(SpawnHelpers.scaleCreep([CARRY, CARRY, MOVE], maxCost, true));
     },
     upgrader: function(maxCost) {
       // Move fast when full on roads; maximize work speed
       var minimalCarryParts = [CARRY, MOVE];
-      var maxCost = Math.min(maxCost, MAX_CREEP_COST);
-      var workParts = scaleCreep([WORK, WORK, MOVE], maxCost - creepCost(minimalCarryParts), true);
-      var carryParts = scaleCreep([CARRY, CARRY, MOVE], maxCost - creepCost(workParts), false);
+      var maxCost = Math.min(maxCost, SpawnConstants.MAX_CREEP_COST);
+      var workParts = SpawnHelpers.scaleCreep([WORK, WORK, MOVE], maxCost - SpawnHelpers.creepCost(minimalCarryParts), true);
+      var carryParts = SpawnHelpers.scaleCreep([CARRY, CARRY, MOVE], maxCost - SpawnHelpers.creepCost(workParts), false);
       if(carryParts.length == 0) carryParts = minimalCarryParts;
-      return sortCreep(workParts.concat(carryParts));
+      return SpawnHelpers.sortCreep(workParts.concat(carryParts));
     },
     builder: function(maxCost) {
       // Move fast when full off roads; maximize work speed
       // TODO think about this some more; ending up with not enough carry (can expend all energy in single tick)
       // Looks like build is 2 energy per WORK per tick -- BUILD_POWER? But that is 5...
       var minimalCarryParts = [CARRY, MOVE];
-      var maxCost = Math.min(maxCost, MAX_CREEP_COST);
-      var workParts = scaleCreep([WORK, MOVE], maxCost - creepCost(minimalCarryParts), true);
-      var carryParts = scaleCreep([CARRY, MOVE], maxCost - creepCost(workParts), false);
+      var maxCost = Math.min(maxCost, SpawnConstants.MAX_CREEP_COST);
+      var workParts = SpawnHelpers.scaleCreep([WORK, MOVE], maxCost - SpawnHelpers.creepCost(minimalCarryParts), true);
+      var carryParts = SpawnHelpers.scaleCreep([CARRY, MOVE], maxCost - SpawnHelpers.creepCost(workParts), false);
       if(carryParts.length == 0) carryParts = minimalCarryParts;
-      return sortCreep(workParts.concat(carryParts));
+      return SpawnHelpers.sortCreep(workParts.concat(carryParts));
     },
     linker: function(maxCost) {
       // Move fast when empty; maximize carry
       // Max carry 400 energy (8x CARRY), derived from size of link (800 energy)
-      var maxCost = Math.min(4*creepCost([CARRY, CARRY, MOVE]), maxCost, MAX_CREEP_COST);
-      return sortCreep(scaleCreep([CARRY, CARRY, MOVE], maxCost, true));
+      var maxCost = Math.min(4*SpawnHelpers.creepCost([CARRY, CARRY, MOVE]), maxCost, SpawnConstants.MAX_CREEP_COST);
+      return SpawnHelpers.sortCreep(SpawnHelpers.scaleCreep([CARRY, CARRY, MOVE], maxCost, true));
     },
     claimer: function(maxCost) {
       return [CLAIM, MOVE];
@@ -85,7 +85,8 @@ const SpawnHelpers = {
   },
 
   doSpawn: function (room, body, memory) {
-    console.log('Attempting to spawn', memory.role, runLengthEncoding(body), creepCost(body));
+    console.log('Attempting to spawn', memory.role, SpawnHelpers.runLengthEncoding(body), SpawnHelpers.creepCost(body));
+    if (!Memory.roleCounts) Memory.roleCounts = {};
     if (Memory.roleCounts[memory.role] == undefined) Memory.roleCounts[memory.role] = 0;
     const spawns = room.find(FIND_STRUCTURES, {
       filter: function (structure) {
@@ -115,7 +116,7 @@ const SpawnHelpers = {
   },
 
   scaleCreep: function (body, maxCost, ensureNonEmpty) {
-    var copies = Math.floor(maxCost / creepCost(body));
+    var copies = Math.floor(maxCost / SpawnHelpers.creepCost(body));
     if (ensureNonEmpty) copies = Math.max(1,copies);
     if (copies == 0) return [];
     return Array(copies).fill(body).reduce(
@@ -126,7 +127,7 @@ const SpawnHelpers = {
 
   sortCreep: function (body) {
     return body.sort(function(a,b){
-      return BODYPART_ORDER.indexOf(a) - BODYPART_ORDER.indexOf(b);
+      return SpawnConstants.BODYPART_ORDER.indexOf(a) - SpawnConstants.BODYPART_ORDER.indexOf(b);
     });
   },
 };
@@ -211,9 +212,9 @@ var Spawn = {
 
     if(room.memory.emergencySpawn) {
       console.log("Emergency Spawn: ", JSON.stringify(room.memory.emergencySpawn));
-      const success = doSpawn(
+      const success = SpawnHelpers.doSpawn(
         room,
-        this.creepConfig[room.memory.emergencySpawn.config](capacity),
+        SpawnHelpers.creepConfig[room.memory.emergencySpawn.config](capacity),
         {
           role: room.memory.emergencySpawn.role,
           room: room.memory.emergencySpawn.room,
@@ -225,16 +226,16 @@ var Spawn = {
 
     if (helpers.creepsWithRole('hauler').length < 1) {
       console.log('Ensuring at least one hauler at all times');
-      doSpawn(
+      SpawnHelpers.doSpawn(
         room,
-        this.creepConfig['hauler'](available),
+        SpawnHelpers.creepConfig['hauler'](available),
         {role: 'hauler'}
       );
     } else if (harvesterWorkParts < 2) {
       console.log('Ensuring at least 2 harvesters before anything else');
-      doSpawn(
+      SpawnHelpers.doSpawn(
         room,
-        this.creepConfig['harvester'](available),
+        SpawnHelpers.creepConfig['harvester'](available),
         {role: 'harvester'}
       );
     } else {
@@ -242,9 +243,9 @@ var Spawn = {
       // Source has 3000 energy every 300 ticks
       // Max 5 WORK per source (plus 20% buffer to ensure 100% harvest)
       if (harvesterWorkParts / 8 < room.find(FIND_SOURCES).length) {
-        doSpawn(
+        SpawnHelpers.doSpawn(
           room,
-          this.creepConfig['harvester'](capacity),
+          SpawnHelpers.creepConfig['harvester'](capacity),
           {role: 'harvester'}
         )
       }
@@ -256,9 +257,9 @@ var Spawn = {
         if (role == 'harvester') continue; // handled separately
         var roleCreeps = _.filter(Game.creeps, (creep) => creep.memory.role == role);
         if (roleCreeps.length < room.memory.desiredCreepCounts[role]) {
-          doSpawn(
+          SpawnHelpers.doSpawn(
             room,
-            this.creepConfig[role](capacity),
+            SpawnHelpers.creepConfig[role](capacity),
             {role: role}
           );
         }
@@ -270,15 +271,15 @@ var Spawn = {
       if (harvesterWorkParts == 0) {
         console.log('All harvester creeps died! Spawing a recovery creep');
         Game.notify('All harvester creeps died! Spawing a recovery creep', 10);
-        Game.spawns['Spawn1'].createCreep(this.creepConfig['harvester'](available), undefined, {
+        Game.spawns['Spawn1'].createCreep(SpawnHelpers.creepConfig['harvester'](available), undefined, {
           role: 'harvester'
         });
       }
       var extensions = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_EXTENSION;}});
-      if (helpers.creepsWithRole('builder').length == 0 && creepCost(this.creepConfig['builder'](capacity)) > room.energyCapacityAvailable) {
+      if (helpers.creepsWithRole('builder').length == 0 && SpawnHelpers.creepCost(SpawnHelpers.creepConfig['builder'](capacity)) > room.energyCapacityAvailable) {
         console.log('Bootstrapping building with a recovery builder');
         Game.notify('Bootstrapping building with a recovery builder', 10);
-        Game.spawns['Spawn1'].createCreep(this.creepConfig['builder'](available), undefined, {
+        Game.spawns['Spawn1'].createCreep(SpawnHelpers.creepConfig['builder'](available), undefined, {
           role: 'builder'
         });
       }
@@ -297,7 +298,7 @@ var Spawn = {
         });
       var bodyParts = spawningCreep.body.map(function(bp){return bp.type;});
       console.log('Spawning', spawningCreep.memory.role, spawningCreep.name,
-                  runLengthEncoding(bodyParts), creepCost(bodyParts));
+                  SpawnHelpers.runLengthEncoding(bodyParts), SpawnHelpers.creepCost(bodyParts));
     }
   },
 };
