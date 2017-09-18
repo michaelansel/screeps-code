@@ -85,7 +85,7 @@ const SpawnHelpers = {
   },
 
   doSpawn: function (room, body, memory) {
-    console.log('Attempting to spawn', memory.role, SpawnHelpers.runLengthEncoding(body), SpawnHelpers.creepCost(body));
+    console.log('Attempting to spawn', memory.role, helpers.runLengthEncoding(body), SpawnHelpers.creepCost(body));
     if (!Memory.roleCounts) Memory.roleCounts = {};
     if (Memory.roleCounts[memory.role] == undefined) Memory.roleCounts[memory.role] = 0;
     const spawns = room.find(FIND_STRUCTURES, {
@@ -96,19 +96,6 @@ const SpawnHelpers = {
     if (spawns.length == 0) return false;
     const name = spawns[0].createCreep(body, (memory.role + Memory.roleCounts[memory.role]++), memory);
     return !!Game.creeps[name];
-  },
-
-  runLengthEncoding: function (data) {
-    return data.reduce(function(rle, element){
-      if (rle[rle.length-1][0] == element) {
-        rle[rle.length-1][1] += 1;
-      } else {
-        rle.push([element, 1]);
-      }
-      return rle;
-    }, [[null, 0]]).slice(1).map(function(entry){
-      return entry.reverse().join('x ');
-    }).join(',');
   },
 
   scaleCreep: function (body, maxCost, ensureNonEmpty) {
@@ -294,7 +281,7 @@ var Spawn = {
         });
       var bodyParts = spawningCreep.body.map(function(bp){return bp.type;});
       console.log('Spawning', spawningCreep.memory.role, spawningCreep.name,
-                  SpawnHelpers.runLengthEncoding(bodyParts), SpawnHelpers.creepCost(bodyParts));
+                  helpers.runLengthEncoding(bodyParts), SpawnHelpers.creepCost(bodyParts));
     }
   },
 };

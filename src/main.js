@@ -1,5 +1,6 @@
 var profiler = require('screeps-profiler');
 var creepManager = require('creep_manager');
+var helpers = require('helpers');
 var roleBuilder = require('role.builder');
 var roleClaimer = require('role.claimer');
 var roleHarvester = require('role.harvester');
@@ -91,6 +92,13 @@ var ConsoleHelpers = {
           towerStats.push(tower.energy);
         }
         console.log("Towers: ", towerStats.join(", "));
+
+        const constructionSites = room.find(FIND_CONSTRUCTION_SITES);
+        if (constructionSites.length > 0) {
+          var constructionStats = [];
+          constructionStats = constructionSites.map(function(cs){return cs.structureType;});
+          console.log("Construction Sites: ", helpers.runLengthEncoding(constructionStats));
+        }
 
         console.log("Build Config: ", (100*room.memory.repairLevel)+"%", ConsoleHelpers.largeNumberToString(room.memory.fortifyLevel));
         console.log("Desired: ", JSON.stringify(room.memory.desiredCreepCounts));

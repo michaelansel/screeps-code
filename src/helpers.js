@@ -147,6 +147,19 @@ var Helpers = {
     console.log(creep.name, "Unable to find any available energy");
     return null;
   },
+
+  runLengthEncoding: function (data) {
+    return data.reduce(function(rle, element){
+      if (rle[rle.length-1][0] == element) {
+        rle[rle.length-1][1] += 1;
+      } else {
+        rle.push([element, 1]);
+      }
+      return rle;
+    }, [[null, 0]]).slice(1).map(function(entry){
+      return entry.reverse().join('x ');
+    }).join(',');
+  },
 };
 
 module.exports = Helpers;
