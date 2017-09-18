@@ -94,12 +94,8 @@ const SpawnHelpers = {
       },
     });
     if (spawns.length == 0) return false;
-    if (spawns[0].canCreateCreep(body)) {
-      const name = spawns[0].createCreep(body, (memory.role + Memory.roleCounts[memory.role]++), memory);
-      return !!Game.creeps[name];
-    } else {
-      return false;
-    }
+    const name = spawns[0].createCreep(body, (memory.role + Memory.roleCounts[memory.role]++), memory);
+    return !!Game.creeps[name];
   },
 
   runLengthEncoding: function (data) {
