@@ -5,17 +5,19 @@ var roleHarvester = require('role.harvester');
 var roleHauler = require('role.hauler');
 var roleUpgrader = require('role.upgrader');
 var roleLinker = require('role.linker');
+var roomManager = require('room_manager');
 var towerLogic = require('tower');
 var spawnLogic = require('spawn');
 
-profiler.registerObject(roleBuilder, 'roleBuilder');
-profiler.registerObject(roleClaimer, 'roleClaimer');
+profiler.registerObject(roleBuilder,   'roleBuilder');
+profiler.registerObject(roleClaimer,   'roleClaimer');
 profiler.registerObject(roleHarvester, 'roleHarvester');
-profiler.registerObject(roleHauler, 'roleHauler');
-profiler.registerObject(roleUpgrader, 'roleUpgrader');
-profiler.registerObject(roleLinker, 'roleLinker');
-profiler.registerObject(towerLogic, 'towerLogic');
-profiler.registerObject(spawnLogic, 'spawnLogic');
+profiler.registerObject(roleHauler,    'roleHauler');
+profiler.registerObject(roleUpgrader,  'roleUpgrader');
+profiler.registerObject(roleLinker,    'roleLinker');
+profiler.registerObject(roomManager,   'roomManager');
+profiler.registerObject(towerLogic,    'towerLogic');
+profiler.registerObject(spawnLogic,    'spawnLogic');
 
 var behaviors = {
   builder: roleBuilder,
@@ -153,6 +155,7 @@ var Main = {
 
     for (var name in Game.rooms) {
       room = Game.rooms[name];
+
       const sources = room.find(FIND_SOURCES);
       if (!room.memory.scanned) {
 
@@ -175,35 +178,9 @@ var Main = {
         room.memory.scanned = true;
       }
 
-      if (!room.controller || !room.controller.my) continue;
-
-      if (!room.memory.desiredCreepCounts) {
-        room.memory.desiredCreepCounts = {
-          hauler: 1,
-          upgrader: 0,
-          builder: 0,
-          linker: 0,
-        };
+      if (room.controller && room.controller.my) {
+        roomManager.runPeriodic(room);
       }
-      if(!room.memory.fortifyLevel) room.memory.fortifyLevel = 150000;
-      if(!room.memory.repairLevel) room.memory.repairLevel = 0.75;
-
-      // Periodically scan for non-empty sources nearing regeneration
-      for (const source of sources) {
-        if (source.ticksToRegeneration <= 10 && source.energy > 0) {
-          Memory.inefficientSources[source.id] = true;
-        }
-      }
-
-      // Update desired number of linkers
-      const links = room.find(FIND_STRUCTURES, {filter: function(structure){return structure.structureType == STRUCTURE_LINK;}});
-      room.memory.desiredCreepCounts.linker = links.length;
-
-      if(!room.memory.roomsToClaim) room.memory.roomsToClaim = [];
-      room.memory.roomsToClaim = room.memory.roomsToClaim.filter(function(rn){return !(Game.rooms[rn] && Game.rooms[rn].controller.my);});
-      room.memory.desiredCreepCounts.claimer = room.memory.roomsToClaim.length;
-
-      spawnLogic.bootstrap(room);
     }
 
     // Tidy up leftover memory values (delete anything not protected)
@@ -224,20 +201,18 @@ var Main = {
 
     for (var rn in Game.rooms) {
       var room = Game.rooms[rn];
-      if(!room.controller) continue;
+      if(!room.controller || !room.controller.my) continue;
 
-      if(room.controller.my) {
-        var spawns = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_SPAWN;}});
-        // Only run spawn logic if we aren't already occupied spawning things
-        if(!spawns.every(function(spawn){return spawn.spawning;})) {
-          spawnLogic.run(room);
-        }
-        for(var spawn of spawns) {
-          spawnLogic.runAlways(spawn);
-        }
+      var spawns = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_SPAWN;}});
+      // Only run spawn logic if we aren't already occupied spawning things
+      if(!spawns.every(function(spawn){return spawn.spawning;})) {
+        spawnLogic.run(room);
+      }
+      for(var spawn of spawns) {
+        spawnLogic.runAlways(spawn);
       }
 
-      if(room.controller.my && room.controller.level > 2) {
+      if(room.controller.level > 2) {
         var towers = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_TOWER;}});
         for (var ti in towers) {
           var tower = towers[ti];
