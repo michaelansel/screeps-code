@@ -201,23 +201,8 @@ var Main = {
 
     for (var rn in Game.rooms) {
       var room = Game.rooms[rn];
-      if(!room.controller || !room.controller.my) continue;
-
-      var spawns = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_SPAWN;}});
-      // Only run spawn logic if we aren't already occupied spawning things
-      if(!spawns.every(function(spawn){return spawn.spawning;})) {
-        spawnLogic.run(room);
-      }
-      for(var spawn of spawns) {
-        spawnLogic.runAlways(spawn);
-      }
-
-      if(room.controller.level > 2) {
-        var towers = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_TOWER;}});
-        for (var ti in towers) {
-          var tower = towers[ti];
-          if (tower.isActive()) towerLogic.run(tower);
-        }
+      if(room.controller && room.controller.my) {
+        roomManager.run(room);
       }
     }
 
