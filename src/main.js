@@ -1,3 +1,4 @@
+if (!Memory.cpuCanary) Memory.cpuCanary = Game.time;
 function sleepLogic() {
   if (Memory.sleepTimer > 0) {
     console.log('Sleeping');
