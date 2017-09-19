@@ -131,15 +131,32 @@ var Spawn = {
           console.log("No spawns available to help", room.name);
         }
       }
+      function creepsWithRoleAssignedToRoom(room, role) {
+        if (room instanceof Room) room = room.name;
+        return helpers.creepsWithRole(role).filter(function(creep){return creep.memory.room != room});
+      }
+      const totalSourceSlots = Object.keys(room.memory.sources).reduce(function(total, source){return total + room.memory.sources[source].slots;});
       // TODO this should just be the same spawn logic, but with emergencySpawn instead of doSpawn
       // This requires a refactor of the spawn logic to isolate the decision-making process
-      if(helpers.creepsInRoomWithRole(room, 'harvester').length == 0) {
+
+      if (
+        helpers.creepsInRoomWithRole(room, 'harvester').length == 0 &&
+        (
+          helpers.creepsInRoomWithRole(room, 'harvester').length +
+          creepsWithRoleAssignedToRoom(room, 'harvester').length
+        ) < totalSourceSlots
+      ) {
         emergencySpawn({
           config: 'harvester',
           room: room.name,
           role: 'harvester',
         });
-      } else if(helpers.creepsInRoomWithRole(room, 'builder').length == 0) {
+      } else if (
+          helpers.creepsInRoomWithRole(room, 'builder').length == 0 &&
+          creepsWithRoleAssignedToRoom(room, 'builder').length < 2 &&
+          room.find(FIND_STRUCTURES, {filter:function(s){return s.structureType == STRUCTURE_CONTAINER;}}).length > 0 &&
+          room.find(FIND_CONSTRUCTION_SITES).length > 0
+      ) {
         emergencySpawn({
           config: 'builder',
           room: room.name,
