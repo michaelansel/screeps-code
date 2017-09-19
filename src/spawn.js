@@ -244,7 +244,7 @@ var Spawn = {
       // Max 5 WORK per source (plus 20% buffer to ensure 100% harvest)
       if (
         harvesterWorkParts / 8 < room.find(FIND_SOURCES).length &&
-        helpers.creepsInRoomWithRole(room, 'harvester') < Object.keys(room.memory.sources).reduce(function(total, source){return total + room.memory.sources[source].slots;})
+        helpers.creepsInRoomWithRole(room, 'harvester').length < Object.keys(room.memory.sources).reduce(function(total, source){return total + room.memory.sources[source].spaces;}, 0)
       ) {
         SpawnHelpers.doSpawn(
           room,
