@@ -1,3 +1,20 @@
+function sleepLogic() {
+  if (Memory.sleepTimer > 0) {
+    console.log('Sleeping');
+    Memory.sleepTimer--;
+    Memory.cpuCanary = Game.time + 1;
+    return true;
+  }
+  if (Memory.cpuCanary != Game.time) {
+    Memory.sleepTimer = Math.min(10, Math.max(1, 2*(Game.time-Memory.cpuCanary)));
+    console.log("CPU timed out; sleeping for a bit", Memory.sleepTimer);
+    console.log(Game.time, Memory.cpuCanary, Memory.sleepTimer);
+    return true;
+  }
+  return false;
+}
+if(sleepLogic()) return;
+
 var profiler = require('screeps-profiler');
 var creepManager = require('creep_manager');
 var helpers = require('helpers');
@@ -227,10 +244,7 @@ var Main = {
   },
 
   loop: function() {
-    // CPU timed out last tick; backoff
-    if (Memory.cpuCanary) return;
-    // Set the CPU timeout canary
-    Memory.cpuCanary = true;
+    if(sleepLogic()) return;
 
     Main._maintenance();
 
@@ -247,8 +261,8 @@ var Main = {
       creepManager.run(creep);
     }
 
-    // Clear the CPU timeout canary
-    Memory.cpuCanary = false;
+    // Update the CPU timeout canary
+    Memory.cpuCanary = Game.time + 1;
   },
 };
 
