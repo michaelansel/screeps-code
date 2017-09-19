@@ -51,6 +51,7 @@ var ConsoleHelpers = {
   },
   stats: function() {
     console.log("Game: ", "GCL"+Game.gcl.level, ConsoleHelpers.largeNumberToString(Game.gcl.progress)+"/"+ConsoleHelpers.largeNumberToString(Game.gcl.progressTotal));
+    console.log("Bucket: ", Game.cpu.bucket);
     for (var rn in Game.rooms) {
       const room = Game.rooms[rn];
       if (!room.controller) continue;
