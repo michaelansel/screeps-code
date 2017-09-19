@@ -208,11 +208,13 @@ var Main = {
 
     // Tidy up leftover memory values (delete anything not protected)
     const protected = [
+      "cpuCanary",
       "creepCounts",
       "creeps",
       "flags",
       "inefficientSources",
       "profiler",
+      "roleCounts",
       "rooms",
     ];
     for (var k in Memory) {
@@ -223,6 +225,11 @@ var Main = {
   },
 
   loop: function() {
+    // CPU timed out last tick; backoff
+    if (Memory.cpuCanary) return;
+    // Set the CPU timeout canary
+    Memory.cpuCanary = true;
+
     Main._maintenance();
 
     for (var rn in Game.rooms) {
@@ -237,6 +244,9 @@ var Main = {
       if (creep.spawning) continue; // no logic when spawning
       creepManager.run(creep);
     }
+
+    // Clear the CPU timeout canary
+    Memory.cpuCanary = false;
   },
 };
 
