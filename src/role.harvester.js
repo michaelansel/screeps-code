@@ -1,11 +1,5 @@
 var _ = require('lodash');
-
-function allCreeps() {
-  return Object.keys(Game.creeps).map(function(creepName){return Game.creeps[creepName];});
-}
-function creepsWithRole(role) {
-  return allCreeps().filter(function(creep){return creep.memory.role == role;});
-}
+const helpers = require('helpers');
 
 var roleHarvester = {
   selectSource: function (creep) {
@@ -18,7 +12,7 @@ var roleHarvester = {
     }});
     var workPartsPerSource = {};
     var workersPerSource = {};
-    var harvesters = creepsWithRole('harvester');
+    var harvesters = helpers.creepsWithRole('harvester');
     for (var ci in harvesters) {
       var c = harvesters[ci];
       if (c.id == creep.id) continue;
@@ -129,10 +123,10 @@ var roleHarvester = {
         },
         // Emergency mode: no haulers available and local containers full
         function(structure) {
-          return creepsWithRole('hauler').length == 0 && structure.structureType == STRUCTURE_SPAWN && structure.energy < structure.energyCapacity;
+          return helpers.creepsWithRole('hauler').length == 0 && structure.structureType == STRUCTURE_SPAWN && structure.energy < structure.energyCapacity;
         },
         function(structure) {
-          return creepsWithRole('hauler').length == 0 && structure.structureType == STRUCTURE_EXTENSION && structure.energy < structure.energyCapacity;
+          return helpers.creepsWithRole('hauler').length == 0 && structure.structureType == STRUCTURE_EXTENSION && structure.energy < structure.energyCapacity;
         },
         // Totally lost mode: just go to a container and deposit your energy
         function(structure) {

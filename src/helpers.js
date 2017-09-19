@@ -1,4 +1,21 @@
-module.exports = {
+var Helpers = {
+  allCreeps: function() {
+    return Object.keys(Game.creeps).map(function(creepName){return Game.creeps[creepName];});
+  },
+
+  creepsWithRole: function(role) {
+    return Helpers.allCreeps().filter(function(creep){return creep.memory.role == role;});
+  },
+
+  allCreepsInRoom: function (room) {
+    if (room instanceof Room) room = room.name;
+    return Helpers.allCreeps().filter(function(creep){return creep.room.name == room;});
+  },
+
+  creepsInRoomWithRole: function (room, role) {
+    return Helpers.allCreepsInRoom(room).filter(function(creep){return creep.memory.role == role;});
+  },
+
   getEnergy: function(creep, prioritizeFull=false) {
     var target = Game.getObjectById(creep.memory.target);
     // console.log(creep.name, 'looking for energy', creep.memory.target, target);
@@ -131,4 +148,19 @@ module.exports = {
     console.log(creep.name, "Unable to find any available energy");
     return null;
   },
+
+  runLengthEncoding: function (data) {
+    return data.reduce(function(rle, element){
+      if (rle[rle.length-1][0] == element) {
+        rle[rle.length-1][1] += 1;
+      } else {
+        rle.push([element, 1]);
+      }
+      return rle;
+    }, [[null, 0]]).slice(1).map(function(entry){
+      return entry.reverse().join('x ');
+    }).join(',');
+  },
 };
+
+module.exports = Helpers;
