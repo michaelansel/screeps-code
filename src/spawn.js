@@ -133,7 +133,7 @@ var Spawn = {
       }
       function creepsWithRoleAssignedToRoom(room, role) {
         if (room instanceof Room) room = room.name;
-        return helpers.creepsWithRole(role).filter(function(creep){return creep.memory.room != room});
+        return helpers.creepsWithRole(role).filter(function(creep){return creep.memory.room == room});
       }
       const totalSourceSlots = Object.keys(room.memory.sources).reduce(function(total, source){return total + room.memory.sources[source].slots;});
       // TODO this should just be the same spawn logic, but with emergencySpawn instead of doSpawn
