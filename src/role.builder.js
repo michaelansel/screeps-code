@@ -85,7 +85,7 @@ var roleBuilder = {
         console.log(creep.name, "has nothing to build or repair");
         creep.room.memory.desiredCreepCounts['builder'] = 0;
         creep.memory.role = 'upgrader';
-        creep.room.memory.desiredCreepCounts['upgrader'] = Math.min(creep.room.memory.desiredCreepCounts['upgrader'] + 1, 2);
+        creep.room.memory.desiredCreepCounts['upgrader'] = Math.min(creep.room.memory.desiredCreepCounts['upgrader'] + 1, 1);
       }
     } else {
       helpers.getEnergy(creep);
