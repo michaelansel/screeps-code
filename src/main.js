@@ -27,10 +27,9 @@ var ConsoleHelpers = {
     const room = Game.rooms[roomname];
     room.memory.desiredCreepCounts.builder = Math.max(room.memory.desiredCreepCounts.builder, room.memory.desiredCreepCounts.upgrader);
     room.memory.desiredCreepCounts.upgrader = 0;
-    for (var name in Game.creeps) {
-      if (Game.creeps[name].memory.role == 'upgrader') {
-        Game.creeps[name].memory.role = 'builder';
-      }
+    for (var creep in helpers.creepsInRoomWithRole('upgrader')) {
+      console.log('converting', creep.name, 'to builder');
+      creep.memory.role = 'builder';
     }
   },
   claim: function(targetRoom) {
