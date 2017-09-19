@@ -1,19 +1,35 @@
+var creepCache = {
+  allCreeps: null,
+  creepsWithRole: {},
+  allCreepsInRoom: {},
+  creepsInRoomWithRole: {},
+};
+
 var Helpers = {
   allCreeps: function() {
-    return Object.keys(Game.creeps).map(function(creepName){return Game.creeps[creepName];});
+    if (!creepCache.allCreeps) creepCache.allCreeps =
+      Object.keys(Game.creeps).map(function(creepName){return Game.creeps[creepName];});
+    return creepCache.allCreeps;
   },
 
   creepsWithRole: function(role) {
-    return Helpers.allCreeps().filter(function(creep){return creep.memory.role == role;});
+    if (!creepCache.creepsWithRole[role]) creepCache.creepsWithRole[role] =
+      Helpers.allCreeps().filter(function(creep){return creep.memory.role == role;});
+    return creepCache.creepsWithRole[role];
   },
 
   allCreepsInRoom: function (room) {
     if (room instanceof Room) room = room.name;
-    return Helpers.allCreeps().filter(function(creep){return creep.room.name == room;});
+    if (!creepCache.allCreepsInRoom[room]) creepCache.allCreepsInRoom[room] =
+      Helpers.allCreeps().filter(function(creep){return creep.room.name == room;});
+    return creepCache.allCreepsInRoom[room];
   },
 
   creepsInRoomWithRole: function (room, role) {
-    return Helpers.allCreepsInRoom(room).filter(function(creep){return creep.memory.role == role;});
+    var key = [room,role].join(',');
+    if (!creepCache.creepsInRoomWithRole[key]) creepCache.creepsInRoomWithRole[key] =
+      Helpers.allCreepsInRoom(room).filter(function(creep){return creep.memory.role == role;});
+    return creepCache.creepsInRoomWithRole[key];
   },
 
   getEnergy: function(creep, prioritizeFull=false) {
