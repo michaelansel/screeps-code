@@ -242,7 +242,10 @@ var Spawn = {
       // Harvest 2 energy per WORK per tick
       // Source has 3000 energy every 300 ticks
       // Max 5 WORK per source (plus 20% buffer to ensure 100% harvest)
-      if (harvesterWorkParts / 8 < room.find(FIND_SOURCES).length) {
+      if (
+        harvesterWorkParts / 8 < room.find(FIND_SOURCES).length &&
+        helpers.creepsInRoomWithRole(room, 'harvester') < Object.keys(room.memory.sources).reduce(function(total, source){return total + room.memory.sources[source].slots;})
+      ) {
         SpawnHelpers.doSpawn(
           room,
           SpawnHelpers.creepConfig['harvester'](capacity),
