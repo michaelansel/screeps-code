@@ -1,11 +1,15 @@
-var creepCache = {
-  allCreeps: null,
-  creepsWithRole: {},
-  allCreepsInRoom: {},
-  creepsInRoomWithRole: {},
-};
+var creepCache;
 
 var Helpers = {
+  initializeCache: function() {
+    creepCache = {
+      allCreeps: null,
+      creepsWithRole: {},
+      allCreepsInRoom: {},
+      creepsInRoomWithRole: {},
+    };
+  },
+
   allCreeps: function() {
     if (!creepCache.allCreeps) creepCache.allCreeps =
       Object.keys(Game.creeps).map(function(creepName){return Game.creeps[creepName];});
@@ -109,6 +113,11 @@ var Helpers = {
   findAvailableEnergy: function(creep, prioritizeFull) {
     var targets;
 
+    if (creep.room.memory.outOfEnergy > Game.time) {
+      console.log(creep.room.name, 'blacklisted');
+      return null;
+    }
+
     targets = creep.room.find(FIND_DROPPED_RESOURCES, {
       filter: (resource) => {
         return resource.resourceType == RESOURCE_ENERGY &&
@@ -161,7 +170,8 @@ var Helpers = {
       }
     }
 
-    console.log(creep.name, "Unable to find any available energy");
+    console.log(creep.name, "unable to find any available energy.", creep.room.name, 'blacklisted for 5 ticks');
+    creep.room.memory.outOfEnergy = Game.time+5;
     return null;
   },
 

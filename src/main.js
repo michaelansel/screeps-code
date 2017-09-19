@@ -126,6 +126,8 @@ var ConsoleHelpers = {
 
 var Main = {
   _maintenance: function() {
+    helpers.initializeCache();
+
     if (Game.time % 10 == 0) {
       Main._periodic_maintenance();
     }
