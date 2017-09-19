@@ -265,25 +265,6 @@ var Spawn = {
         }
       }
     }
-
-    if (!Game.spawns['Spawn1'].spawning) {
-    } else {
-      if (harvesterWorkParts == 0) {
-        console.log('All harvester creeps died! Spawing a recovery creep');
-        Game.notify('All harvester creeps died! Spawing a recovery creep', 10);
-        Game.spawns['Spawn1'].createCreep(SpawnHelpers.creepConfig['harvester'](available), undefined, {
-          role: 'harvester'
-        });
-      }
-      var extensions = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_EXTENSION;}});
-      if (helpers.creepsWithRole('builder').length == 0 && SpawnHelpers.creepCost(SpawnHelpers.creepConfig['builder'](capacity)) > room.energyCapacityAvailable) {
-        console.log('Bootstrapping building with a recovery builder');
-        Game.notify('Bootstrapping building with a recovery builder', 10);
-        Game.spawns['Spawn1'].createCreep(SpawnHelpers.creepConfig['builder'](available), undefined, {
-          role: 'builder'
-        });
-      }
-    }
   },
 
   runAlways: function(spawn) {
