@@ -11,6 +11,7 @@ var roomManager = require('room_manager');
 var towerLogic = require('tower');
 var spawnLogic = require('spawn');
 
+profiler.registerObject(helpers,       'helpers');
 profiler.registerObject(roleBuilder,   'roleBuilder');
 profiler.registerObject(roleClaimer,   'roleClaimer');
 profiler.registerObject(roleHarvester, 'roleHarvester');
@@ -209,11 +210,14 @@ var Main = {
     const protected = [
       "creepCounts",
       "creeps",
+      "flags",
       "inefficientSources",
+      "profiler",
       "rooms",
     ];
     for (var k in Memory) {
       if (protected.includes(k)) continue;
+      console.log("cleaning up unexpected memory value", k);
       delete Memory[k];
     }
   },
@@ -235,6 +239,9 @@ var Main = {
     }
   },
 };
+
+profiler.registerObject(ConsoleHelpers, 'ConsoleHelpers');
+profiler.registerObject(Main,           'Main');
 
 Object.assign(Main, ConsoleHelpers);
 module.exports = Main;
