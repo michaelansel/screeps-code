@@ -192,7 +192,7 @@ var Spawn = {
         if(harvesters.length > 0) {
           harvesters[0].memory.role = 'upgrader';
         } else {
-          Game.notify("No harvestors available to convert into upgraders", 30);
+          Game.notify("No harvesters available to convert into upgraders", 30);
         }
       }
     }
