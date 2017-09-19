@@ -12,7 +12,7 @@ var roleHarvester = {
     }});
     var workPartsPerSource = {};
     var workersPerSource = {};
-    var harvesters = helpers.creepsWithRole('harvester');
+    var harvesters = helpers.creepsInRoomWithRole(creep.room, 'harvester');
     for (var ci in harvesters) {
       var c = harvesters[ci];
       if (c.id == creep.id) continue;
@@ -123,10 +123,10 @@ var roleHarvester = {
         },
         // Emergency mode: no haulers available and local containers full
         function(structure) {
-          return helpers.creepsWithRole('hauler').length == 0 && structure.structureType == STRUCTURE_SPAWN && structure.energy < structure.energyCapacity;
+          return helpers.creepsInRoomWithRole(creep.room, 'hauler').length == 0 && structure.structureType == STRUCTURE_SPAWN && structure.energy < structure.energyCapacity;
         },
         function(structure) {
-          return helpers.creepsWithRole('hauler').length == 0 && structure.structureType == STRUCTURE_EXTENSION && structure.energy < structure.energyCapacity;
+          return helpers.creepsInRoomWithRole(creep.room, 'hauler').length == 0 && structure.structureType == STRUCTURE_EXTENSION && structure.energy < structure.energyCapacity;
         },
         // Totally lost mode: just go to a container and deposit your energy
         function(structure) {

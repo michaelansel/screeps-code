@@ -17,7 +17,7 @@ var roleLinker = {
     for (var li in links) {
       var l = links[li];
       var done = false;
-      var linkers = helpers.creepsWithRole('linker');
+      var linkers = helpers.creepsInRoomWithRole(creep.room, 'linker');
       for (var ci in linkers) {
         var c = linkers[ci];
         if (c.id == creep.id) continue;
