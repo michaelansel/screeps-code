@@ -200,7 +200,7 @@ var Spawn = {
     var available = room.energyAvailable,
         capacity = room.energyCapacityAvailable;
 
-    var harvesterWorkParts = helpers.creepsWithRole('harvester').reduce(function(total, creep){
+    var harvesterWorkParts = helpers.creepsInRoomWithRole(room, 'harvester').reduce(function(total, creep){
       return total + creep.body.reduce(function(sum, bp){
         if (bp.type == WORK) {
           return sum + 1;
@@ -224,7 +224,7 @@ var Spawn = {
       if (success) console.log("successfully spawned emergency creep!");
     }
 
-    if (helpers.creepsWithRole('hauler').length < 1) {
+    if (helpers.creepsInRoomWithRole('hauler').length < 1) {
       console.log('Ensuring at least one hauler at all times');
       SpawnHelpers.doSpawn(
         room,
@@ -255,7 +255,7 @@ var Spawn = {
       // If too many consumption WORK parts, re-role to higher priority
       for (var role in room.memory.desiredCreepCounts) {
         if (role == 'harvester') continue; // handled separately
-        var roleCreeps = _.filter(Game.creeps, (creep) => creep.memory.role == role);
+        var roleCreeps = helpers.creepsInRoomWithRole(room, role);
         if (roleCreeps.length < room.memory.desiredCreepCounts[role]) {
           SpawnHelpers.doSpawn(
             room,
