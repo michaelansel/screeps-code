@@ -39,7 +39,7 @@ var roleBuilder = {
     if (target instanceof ConstructionSite) return true;
     if (target instanceof StructureRampart ||
         target instanceof StructureWall) return target.energy < target.room.memory.fortifyLevel;
-    if (target instanceof OwnedStructure) return target.hits < target.room.memory.repairLevel * target.hitsMax;
+    if (target instanceof Structure) return target.hits < target.room.memory.repairLevel * target.hitsMax;
 
     return false;
   },
@@ -47,7 +47,7 @@ var roleBuilder = {
   workTarget: function(creep, target) {
     var act;
     if (target instanceof ConstructionSite) act = function(){return creep.build(target);};
-    if (target instanceof OwnedStructure) act = function(){return creep.repair(target);};
+    if (target instanceof Structure) act = function(){return creep.repair(target);};
     if (act() == ERR_NOT_IN_RANGE) {
       creep.moveTo(target, {
         visualizePathStyle: {
@@ -82,7 +82,7 @@ var roleBuilder = {
         creep.memory.target = target.id;
         this.workTarget(creep, target);
       } else {
-        console.log(creep.name, "has nothing to build or repair");
+        console.log(creep.name, "has nothing to build or repair", target);
         creep.room.memory.desiredCreepCounts['builder'] = 0;
         creep.memory.role = 'upgrader';
         creep.room.memory.desiredCreepCounts['upgrader'] = Math.min(creep.room.memory.desiredCreepCounts['upgrader'] + 1, 1);
