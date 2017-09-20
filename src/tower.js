@@ -1,5 +1,7 @@
 module.exports = {
   run: function(tower) {
+    if(tower.energy == 0) return;
+
     const room = tower.room;
     var hostiles = [];
     var hostileSelectors = [
