@@ -1,9 +1,10 @@
+var helpers = require('helpers');
 var towerLogic = require('tower');
 var spawnLogic = require('spawn');
 
 const RoomManager = {
   run: function (room) {
-    var spawns = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_SPAWN;}});
+    var spawns = helpers.structuresInRoom(room, STRUCTURE_SPAWN);
     // Only run spawn logic if we aren't already occupied spawning things
     if(!spawns.every(function(spawn){return spawn.spawning;})) {
       spawnLogic.run(room);
@@ -13,7 +14,7 @@ const RoomManager = {
     }
 
     if(room.controller.level > 2) {
-      var towers = room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_TOWER;}});
+      var towers = helpers.structuresInRoom(room, STRUCTURE_TOWER);
       for (var ti in towers) {
         var tower = towers[ti];
         if (tower.isActive()) towerLogic.run(tower);
@@ -36,7 +37,7 @@ const RoomManager = {
     if(!room.memory.repairLevel) room.memory.repairLevel = 0.75;
 
     // Update desired number of linkers
-    const links = room.find(FIND_STRUCTURES, {filter: function(structure){return structure.structureType == STRUCTURE_LINK;}});
+    const links = helpers.structuresInRoom(room, STRUCTURE_LINK);
     room.memory.desiredCreepCounts.linker = links.length;
 
     if(!room.memory.roomsToClaim) room.memory.roomsToClaim = [];

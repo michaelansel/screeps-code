@@ -91,7 +91,7 @@ var ConsoleHelpers = {
         }
         console.log("Sources: ", sourceStats.join(", "));
 
-        const containers = room.find(FIND_STRUCTURES, {filter: function(s){return s.structureType == STRUCTURE_CONTAINER;}});
+        const containers = helpers.structuresInRoom(room, STRUCTURE_CONTAINER);
         var containerStats = [];
         for (var container of containers) {
           var stat = container.store[RESOURCE_ENERGY];
@@ -106,7 +106,7 @@ var ConsoleHelpers = {
           console.log("Storage: ", ConsoleHelpers.largeNumberToString(room.storage.store[RESOURCE_ENERGY]));
         }
 
-        const towers = room.find(FIND_STRUCTURES, {filter: function(s){return s.structureType == STRUCTURE_TOWER;}});
+        const towers = helpers.structuresInRoom(room, STRUCTURE_TOWER);
         if (towers.length > 0) {
           var towerStats = [];
           for (var tower of towers) {

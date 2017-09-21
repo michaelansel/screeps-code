@@ -11,9 +11,7 @@ var roleLinker = {
 
   selectLink: function (creep) {
     // Find the nearest link without a linker assigned
-    var links = creep.room.find(FIND_STRUCTURES, {filter: function(structure) {
-        return structure.structureType == STRUCTURE_LINK;
-    }});
+    var links = helpers.structuresInRoom(creep.room, STRUCTURE_LINK);
     for (var li in links) {
       var l = links[li];
       var done = false;
@@ -47,9 +45,7 @@ var roleLinker = {
         });
       }
     } else {
-      var links = creep.room.find(FIND_STRUCTURES, {filter: function(structure) {
-          return structure.structureType == STRUCTURE_LINK;
-      }});
+      var links = helpers.structuresInRoom(creep.room, STRUCTURE_LINK);
       for (var li in links) {
         if (link.id == li) continue;
         var l = links[li];

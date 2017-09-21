@@ -88,11 +88,7 @@ const SpawnHelpers = {
     console.log('Attempting to spawn', memory.role, helpers.runLengthEncoding(body), SpawnHelpers.creepCost(body));
     if (!Memory.roleCounts) Memory.roleCounts = {};
     if (Memory.roleCounts[memory.role] == undefined) Memory.roleCounts[memory.role] = 0;
-    const spawns = room.find(FIND_STRUCTURES, {
-      filter: function (structure) {
-        return structure.structureType == STRUCTURE_SPAWN && !structure.spawning;
-      },
-    });
+    const spawns = helpers.structuresInRoom(room, STRUCTURE_SPAWN).filter(function(spawn){return !spawn.spawning;});
     if (spawns.length == 0) return false;
     const name = spawns[0].createCreep(body, (memory.role + Memory.roleCounts[memory.role]++), memory);
     return !!Game.creeps[name];
@@ -117,7 +113,7 @@ const SpawnHelpers = {
 
 var Spawn = {
   bootstrap: function(room) {
-    if(room.find(FIND_STRUCTURES, {filter: function(s){return s.structureType == STRUCTURE_SPAWN;}}).length == 0) {
+    if(helpers.structuresInRoom(room, STRUCTURE_SPAWN).length == 0) {
       function emergencySpawn(params) {
         console.log('EMERGENCY', room.name, 'is out of '+params.role+'s and spawns');
         const helperSpawns = Object.keys(Game.spawns).map(function(k){return Game.spawns[k];}).filter(function(s){return !s.spawning;});
@@ -154,7 +150,7 @@ var Spawn = {
       } else if (
           helpers.creepsInRoomWithRole(room, 'builder').length == 0 &&
           creepsWithRoleAssignedToRoom(room, 'builder').length < 2 &&
-          room.find(FIND_STRUCTURES, {filter:function(s){return s.structureType == STRUCTURE_CONTAINER;}}).length > 0 &&
+          helpers.structuresInRoom(room, STRUCTURE_CONTAINER).length > 0 &&
           room.find(FIND_CONSTRUCTION_SITES).length > 0
       ) {
         emergencySpawn({
