@@ -41,6 +41,11 @@ var Helpers = {
     return creepCache.creepsInRoomWithRole[key];
   },
 
+  creepsWithRoleAssignedToRoom: function (room, role) {
+    if (room instanceof Room) room = room.name;
+    return helpers.creepsWithRole(role).filter(function(creep){return creep.memory.room == room});
+  },
+
   structuresInRoom: function (room, type) {
     if (room instanceof Room) room = room.name;
     if (type instanceof Array) types = type; else types = [type];
