@@ -37,8 +37,8 @@ var roleBuilder = {
 
   isValidTarget: function(target) {
     if (target instanceof ConstructionSite) return true;
-    if (target instanceof StructureRampart ||
-        target instanceof StructureWall) return target.energy < target.room.memory.fortifyLevel;
+    if ((target instanceof StructureRampart) ||
+        (target instanceof StructureWall)) return target.hits < target.room.memory.fortifyLevel;
     if (target instanceof Structure) return target.hits < target.room.memory.repairLevel * target.hitsMax;
 
     return false;
