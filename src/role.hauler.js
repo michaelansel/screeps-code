@@ -39,7 +39,7 @@ var roleHauler = {
       },
       function() {
         if (creep.memory.rebalancing) {
-          return helpers.structuresInRoom(creep.room, STRUCTURE_STORAGE).filter(function(tower){
+          return helpers.structuresInRoom(creep.room, STRUCTURE_STORAGE).filter(function(structure){
             return _.sum(structure.store) < structure.storeCapacity;
           });
         } else {
