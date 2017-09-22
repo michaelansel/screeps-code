@@ -115,30 +115,33 @@ var roleHarvester = {
         // function(structure) {
         //   return structure.structureType == STRUCTURE_TOWER && structure.energy < structure.energyCapacity;
         // },
-        function(structure) {
-          return (structure.structureType == STRUCTURE_CONTAINER ||
-                  structure.structureType == STRUCTURE_STORAGE) &&
-                 _.sum(structure.store) < structure.storeCapacity &&
-                 creep.pos.getRangeTo(structure) < 5;
+        function() {
+          return helpers.structuresInRoom(creep.room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).filter(function(structure){
+            return _.sum(structure.store) < structure.storeCapacity &&
+            creep.pos.getRangeTo(structure) < 5;
+          });
         },
         // Emergency mode: no haulers available and local containers full
-        function(structure) {
-          return helpers.creepsInRoomWithRole(creep.room, 'hauler').length == 0 && structure.structureType == STRUCTURE_SPAWN && structure.energy < structure.energyCapacity;
-        },
-        function(structure) {
-          return helpers.creepsInRoomWithRole(creep.room, 'hauler').length == 0 && structure.structureType == STRUCTURE_EXTENSION && structure.energy < structure.energyCapacity;
+        function() {
+          if (helpers.creepsInRoomWithRole(creep.room, 'hauler').length == 0) {
+            return helpers.structuresInRoom(creep.room, [STRUCTURE_SPAWN, STRUCTURE_EXTENSION]).filter(function(structure){
+              return structure.energy < structure.energyCapacity;
+            });
+          } else {
+            return [];
+          }
         },
         // Totally lost mode: just go to a container and deposit your energy
-        function(structure) {
-          return (structure.structureType == STRUCTURE_CONTAINER ||
-                  structure.structureType == STRUCTURE_STORAGE) &&
-                 _.sum(structure.store) < structure.storeCapacity;
+        function() {
+          return helpers.structuresInRoom(creep.room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).filter(function(structure){
+            return _.sum(structure.store) < structure.storeCapacity;
+          });
         },
       ];
       var targets = [];
       var i = 0;
       while(!targets.length && i<structureSelectors.length) {
-        targets = creep.room.find(FIND_STRUCTURES, {filter: structureSelectors[i++]});
+        targets = structureSelectors[i++]();
       }
       if (targets.length > 0) {
         var target = creep.pos.findClosestByPath(targets);

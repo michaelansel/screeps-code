@@ -4,39 +4,53 @@ var helpers = require('helpers');
 var roleHauler = {
   selectTarget: function(creep) {
     var structureSelectors = [
-      function(structure) {
-        return creep.room.memory.underAttack &&
-               structure.structureType == STRUCTURE_TOWER &&
-               structure.energy < structure.energyCapacity/10;
+      function() {
+        if (creep.room.memory.underAttack) {
+          return helpers.structuresInRoom(creep.room, STRUCTURE_TOWER).filter(function(tower){
+            return tower.energy < tower.energyCapacity/10;
+          });
+        } else {
+          return [];
+        }
       },
-      function(structure) {
-        return creep.room.memory.underAttack &&
-               structure.structureType == STRUCTURE_TOWER &&
-               structure.energy < structure.energyCapacity;
+      function() {
+        if (creep.room.memory.underAttack) {
+          return helpers.structuresInRoom(creep.room, STRUCTURE_TOWER).filter(function(tower){
+            return tower.energy < tower.energyCapacity;
+          });
+        } else {
+          return [];
+        }
       },
-      function(structure) {
-        return (structure.structureType == STRUCTURE_SPAWN ||
-                structure.structureType == STRUCTURE_EXTENSION) &&
-               structure.energy < structure.energyCapacity;
+      function() {
+        return helpers.structuresInRoom(creep.room, [STRUCTURE_SPAWN, STRUCTURE_EXTENSION]).filter(function(structure){
+          return structure.energy < structure.energyCapacity;
+        });
       },
-      function(structure) {
-        return structure.structureType == STRUCTURE_TOWER &&
-               structure.energy < structure.energyCapacity/10;
+      function() {
+        return helpers.structuresInRoom(creep.room, STRUCTURE_TOWER).filter(function(tower){
+          return tower.energy < tower.energyCapacity/10;
+        });
       },
-      function(structure) {
-        return structure.structureType == STRUCTURE_TOWER &&
-               structure.energy < structure.energyCapacity;
+      function() {
+        return helpers.structuresInRoom(creep.room, STRUCTURE_TOWER).filter(function(tower){
+          return tower.energy < tower.energyCapacity;
+        });
       },
-      function(structure) {
-        return creep.memory.rebalancing &&
-               structure.structureType == STRUCTURE_STORAGE &&
-               _.sum(structure.store) < structure.storeCapacity;
+      function() {
+        if (creep.memory.rebalancing) {
+          return helpers.structuresInRoom(creep.room, STRUCTURE_STORAGE).filter(function(tower){
+            return _.sum(structure.store) < structure.storeCapacity;
+          });
+        } else {
+          return [];
+        }
       },
     ];
     var targets = [];
     var i = 0;
     while(!targets.length && i<structureSelectors.length) {
-      targets = creep.room.find(FIND_STRUCTURES, {filter: structureSelectors[i++]});
+      targets = structureSelectors[i++]();
     }
     if (targets.length > 0) {
       return creep.pos.findClosestByPath(targets);

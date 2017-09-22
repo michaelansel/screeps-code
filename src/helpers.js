@@ -1,4 +1,4 @@
-var creepCache;
+var creepCache, structureCache;
 
 var Helpers = {
   initializeCache: function() {
@@ -7,6 +7,10 @@ var Helpers = {
       creepsWithRole: {},
       allCreepsInRoom: {},
       creepsInRoomWithRole: {},
+    };
+
+    structureCache = {
+      byRoomStructureType: {},
     };
   },
 
@@ -30,10 +34,30 @@ var Helpers = {
   },
 
   creepsInRoomWithRole: function (room, role) {
+    if (room instanceof Room) room = room.name;
     var key = [room,role].join(',');
     if (!creepCache.creepsInRoomWithRole[key]) creepCache.creepsInRoomWithRole[key] =
       Helpers.allCreepsInRoom(room).filter(function(creep){return creep.memory.role == role;});
     return creepCache.creepsInRoomWithRole[key];
+  },
+
+  creepsWithRoleAssignedToRoom: function (room, role) {
+    if (room instanceof Room) room = room.name;
+    return helpers.creepsWithRole(role).filter(function(creep){return creep.memory.room == room});
+  },
+
+  structuresInRoom: function (room, type) {
+    if (room instanceof Room) room = room.name;
+    if (type instanceof Array) types = type; else types = [type];
+    var result = [];
+    for (const type of types) {
+      var key = [room,type].join(',');
+      if (!structureCache.byRoomStructureType[key]) structureCache.byRoomStructureType[key] =
+        Game.rooms[room].find(FIND_STRUCTURES, {filter:function(s){return s.structureType == type;}});
+      // TODO verify the semantics of concat
+      result = result.concat(structureCache.byRoomStructureType[key]);
+    }
+    return result;
   },
 
   getEnergy: function(creep, prioritizeFull=false) {
@@ -45,7 +69,7 @@ var Helpers = {
     if (target) {
       this.getEnergyFromTarget(creep, target);
     } else {
-      var containers = creep.room.find(FIND_STRUCTURES, {filter:function(structure){return structure.structureType == STRUCTURE_CONTAINER;}});
+      var containers = this.structuresInRoom(creep.room, STRUCTURE_CONTAINER);
       if (containers.length == 0 && creep.body.includes(WORK)) {
         creep.memory.returnToRole = creep.memory.role;
         creep.memory.role = 'harvester';
@@ -135,11 +159,8 @@ var Helpers = {
       }
     }
 
-    targets = creep.room.find(FIND_STRUCTURES, {
-      filter: (structure) => {
-        return (structure.structureType == STRUCTURE_CONTAINER ||
-                structure.structureType == STRUCTURE_STORAGE ) && structure.store[RESOURCE_ENERGY] >= Math.min(200, creep.carryCapacity - creep.carry.energy);
-      }
+    targets = this.structuresInRoom(creep.room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).filter(function(structure){
+      return structure.store[RESOURCE_ENERGY] >= Math.min(200, creep.carryCapacity - creep.carry.energy)
     });
     if (targets.length > 0) {
       var target;
