@@ -43,7 +43,7 @@ var Helpers = {
 
   creepsWithRoleAssignedToRoom: function (room, role) {
     if (room instanceof Room) room = room.name;
-    return helpers.creepsWithRole(role).filter(function(creep){return creep.memory.room == room});
+    return Helpers.creepsWithRole(role).filter(function(creep){return creep.memory.room == room});
   },
 
   structuresInRoom: function (room, type) {
