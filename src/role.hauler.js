@@ -73,6 +73,10 @@ var roleHauler = {
   },
 
   workTarget: function(creep, target) {
+    if (creep.memory.rebalancing && !(target instanceof StructureStorage)) {
+      console.log(creep.name, 'non-storage wants energy; disabling rebalancing');
+      creep.memory.rebalancing = false;
+    }
     if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
       creep.moveTo(target, {
         visualizePathStyle: {
