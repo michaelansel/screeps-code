@@ -52,7 +52,7 @@ var ConsoleHelpers = {
   },
   claim: function(targetRoom) {
     const lifesaver = Object.keys(Game.spawns).map(function(k){return Game.spawns[k];}).sort(function(a,b){
-      return Game.map.findRoute(a, targetRoom).length - Game.map.findRoute(b, targetRoom).length;
+      return Game.map.findRoute(a.room.name, targetRoom).length - Game.map.findRoute(b.room.name, targetRoom).length;
     })[0];
     const sourceRoom = lifesaver.room;
     if(!sourceRoom.memory.roomsToClaim) sourceRoom.memory.roomsToClaim = [];

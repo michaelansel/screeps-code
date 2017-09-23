@@ -119,7 +119,7 @@ var Spawn = {
         const helperSpawns = Object.keys(Game.spawns).map(function(k){return Game.spawns[k];}).filter(function(s){return !s.spawning;});
         if (helperSpawns.length > 0) {
           const lifesaver = helperSpawns.sort(function(a,b){
-            return Game.map.findRoute(room, a).length - Game.map.findRoute(room, b).length;
+            return Game.map.findRoute(a.room.name, room).length - Game.map.findRoute(b.room.name, room).length;
           })[0];
           console.log(room.name, "requesting spawn assistance from", lifesaver);
           lifesaver.room.memory.emergencySpawn = params;
