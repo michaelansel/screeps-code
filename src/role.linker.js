@@ -71,7 +71,7 @@ var roleLinker = {
     if (creep.carry.energy < Math.min(link.energyCapacity-link.energy, creep.carryCapacity)) {
       var containers = link.pos.findInRange(FIND_STRUCTURES, 5, {filter: function(structure) {
           return structure.structureType == STRUCTURE_CONTAINER &&
-                 structure.store[RESOURCE_ENERGY] > 0;
+                 structure.store[RESOURCE_ENERGY] > 500;
       }});
       var container = creep.pos.findClosestByPath(containers);
       if(containers.length > 0 && !container) {
