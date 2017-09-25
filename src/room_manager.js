@@ -4,6 +4,15 @@ var spawnLogic = require('spawn');
 
 const RoomManager = {
   run: function (room) {
+    room.state = {};
+    room.state.workerEnergyAvailable = helpers.structuresInRoom(room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).reduce(function(total, structure){
+      return total + structure.store[RESOURCE_ENERGY];
+    }, 0);
+    room.state.workerEnergyReserved = 0;
+    room.state.workersWithEnergyReserved = [];
+    helpers.refreshEnergyReservations(room);
+
+
     var spawns = helpers.structuresInRoom(room, STRUCTURE_SPAWN);
     // Only run spawn logic if we aren't already occupied spawning things
     if(!spawns.every(function(spawn){return spawn.spawning;})) {

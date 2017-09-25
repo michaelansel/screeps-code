@@ -60,11 +60,102 @@ var Helpers = {
     return result;
   },
 
+  addEnergyReservation: function(creep) {
+    let room = creep.room;
+    if (!room.memory.energyReservations) room.memory.energyReservations = [];
+    let reservations = room.memory.energyReservations;
+
+    for (let res of room.memory.energyReservations) {
+      if (res.name == creep.name) return;
+    }
+
+    let reservation = {
+      role: creep.memory.role,
+      name: creep.name,
+      amount: Math.min(200, creep.carryCapacity - creep.carry[RESOURCE_ENERGY]),
+    };
+
+    console.log(
+      reservation.name, '('+reservation.role+') reserving', reservation.amount, 'energy',
+      '('+creep.room.state.workerEnergyReserved+'/'+creep.room.state.workerEnergyAvailable+' already reserved)'
+    );
+    reservations.push(reservation);
+  },
+
+  energyReservedForCreep: function(creep) {
+    return creep.room.state.workersWithEnergyReserved.includes(creep.name);
+  },
+
+  refreshEnergyReservations: function (room) {
+    let priority = [
+      "hauler",
+      "builder",
+      "linker",
+      "upgrader",
+    ];
+
+    if (room.memory.energyReservations.length > 0) console.log(room.name, JSON.stringify(room.memory.energyReservations));
+
+    // Priority sort reservations
+    room.memory.energyReservations.sort(function(resA, resB){
+      return priority.indexOf(resA.role) - priority.indexOf(resB.role);
+    });
+
+    // Pull the max number of reservations we can fit in the available energy
+    let i=0;
+    while (
+      i < room.memory.energyReservations.length &&
+      (
+        room.state.workerEnergyReserved +
+        room.memory.energyReservations[i].amount
+      ) < room.state.workerEnergyAvailable
+    ) {
+      let res = room.memory.energyReservations[i];
+      room.state.workerEnergyReserved += res.amount;
+      room.state.workersWithEnergyReserved.push(res.name);
+      i++;
+    }
+
+    if (i<room.memory.energyReservations.length) {
+      // not enough energy to fill all reservations
+      room.state.workerEnergyReserved = room.state.workerEnergyAvailable;
+    }
+
+    if (room.state.workersWithEnergyReserved.length > 0) {
+      console.log('workersWithEnergyReserved', JSON.stringify(room.state.workersWithEnergyReserved), room.state.workerEnergyReserved, room.state.workerEnergyAvailable);
+    }
+    console.log(
+      room.name,
+      'energy',
+      room.state.workerEnergyReserved,
+      room.state.workerEnergyAvailable
+    );
+  },
+
+  allowedToGetEnergy: function (creep) {
+    return (
+      (
+        // energy available
+        creep.room.state.workerEnergyAvailable >=
+        Math.min(200, creep.carryCapacity - creep.carry[RESOURCE_ENERGY])
+      ) && (
+        // not all energy reserved
+        creep.room.state.workerEnergyReserved < creep.room.state.workerEnergyAvailable ||
+        // energy already reserved for this creep
+        this.energyReservedForCreep(creep)
+      )
+    );
+  },
+
   getEnergy: function(creep, prioritizeFull=false) {
     var target = Game.getObjectById(creep.memory.target);
-    // console.log(creep.name, 'looking for energy', creep.memory.target, target);
     if (!target) {
-      target = this.findAvailableEnergy(creep, prioritizeFull);
+      if (this.allowedToGetEnergy(creep)) {
+        console.log(creep.name, 'looking for energy', creep.room.state.workerEnergyAvailable, creep.room.state.workerEnergyReserved, this.energyReservedForCreep(creep));
+        target = this.findAvailableEnergy(creep, prioritizeFull);
+      } else {
+        this.addEnergyReservation(creep);
+      }
     }
     if (target) {
       this.getEnergyFromTarget(creep, target);
@@ -95,13 +186,23 @@ var Helpers = {
       }
     }
 
+    const gotEnergyFromTarget = function() {
+      // Remove all reservations for this creep
+      if (!creep.room.memory.energyReservations) creep.room.memory.energyReservations = [];
+      creep.room.memory.energyReservations = creep.room.memory.energyReservations.filter(function(res){
+        return res.name != creep.name;
+      });
+    }
+
     if (target instanceof Source) {
       if (target.energy == 0) {
         console.log(creep.name, "giving up on previous source", creep.memory.target);
         creep.memory.target = null;
         return;
       }
-      if (creep.harvest(target) != 0) {
+      if (creep.harvest(target) == OK) {
+        gotEnergyFromTarget();
+      } else {
         moveToTarget();
       }
     }
@@ -114,7 +215,9 @@ var Helpers = {
           creep.memory.target = null;
           return;
         }
-        if (creep.withdraw(target, RESOURCE_ENERGY) != 0) {
+        if (creep.withdraw(target, RESOURCE_ENERGY) == OK) {
+          gotEnergyFromTarget();
+        } else {
           moveToTarget();
         }
       }
@@ -127,7 +230,9 @@ var Helpers = {
           creep.memory.target = null;
           return;
         }
-        if (creep.pickup(target) != 0) {
+        if (creep.pickup(target) == OK) {
+          gotEnergyFromTarget();
+        } else {
           moveToTarget();
         }
       }
