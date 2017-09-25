@@ -22,12 +22,15 @@ module.exports = {
       var hostile = tower.pos.findClosestByRange(hostiles);
       tower.attack(hostile);
       console.log(tower, "attacking", hostile);
-    // var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-    // if(closestHostile) {
-    //   tower.attack(closestHostile);
-    //   Game.notify("Hostiles detected at tick " + Game.time, 10);
     } else {
       room.memory.underAttack = false;
+
+      var closestDamagedCreep = tower.pos.findClosestByRange(FIND_CREEPS, {filter:function(creep){return creep.hits < creep.hitsMax;}});
+      if (closestDamagedCreep) {
+        tower.heal(creep);
+        return;
+      }
+
       var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
         filter: (structure) => {
           if (structure.structureType == STRUCTURE_RAMPART ||
@@ -39,7 +42,8 @@ module.exports = {
         }
       });
       if(closestDamagedStructure) {
-          tower.repair(closestDamagedStructure);
+        tower.repair(closestDamagedStructure);
+        return;
       }
     }
   }
