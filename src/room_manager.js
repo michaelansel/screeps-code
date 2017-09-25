@@ -53,6 +53,11 @@ const RoomManager = {
     room.memory.roomsToClaim = room.memory.roomsToClaim.filter(function(rn){return !(Game.rooms[rn] && Game.rooms[rn].controller.my);});
     room.memory.desiredCreepCounts.claimer = room.memory.roomsToClaim.length;
 
+    // Remove reservations from dead creeps
+    room.memory.energyReservations = room.memory.energyReservations.filter(function(res){
+      return !!Game.creeps[res.name];
+    });
+
     spawnLogic.bootstrap(room);
   },
 };
