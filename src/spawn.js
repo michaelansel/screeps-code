@@ -105,9 +105,15 @@ const SpawnHelpers = {
   },
 
   sortCreep: function (body) {
-    return body.sort(function(a,b){
+    let sorted = body.sort(function(a,b){
       return SpawnConstants.BODYPART_ORDER.indexOf(a) - SpawnConstants.BODYPART_ORDER.indexOf(b);
     });
+
+    // Ensure there is always at least one MOVE part remaining on the creep
+    sorted.splice(sorted.indexOf(MOVE), 1);
+    sorted.push(MOVE);
+
+    return sorted;
   },
 };
 
