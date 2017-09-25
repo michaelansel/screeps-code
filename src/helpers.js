@@ -94,6 +94,7 @@ var Helpers = {
       "upgrader",
     ];
 
+    if (!room.memory.energyReservations) room.memory.energyReservations = [];
     if (room.memory.energyReservations.length > 0) console.log(room.name, JSON.stringify(room.memory.energyReservations));
 
     // Priority sort reservations
