@@ -17,14 +17,10 @@ module.exports = {
       hostiles = tower.room.find(FIND_HOSTILE_CREEPS, {filter: hostileSelectors[i++]});
     }
     if (hostiles.length > 0) {
-      if (!room.memory.underAttack) Game.notify("Hostiles detected at tick " + Game.time, 10);
-      room.memory.underAttack = true;
       var hostile = tower.pos.findClosestByRange(hostiles);
       tower.attack(hostile);
       console.log(tower, "attacking", hostile);
     } else {
-      room.memory.underAttack = false;
-
       var closestDamagedCreep = tower.pos.findClosestByRange(FIND_CREEPS, {filter:function(creep){return creep.hits < creep.hitsMax;}});
       if (closestDamagedCreep) {
         tower.heal(closestDamagedCreep);

@@ -11,6 +11,12 @@ const RoomManager = {
     room.state.workerEnergyReserved = 0;
     room.state.workersWithEnergyReserved = [];
     helpers.refreshEnergyReservations(room);
+    if (room.find(FIND_HOSTILE_CREEPS).length > 0) {
+      if (!room.state.underAttack) Game.notify("Hostiles detected at tick " + Game.time, 10);
+      room.state.underAttack = true;
+    } else {
+      room.state.underAttack = false;
+    }
 
 
     var spawns = helpers.structuresInRoom(room, STRUCTURE_SPAWN);

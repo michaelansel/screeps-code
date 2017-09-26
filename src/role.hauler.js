@@ -5,7 +5,7 @@ var roleHauler = {
   selectTarget: function(creep) {
     var structureSelectors = [
       function() {
-        if (creep.room.memory.underAttack) {
+        if (creep.room.state.underAttack) {
           return helpers.structuresInRoom(creep.room, STRUCTURE_TOWER).filter(function(tower){
             return tower.energy < tower.energyCapacity/10;
           });
@@ -14,7 +14,7 @@ var roleHauler = {
         }
       },
       function() {
-        if (creep.room.memory.underAttack) {
+        if (creep.room.state.underAttack) {
           return helpers.structuresInRoom(creep.room, STRUCTURE_TOWER).filter(function(tower){
             return tower.energy < tower.energyCapacity;
           });

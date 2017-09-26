@@ -4,7 +4,7 @@ var roleUpgrader = {
 
   /** @param {Creep} creep **/
   run: function(creep) {
-    if (creep.room.memory.underAttack) {
+    if (creep.room.state.underAttack) {
       // Stop upgrading when hostiles present so all energy can go to towers
       creep.moveTo(Game.flags['RallyWhenLost-'+creep.room.name]);
       return;
