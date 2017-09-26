@@ -184,7 +184,7 @@ var Spawn = {
     }
 
     // Convert harvester to upgrader if controller is at risk of downgrading
-    if (room.controller.ticksToDowngrade < 4000) {
+    if (room.controller.ticksToDowngrade < 3000) {
       if(helpers.creepsInRoomWithRole(room, 'upgrader').length == 0) {
         var harvesters = helpers.creepsInRoomWithRole(room, 'harvester');
         if(harvesters.length > 0) {

@@ -1,3 +1,4 @@
+const _ = require('lodash');
 var creepCache, structureCache;
 
 var Helpers = {
@@ -95,12 +96,23 @@ var Helpers = {
     ];
 
     if (!room.memory.energyReservations) room.memory.energyReservations = [];
-    if (room.memory.energyReservations.length > 0) console.log(room.name, JSON.stringify(room.memory.energyReservations));
 
     // Priority sort reservations
     room.memory.energyReservations.sort(function(resA, resB){
       return priority.indexOf(resA.role) - priority.indexOf(resB.role);
     });
+
+    if (room.state.atRiskOfDowngrading) {
+      // Move an upgrader to the front
+      let upRes = _.find(room.memory.energyReservations, function(res){ return res.role == 'upgrader';});
+      if (upRes) {
+        console.log(room.name, 'prioritizing upgrader', upRes.name);
+        room.memory.energyReservations.splice(room.memory.energyReservations.indexOf(upRes), 1);
+        room.memory.energyReservations.splice(0, 0, upRes);
+      }
+    }
+
+    if (room.memory.energyReservations.length > 0) console.log(room.name, 'sorted reservations', room.memory.energyReservations.map(function(res){return [res.role, res.name,res.amount].join('-');}).join(', '));
 
     // Pull the max number of reservations we can fit in the available energy
     let i=0;

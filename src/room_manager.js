@@ -5,19 +5,21 @@ var spawnLogic = require('spawn');
 const RoomManager = {
   run: function (room) {
     room.state = {};
+    // Independent state
+    room.state.underAttack = (room.find(FIND_HOSTILE_CREEPS).length > 0);
+    room.state.atRiskOfDowngrading = (room.controller.ticksToDowngrade < 3000);
     room.state.workerEnergyAvailable = helpers.structuresInRoom(room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).reduce(function(total, structure){
       return total + structure.store[RESOURCE_ENERGY];
     }, 0);
-    room.state.workerEnergyReserved = 0;
-    room.state.workersWithEnergyReserved = [];
-    helpers.refreshEnergyReservations(room);
-    if (room.find(FIND_HOSTILE_CREEPS).length > 0) {
-      if (!room.state.underAttack) Game.notify("Hostiles detected at tick " + Game.time, 10);
-      room.state.underAttack = true;
-    } else {
-      room.state.underAttack = false;
-    }
 
+    // Dependent state
+    room.state.workerEnergyReserved = 0; // initialize; updated by refreshEnergyReservations
+    room.state.workersWithEnergyReserved = []; // initialize; updated by refreshEnergyReservations
+    helpers.refreshEnergyReservations(room);
+
+    // Notify on underAttack rising edge
+    if (room.state.underAttack && !room.memory.underAttack) Game.notify("Hostiles detected at tick " + Game.time, 10);
+    room.memory.underAttack = room.state.underAttack;
 
     var spawns = helpers.structuresInRoom(room, STRUCTURE_SPAWN);
     // Only run spawn logic if we aren't already occupied spawning things
