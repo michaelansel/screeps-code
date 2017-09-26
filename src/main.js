@@ -115,7 +115,7 @@ var ConsoleHelpers = {
           console.log("Towers: ", towerStats.join(", "));
         }
 
-        const constructionSites = room.find(FIND_CONSTRUCTION_SITES);
+        const constructionSites = room.find(FIND_CONSTRUCTION_SITES).sort();
         if (constructionSites.length > 0) {
           var constructionStats = constructionSites.map(function(cs){return cs.structureType;});
           var totalConstructionEnergy = constructionSites.reduce(function(total, cs){return total + (cs.progressTotal-cs.progress);}, 0);
