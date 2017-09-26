@@ -135,15 +135,19 @@ var Helpers = {
 
   allowedToGetEnergy: function (creep) {
     return (
+      !creep.room.controller ||
+      !creep.room.controller.my ||
       (
-        // energy available
-        creep.room.state.workerEnergyAvailable >=
-        Math.min(200, creep.carryCapacity - creep.carry[RESOURCE_ENERGY])
-      ) && (
-        // not all energy reserved
-        creep.room.state.workerEnergyReserved < creep.room.state.workerEnergyAvailable ||
-        // energy already reserved for this creep
-        this.energyReservedForCreep(creep)
+        (
+          // energy available
+          creep.room.state.workerEnergyAvailable >=
+          Math.min(200, creep.carryCapacity - creep.carry[RESOURCE_ENERGY])
+        ) && (
+          // not all energy reserved
+          creep.room.state.workerEnergyReserved < creep.room.state.workerEnergyAvailable ||
+          // energy already reserved for this creep
+          this.energyReservedForCreep(creep)
+        )
       )
     );
   },
@@ -152,7 +156,7 @@ var Helpers = {
     var target = Game.getObjectById(creep.memory.target);
     if (!target) {
       if (this.allowedToGetEnergy(creep)) {
-        console.log(creep.name, 'looking for energy', creep.room.state.workerEnergyAvailable, creep.room.state.workerEnergyReserved, this.energyReservedForCreep(creep));
+        if (creep.room.controller && creep.room.controller.my) console.log(creep.name, 'looking for energy', creep.room.state.workerEnergyAvailable, creep.room.state.workerEnergyReserved, this.energyReservedForCreep(creep));
         target = this.findAvailableEnergy(creep, prioritizeFull);
       } else {
         this.addEnergyReservation(creep);
