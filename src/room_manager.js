@@ -1,6 +1,7 @@
 var helpers = require('helpers');
 var towerLogic = require('tower');
 var spawnLogic = require('spawn');
+var creepManager = require('creep_manager');
 
 const RoomManager = {
   run: function (room) {
@@ -36,6 +37,11 @@ const RoomManager = {
         var tower = towers[ti];
         if (tower.isActive()) towerLogic.run(tower);
       }
+    }
+
+    for (const creep of helpers.allCreepsInRoom(room)) {
+      if (creep.spawning) continue; // no logic when spawning
+      creepManager.run(creep);
     }
   },
 

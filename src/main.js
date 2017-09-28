@@ -256,12 +256,6 @@ var Main = {
       }
     }
 
-    for (var name in Game.creeps) {
-      var creep = Game.creeps[name];
-      if (creep.spawning) continue; // no logic when spawning
-      creepManager.run(creep);
-    }
-
     // Update the CPU timeout canary
     Memory.cpuCanary = Game.time + 1;
   },
