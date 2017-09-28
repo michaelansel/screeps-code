@@ -88,6 +88,20 @@ var roleHauler = {
 
   /** @param {Creep} creep **/
   run: function(creep) {
+    if (
+      !creep.memory.working &&
+      creep.carry[RESOURCE_ENERGY] == creep.carryCapacity &&
+      creep.memory.rebalancing
+    ) {
+      // Just picked up from the most-full container
+      if (creep.pos.getRangeTo(creep.room.storage) == 1) {
+        console.log(creep.name, "fully balanced; taking a nap");
+        creep.memory.rebalancing = false;
+        creep.memory.sleep = 10;
+        // Game.notify([creep.name, creep.room.name, 'fully balanced, sleeping'].join(' '), 10);
+      }
+    }
+
     if (creep.carry.energy == creep.carryCapacity) {
       // Full of energy
       creep.memory.working = true;
@@ -118,17 +132,6 @@ var roleHauler = {
         creep.moveTo(Game.flags['RallyWhenLost-'+creep.room.name]);
       } else {
         helpers.getEnergy(creep, creep.memory.rebalancing);
-        if (
-          creep.carry[RESOURCE_ENERGY] == creep.carryCapacity &&
-          creep.memory.rebalancing
-        ) {
-          // Just picked up from the most-full container
-          if (creep.pos.getRangeTo(creep.room.storage) == 1) {
-            console.log(creep.name, "fully balanced; taking a nap");
-            creep.memory.rebalancing = false;
-            creep.memory.sleep = 10;
-          }
-        }
       }
     }
   },
