@@ -112,9 +112,14 @@ var roleHarvester = {
       }
 
       var structureSelectors = [
-        // function(structure) {
-        //   return structure.structureType == STRUCTURE_TOWER && structure.energy < structure.energyCapacity;
-        // },
+        function(structure) {
+          return helpers.structuresInRoom(creep.room, STRUCTURE_LINK).filter(function(structure){
+            return (
+              structure.energy < structure.energyCapacity &&
+              creep.pos.getRangeTo(structure) < 5
+            );
+          });
+        },
         function() {
           return helpers.structuresInRoom(creep.room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).filter(function(structure){
             return _.sum(structure.store) < structure.storeCapacity &&

@@ -54,7 +54,10 @@ const RoomManager = {
     if(!room.memory.repairLevel) room.memory.repairLevel = 0.75;
 
     // Update desired number of linkers
-    const links = helpers.structuresInRoom(room, STRUCTURE_LINK);
+    const links = helpers.structuresInRoom(room, STRUCTURE_LINK).filter(function(link){
+      // Keep it if there is not a source nearby
+      return !(link.pos.findInRange(FIND_SOURCES, 3).length > 0);
+    });
     room.memory.desiredCreepCounts.linker = links.length;
 
     if(!room.memory.roomsToClaim) room.memory.roomsToClaim = [];

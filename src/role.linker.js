@@ -10,8 +10,11 @@ var roleLinker = {
   },
 
   selectLink: function (creep) {
-    // Find the nearest link without a linker assigned
-    var links = helpers.structuresInRoom(creep.room, STRUCTURE_LINK);
+    // Find the nearest link that wants a linker, but without one assigned
+    const links = helpers.structuresInRoom(room, STRUCTURE_LINK).filter(function(link){
+      // Keep it if there is not a source nearby
+      return !(link.pos.findInRange(FIND_SOURCES, 3).length > 0);
+    });
     for (var li in links) {
       var l = links[li];
       var done = false;
