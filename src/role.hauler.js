@@ -46,6 +46,19 @@ var roleHauler = {
           return [];
         }
       },
+      function() {
+        if (creep.memory.rebalancing) {
+          return [
+            helpers.structuresInRoom(creep.room, STRUCTURE_CONTAINER).filter(function(structure){
+              return _.sum(structure.store) < structure.storeCapacity;
+            }).sort(function(a,b){
+              return _.sum(a.store) - _.sum(b.store);
+            })[0]
+          ];
+        } else {
+          return [];
+        }
+      },
     ];
     var targets = [];
     var i = 0;
@@ -73,8 +86,14 @@ var roleHauler = {
   },
 
   workTarget: function(creep, target) {
-    if (creep.memory.rebalancing && !(target instanceof StructureStorage)) {
-      console.log(creep.name, 'non-storage wants energy; disabling rebalancing');
+    if (
+      creep.memory.rebalancing &&
+      !(
+        target instanceof StructureStorage ||
+        target instanceof StructureContainer
+      )
+    ) {
+      console.log(creep.name, 'non-storage/container wants energy; disabling rebalancing');
       creep.memory.rebalancing = false;
     }
     if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
