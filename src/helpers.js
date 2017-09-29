@@ -99,7 +99,11 @@ var Helpers = {
 
     // Priority sort reservations
     room.memory.energyReservations.sort(function(resA, resB){
-      return priority.indexOf(resA.role) - priority.indexOf(resB.role);
+      if (resA.role != resB.role) {
+        return priority.indexOf(resA.role) - priority.indexOf(resB.role);
+      } else {
+        return resA.amount - resB.amount;
+      }
     });
 
     if (room.state.atRiskOfDowngrading) {
@@ -121,7 +125,7 @@ var Helpers = {
       (
         room.state.workerEnergyReserved +
         room.memory.energyReservations[i].amount
-      ) < room.state.workerEnergyAvailable
+      ) <= room.state.workerEnergyAvailable
     ) {
       let res = room.memory.energyReservations[i];
       room.state.workerEnergyReserved += res.amount;
@@ -282,8 +286,13 @@ var Helpers = {
     }
 
     targets = this.structuresInRoom(creep.room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).filter(function(structure){
-      return structure.store[RESOURCE_ENERGY] >= Math.min(200, creep.carryCapacity - creep.carry.energy)
+      return structure.store[RESOURCE_ENERGY] >= Math.min(200, creep.carryCapacity - creep.carry.energy);
     });
+    if (targets.length == 0) {
+      targets = this.structuresInRoom(creep.room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).filter(function(structure){
+        return structure.store[RESOURCE_ENERGY] >= 0;
+      });
+    }
     if (targets.length > 0) {
       var target;
       if (prioritizeFull) {

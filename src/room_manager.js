@@ -9,9 +9,18 @@ const RoomManager = {
     // Independent state
     room.state.underAttack = (room.find(FIND_HOSTILE_CREEPS).length > 0);
     room.state.atRiskOfDowngrading = (room.controller.ticksToDowngrade < 3000);
-    room.state.workerEnergyAvailable = helpers.structuresInRoom(room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).reduce(function(total, structure){
-      return total + structure.store[RESOURCE_ENERGY];
-    }, 0);
+    room.state.workerEnergyAvailable = (
+      helpers.structuresInRoom(room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).reduce(function(total, structure){
+        return total + structure.store[RESOURCE_ENERGY];
+      }, 0) +
+      room.find(FIND_DROPPED_RESOURCES, {
+        filter: (resource) => {
+          return resource.resourceType == RESOURCE_ENERGY;
+        },
+      }).reduce(function(total, resource){
+        return total + resource.amount;
+      }, 0)
+    );
 
     // Dependent state
     room.state.workerEnergyReserved = 0; // initialize; updated by refreshEnergyReservations
