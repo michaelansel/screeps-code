@@ -189,6 +189,16 @@ var Main = {
       }
     }
 
+    for (var name in Memory.rooms) {
+      if (
+        !Memory.rooms[name].expiration ||
+        Memory.rooms[name].expiration < Game.time
+      ) {
+        delete Memory.rooms[name];
+        console.log('Clearing old room memory:', name);
+      }
+    }
+
     for (var name in Game.rooms) {
       room = Game.rooms[name];
 
@@ -251,6 +261,10 @@ var Main = {
 
     for (var rn in Game.rooms) {
       var room = Game.rooms[rn];
+
+      // Room memory evicted after 100 ticks
+      room.memory.expiration = Game.time + 100;
+
       if(room.controller && room.controller.my) {
         roomManager.run(room);
       }
