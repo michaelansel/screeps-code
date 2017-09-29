@@ -15,15 +15,15 @@ var roleLinker = {
       // Keep it if there is not a source nearby
       return !(link.pos.findInRange(FIND_SOURCES, 3).length > 0);
     });
-    for (var li in links) {
-      var l = links[li];
-      var done = false;
+    console.log(creep.name, 'selecting a link from', links);
+    for (var l of links) {
+      var done = true;
       var linkers = helpers.creepsInRoomWithRole(creep.room, 'linker');
-      for (var ci in linkers) {
-        var c = linkers[ci];
+      for (var c of linkers) {
         if (c.id == creep.id) continue;
         if (c.memory.link == l.id) {
           console.log(creep.name, c.name, l.id, "occupied");
+          done = false;
           continue;
         } else {
           console.log(creep.name, c.name, l.id, "available");
