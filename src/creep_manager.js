@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var roleBuilder = require('role.builder');
 var roleClaimer = require('role.claimer');
 var roleHarvester = require('role.harvester');
@@ -16,13 +17,16 @@ var CreepManager = {
   },
 
   run: function(creep) {
-    var droppedEnergy = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {
-      filter: function (resource) {
-        return resource.resourceType == RESOURCE_ENERGY;
-      }});
-    if (droppedEnergy.length > 0) {
-      for (var ei in droppedEnergy) {
-        creep.pickup(droppedEnergy[ei]);
+    if (_.sum(creep.carry) < creep.carryCapacity) {
+      var droppedEnergy = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 3, {
+        filter: function (resource) {
+          return resource.resourceType == RESOURCE_ENERGY;
+        }});
+      if (droppedEnergy.length > 0) {
+        const closestEnergy = creep.pos.findClosestByPath(droppedEnergy);
+        if(creep.pickup(closestEnergy) != OK) {
+          creep.moveTo(closestEnergy);
+        }
       }
     }
 
