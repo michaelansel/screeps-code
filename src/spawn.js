@@ -169,18 +169,20 @@ var Spawn = {
     if(room.find(FIND_CONSTRUCTION_SITES).length > 0) {
       room.memory.desiredCreepCounts['builder'] = Math.max(room.memory.desiredCreepCounts['builder'], 3);
     }
-    var targets = room.find(FIND_STRUCTURES, {
-      filter: (structure) => {
-        if (structure.structureType == STRUCTURE_RAMPART ||
-            structure.structureType == STRUCTURE_WALL) {
-          return structure.hits < Math.min(room.memory.fortifyLevel, structure.hitsMax);
-        } else {
-          return structure.hits < room.memory.repairLevel*structure.hitsMax;
+    if (helpers.structuresInRoom(room, STRUCTURE_TOWER).length == 0) {
+      var targets = room.find(FIND_STRUCTURES, {
+        filter: (structure) => {
+          if (structure.structureType == STRUCTURE_RAMPART ||
+              structure.structureType == STRUCTURE_WALL) {
+            return structure.hits < Math.min(room.memory.fortifyLevel, structure.hitsMax);
+          } else {
+            return structure.hits < room.memory.repairLevel*structure.hitsMax;
+          }
         }
+      });
+      if(targets.length > 0) {
+        room.memory.desiredCreepCounts['builder'] = Math.max(room.memory.desiredCreepCounts['builder'], Math.min(3,targets.length));
       }
-    });
-    if(targets.length > 0) {
-      room.memory.desiredCreepCounts['builder'] = Math.max(room.memory.desiredCreepCounts['builder'], Math.min(3,targets.length));
     }
 
     // Convert harvester to upgrader if controller is at risk of downgrading
