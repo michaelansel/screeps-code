@@ -168,6 +168,11 @@ var Spawn = {
     // Scale up builders if there is construction to do or damage to repair
     if(room.find(FIND_CONSTRUCTION_SITES).length > 0) {
       room.memory.desiredCreepCounts['builder'] = Math.max(room.memory.desiredCreepCounts['builder'], 3);
+    } else {
+      room.memory.desiredCreepCounts['builder'] = 0;
+      for (const creep of helpers.creepsInRoomWithRole(room, 'builder')) {
+        creep.memory.role = 'recycle';
+      }
     }
     if (helpers.structuresInRoom(room, STRUCTURE_TOWER).length == 0) {
       var targets = room.find(FIND_STRUCTURES, {

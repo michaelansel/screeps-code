@@ -5,6 +5,7 @@ var roleHarvester = require('role.harvester');
 var roleHauler = require('role.hauler');
 var roleUpgrader = require('role.upgrader');
 var roleLinker = require('role.linker');
+var roleRecycle = require('role.recycle');
 
 var CreepManager = {
   creepBehaviors: {
@@ -13,6 +14,7 @@ var CreepManager = {
     harvester: roleHarvester,
     hauler: roleHauler,
     linker: roleLinker,
+    recycle: roleRecycle,
     upgrader: roleUpgrader,
   },
 
