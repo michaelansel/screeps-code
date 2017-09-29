@@ -28,6 +28,7 @@ var CreepManager = {
         const closestEnergy = creep.pos.findClosestByPath(droppedEnergy);
         if(creep.pickup(closestEnergy) != OK) {
           creep.moveTo(closestEnergy);
+          return;
         }
       }
     }
