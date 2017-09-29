@@ -19,10 +19,15 @@ var CreepManager = {
   },
 
   run: function(creep) {
-    if (_.sum(creep.carry) < creep.carryCapacity) {
+    let availableSpace = creep.carryCapacity - _.sum(creep.carry);
+    if (availableSpace > 0) {
       var droppedEnergy = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 3, {
         filter: function (resource) {
-          return resource.resourceType == RESOURCE_ENERGY;
+          return (
+            resource.resourceType == RESOURCE_ENERGY &&
+            // Pick up at least 25 energy at a time unless we can pick up all of it
+            availableSpace > Math.min(25, resource.amount)
+          );
         }});
       if (droppedEnergy.length > 0) {
         const closestEnergy = creep.pos.findClosestByPath(droppedEnergy);
