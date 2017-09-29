@@ -37,8 +37,8 @@ const SpawnHelpers = {
     },
     harvester: function(maxCost) {
       // Move fast when empty; don't care when full; maximize work speed
-      // Max of 4x WORK per harvester (almost enough to single handedly drain a source, but still work in pairs)
-      var maxCost = Math.min(2*SpawnHelpers.creepCost([WORK, WORK, MOVE]), maxCost - BODYPART_COST[CARRY], SpawnConstants.MAX_CREEP_COST);
+      // Max of 6x WORK per harvester (enough to single-handedly drain a source)
+      var maxCost = Math.min(3*SpawnHelpers.creepCost([WORK, WORK, MOVE]), maxCost - BODYPART_COST[CARRY], SpawnConstants.MAX_CREEP_COST);
       return SpawnHelpers.sortCreep(SpawnHelpers.scaleCreep([WORK, WORK, MOVE], maxCost, true).concat([CARRY]));
     },
     hauler: function(maxCost) {
@@ -242,7 +242,7 @@ var Spawn = {
       // Source has 3000 energy every 300 ticks
       // Max 5 WORK per source (plus 20% buffer to ensure 100% harvest)
       if (
-        harvesterWorkParts / 8 < room.find(FIND_SOURCES).length &&
+        harvesterWorkParts / 5 < room.find(FIND_SOURCES).length &&
         helpers.creepsInRoomWithRole(room, 'harvester').length < Object.keys(room.memory.sources).reduce(function(total, source){return total + room.memory.sources[source].spaces;}, 0)
       ) {
         SpawnHelpers.doSpawn(
