@@ -116,14 +116,14 @@ var roleHarvester = {
           return helpers.structuresInRoom(creep.room, STRUCTURE_LINK).filter(function(structure){
             return (
               structure.energy < structure.energyCapacity &&
-              creep.pos.getRangeTo(structure) < 5
+              creep.pos.getRangeTo(structure) <= 2
             );
           });
         },
         function() {
           return helpers.structuresInRoom(creep.room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).filter(function(structure){
             return _.sum(structure.store) < structure.storeCapacity &&
-            creep.pos.getRangeTo(structure) < 5;
+            creep.pos.getRangeTo(structure) <= 2;
           });
         },
         // Emergency mode: no haulers available and local containers full
