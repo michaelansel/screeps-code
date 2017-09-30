@@ -48,13 +48,11 @@ var roleHauler = {
       },
       function() {
         if (creep.memory.rebalancing) {
-          return [
-            helpers.structuresInRoom(creep.room, STRUCTURE_CONTAINER).filter(function(structure){
-              return _.sum(structure.store) < structure.storeCapacity;
-            }).sort(function(a,b){
-              return _.sum(a.store) - _.sum(b.store);
-            })[0]
-          ];
+          return helpers.structuresInRoom(creep.room, STRUCTURE_CONTAINER).filter(function(structure){
+            return _.sum(structure.store) < structure.storeCapacity;
+          }).sort(function(a,b){
+            return _.sum(a.store) - _.sum(b.store);
+          }).slice(1,2);
         } else {
           return [];
         }
