@@ -30,7 +30,7 @@ var Helpers = {
   allCreepsInRoom: function (room) {
     if (room instanceof Room) room = room.name;
     if (!creepCache.allCreepsInRoom[room]) creepCache.allCreepsInRoom[room] =
-      Helpers.allCreeps().filter(function(creep){return creep.room.name == room;});
+      Helpers.allCreeps().filter(function(creep){return creep.room.name == room && !creep.memory.room;});
     return creepCache.allCreepsInRoom[room];
   },
 
@@ -38,7 +38,7 @@ var Helpers = {
     if (room instanceof Room) room = room.name;
     var key = [room,role].join(',');
     if (!creepCache.creepsInRoomWithRole[key]) creepCache.creepsInRoomWithRole[key] =
-      Helpers.allCreepsInRoom(room).filter(function(creep){return creep.memory.role == role;});
+      Helpers.allCreepsInRoom(room).filter(function(creep){return creep.memory.role == role && !creep.memory.room;});
     return creepCache.creepsInRoomWithRole[key];
   },
 
