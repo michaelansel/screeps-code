@@ -17,13 +17,15 @@ var roleBuilder = {
       }
     });
     target = creep.pos.findClosestByPath(targets);
+    room.memory.fortifyLevel = 50000;
+    room.memory.repairLevel = 0.5;
     if (target) {
-      room.memory.fortifyLevel = Math.max(room.memory.fortifyLevel, 150000);
-      room.memory.repairLevel = Math.max(room.memory.repairLevel, 0.75);
+      // room.memory.fortifyLevel = Math.max(room.memory.fortifyLevel, 150000);
+      // room.memory.repairLevel = Math.max(room.memory.repairLevel, 0.75);
       return target;
-    } else {
-      room.memory.fortifyLevel = Math.min(room.memory.fortifyLevel, 50000);
-      room.memory.repairLevel = Math.min(room.memory.repairLevel, 0.5);
+    // } else {
+    //   room.memory.fortifyLevel = Math.min(room.memory.fortifyLevel, 50000);
+    //   room.memory.repairLevel = Math.min(room.memory.repairLevel, 0.5);
     }
 
     targets = creep.room.find(FIND_CONSTRUCTION_SITES);
