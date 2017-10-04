@@ -270,8 +270,14 @@ var Helpers = {
 
     targets = creep.room.find(FIND_DROPPED_RESOURCES, {
       filter: (resource) => {
-        return resource.resourceType == RESOURCE_ENERGY &&
-               resource.energy >= (creep.carryCapacity - creep.carry[RESOURCE_ENERGY]);
+        if (resource.resourceType != RESOURCE_ENERGY) return false;
+        if (prioritizeFull) {
+          // Pick up any energy when in rebalancing mode
+          return resource.energy >= 0;
+        } else {
+          // Normally, only pick up dropped energy if it will fill us up
+          return resource.energy >= (creep.carryCapacity - creep.carry[RESOURCE_ENERGY]);
+        }
       },
     });
     if (targets.length > 0) {
