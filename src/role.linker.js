@@ -112,7 +112,7 @@ var roleLinker = {
       console.log(creep.name, "unable to find a link to associate with", creep.memory.link);
       return;
     }
-    if(!creep.room.memory.storageLink) {
+    if(!creep.room.memory.storageLink || !Game.getObjectById(creep.room.memory.storageLink)) {
       console.log(creep.name, "locating the storage link for", creep.room.name);
       this.locateStorageLink(creep.room);
     }
