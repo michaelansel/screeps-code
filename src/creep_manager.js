@@ -19,6 +19,10 @@ var CreepManager = {
   },
 
   run: function(creep) {
+    if (creep.lastProcessedTick == Game.time) return; // only process every creep once
+    creep.lastProcessedTick = Game.time;
+    if (creep.spawning) return; // no logic when spawning
+
     let availableSpace = creep.carryCapacity - _.sum(creep.carry);
     if (availableSpace > 0) {
       var droppedEnergy = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 3, {

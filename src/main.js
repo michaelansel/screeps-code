@@ -270,6 +270,11 @@ var Main = {
       }
     }
 
+    // Process creeps in unowned rooms
+    for (const creep of helpers.allCreeps()) {
+      creepManager.run(creep);
+    }
+
     // Update the CPU timeout canary
     Memory.cpuCanary = Game.time + 1;
   },

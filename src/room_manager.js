@@ -49,7 +49,6 @@ const RoomManager = {
     }
 
     for (const creep of helpers.allCreepsInRoom(room)) {
-      if (creep.spawning) continue; // no logic when spawning
       creepManager.run(creep);
     }
   },
