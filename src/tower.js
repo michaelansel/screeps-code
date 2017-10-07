@@ -29,6 +29,16 @@ module.exports = {
 
       var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
         filter: (structure) => {
+          const flags = structure.pos.lookFor(LOOK_FLAGS);
+          if (flags.some(function(flag){
+            return (
+              flag.color == COLOR_RED &&
+              flag.secondaryColor == COLOR_BROWN
+            );
+          })) {
+            // Ignore structures being dismantled
+            return false;
+          }
           if (structure.structureType == STRUCTURE_RAMPART ||
               structure.structureType == STRUCTURE_WALL) {
             return structure.hits < Math.min(room.memory.fortifyLevel, structure.hitsMax);

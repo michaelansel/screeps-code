@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var helpers = require('helpers');
 
 var roleBuilder = {
@@ -60,7 +61,7 @@ var roleBuilder = {
   },
 
   /** @param {Creep} creep **/
-  run: function(creep) {
+  construct: function(creep) {
     if (creep.carry.energy == creep.carryCapacity) {
       if (!creep.memory.working) creep.say('🚧 build');
       // Full of energy
@@ -85,12 +86,83 @@ var roleBuilder = {
         this.workTarget(creep, target);
       } else {
         console.log(creep.name, "has nothing to build or repair", target);
-        creep.room.memory.desiredCreepCounts['builder'] = 0;
-        creep.memory.role = 'upgrader';
-        creep.room.memory.desiredCreepCounts['upgrader'] = Math.min(creep.room.memory.desiredCreepCounts['upgrader'] + 1, 1);
+        creep.moveTo(Game.flags['RallyWhenLost-'+creep.room.name]);
       }
     } else {
       helpers.getEnergy(creep);
+    }
+  },
+
+  destruct: function (creep, flag) {
+    const structure = flag.pos.lookFor(LOOK_STRUCTURES)[0];
+    if (!structure) return flag.remove();
+    console.log(creep.name, 'dismantling', structure);
+
+    if (creep.carry.energy == creep.carryCapacity) {
+      if (!creep.memory.working) creep.say('🔄 deposit');
+      // Full of energy
+      creep.memory.working = false;
+      creep.memory.target = null;
+    }
+
+    if (creep.carry.energy == 0) {
+      if (creep.memory.working) creep.say('🚧 dismantle');
+      // Out of energy
+      creep.memory.working = true;
+      creep.memory.target = null;
+    }
+
+    if (creep.memory.working) {
+      if (creep.dismantle(structure) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(structure, {
+          visualizePathStyle: {
+            stroke: '#ff0000'
+          }
+        });
+      }
+    } else {
+      let target = Game.getObjectById(creep.memory.target);
+      if (!target) {
+        let targets = helpers.structuresInRoom(creep.room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).filter(function(struct){
+          return (
+            // Don't deposit in the structure we are dismantling
+            struct.id != structure.id &&
+            // Don't pick storage/container that is full
+            _.sum(struct.store) < struct.storeCapacity
+          );
+        });
+        target = creep.pos.findClosestByPath(targets);
+      }
+      if (target) {
+        if (_.sum(target.store) >= target.storeCapacity) {
+          creep.memory.target = null;
+          return;
+        }
+        if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+          creep.moveTo(target, {
+            visualizePathStyle: {
+              stroke: '#ffffff'
+            }
+          });
+        }
+      }
+    }
+  },
+
+  run: function (creep) {
+    const destructionFlags = Object.keys(Game.flags).map(function(flagname){
+      return Game.flags[flagname];
+    }).filter(function(flag){
+      return (
+        flag.room.name == creep.room.name &&
+        flag.color == COLOR_RED &&
+        flag.secondaryColor == COLOR_BROWN
+      );
+    });
+    if (destructionFlags.length > 0) {
+      this.destruct(creep, creep.pos.findClosestByRange(destructionFlags));
+    } else {
+      this.construct(creep);
     }
   }
 };
