@@ -169,7 +169,7 @@ var Main = {
           if(source.energy > 0) {
             var message = [Game.time, source.id, "leaving some energy uncollected", source.energy].join(" ");
             console.log(message);
-            Game.notify(message, 60);
+            // Game.notify(message, 60);
           }
         }
       }

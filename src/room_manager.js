@@ -28,7 +28,7 @@ const RoomManager = {
     helpers.refreshEnergyReservations(room);
 
     // Notify on underAttack rising edge
-    if (room.state.underAttack && !room.memory.underAttack) Game.notify("Hostiles detected at tick " + Game.time, 10);
+    // if (room.state.underAttack && !room.memory.underAttack) Game.notify("Hostiles detected at tick " + Game.time, 10);
     room.memory.underAttack = room.state.underAttack;
 
     var spawns = helpers.structuresInRoom(room, STRUCTURE_SPAWN);
