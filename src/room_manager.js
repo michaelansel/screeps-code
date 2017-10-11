@@ -75,7 +75,11 @@ const RoomManager = {
     room.memory.desiredCreepCounts.linker = links.length;
 
     // Update desired number of miners
-    const extractors = helpers.structuresInRoom(room, STRUCTURE_EXTRACTOR);
+    const extractors = helpers.structuresInRoom(room, STRUCTURE_EXTRACTOR).filter(function(extractor){
+      const mineral = extractor.pos.lookFor(LOOK_MINERALS)[0];
+      // Only spawn miners when there are resources to mine
+      return mineral && mineral.mineralAmount > 0;
+    });
     room.memory.desiredCreepCounts.miner = extractors.length;
 
     if(!room.memory.roomsToClaim) room.memory.roomsToClaim = [];

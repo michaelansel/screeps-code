@@ -179,6 +179,16 @@ var Spawn = {
         creep.memory.role = 'recycle';
       }
     }
+    // Recycle miners if no more minerals to mine in creep's lifetime
+    const mineral = room.find(FIND_MINERALS)[0];
+    if (mineral && mineral.mineralAmount == 0) {
+      for (const creep of helpers.creepsInRoomWithRole(room, 'miner')) {
+        if (mineral.ticksToRegeneration > creep.ticksToLive) {
+          console.log('Recycling miner', creep.name);
+          creep.memory.role = 'recycle';
+        }
+      }
+    }
     if (helpers.structuresInRoom(room, STRUCTURE_TOWER).length == 0) {
       var targets = room.find(FIND_STRUCTURES, {
         filter: (structure) => {
