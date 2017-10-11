@@ -74,6 +74,10 @@ const RoomManager = {
     });
     room.memory.desiredCreepCounts.linker = links.length;
 
+    // Update desired number of miners
+    const extractors = helpers.structuresInRoom(room, STRUCTURE_EXTRACTOR);
+    room.memory.desiredCreepCounts.miner = extractors.length;
+
     if(!room.memory.roomsToClaim) room.memory.roomsToClaim = [];
     room.memory.roomsToClaim = room.memory.roomsToClaim.filter(function(rn){return !(Game.rooms[rn] && Game.rooms[rn].controller.my);});
     room.memory.desiredCreepCounts.claimer = room.memory.roomsToClaim.length;
