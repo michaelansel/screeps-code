@@ -25,14 +25,22 @@ var CreepManager = {
     creep.lastProcessedTick = Game.time;
     if (creep.spawning) return; // no logic when spawning
 
+    const multiResourceRoles = [
+      "miner"
+    ];
     let availableSpace = creep.carryCapacity - _.sum(creep.carry);
     if (availableSpace > 0) {
       var droppedEnergy = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 3, {
         filter: function (resource) {
           return (
-            resource.resourceType == RESOURCE_ENERGY &&
-            // Pick up at least 25 energy at a time unless we can pick up all of it
-            availableSpace > Math.min(25, resource.amount)
+            (
+              resource.resourceType == RESOURCE_ENERGY &&
+              // Pick up at least 25 energy at a time unless we can pick up all of it
+              availableSpace > Math.min(25, resource.amount)
+            ) || (
+              resource.resourceType != RESOURCE_ENERGY &&
+              multiResourceRoles.includes(creep.memory.role)
+            )
           );
         }});
       if (droppedEnergy.length > 0) {

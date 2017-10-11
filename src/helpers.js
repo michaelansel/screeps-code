@@ -73,7 +73,7 @@ var Helpers = {
     let reservation = {
       role: creep.memory.role,
       name: creep.name,
-      amount: Math.min(200, creep.carryCapacity - creep.carry[RESOURCE_ENERGY]),
+      amount: Math.min(200, creep.carryCapacity - _.sum(creep.carry)),
     };
 
     console.log(
@@ -157,7 +157,7 @@ var Helpers = {
         (
           // energy available
           creep.room.state.workerEnergyAvailable >=
-          Math.min(200, creep.carryCapacity - creep.carry[RESOURCE_ENERGY])
+          Math.min(200, creep.carryCapacity - _.sum(creep.carry))
         ) && (
           // not all energy reserved
           creep.room.state.workerEnergyReserved < creep.room.state.workerEnergyAvailable ||
@@ -276,7 +276,7 @@ var Helpers = {
           return resource.energy >= 0;
         } else {
           // Normally, only pick up dropped energy if it will fill us up
-          return resource.energy >= (creep.carryCapacity - creep.carry[RESOURCE_ENERGY]);
+          return resource.energy >= (creep.carryCapacity - _.sum(creep.carry));
         }
       },
     });
@@ -292,7 +292,7 @@ var Helpers = {
     }
 
     targets = this.structuresInRoom(creep.room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).filter(function(structure){
-      return structure.store[RESOURCE_ENERGY] >= Math.min(200, creep.carryCapacity - creep.carry.energy);
+      return structure.store[RESOURCE_ENERGY] >= Math.min(200, creep.carryCapacity - _.sum(creep.carry));
     });
     if (targets.length == 0) {
       targets = this.structuresInRoom(creep.room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).filter(function(structure){
