@@ -67,6 +67,11 @@ const SpawnHelpers = {
       if(carryParts.length == 0) carryParts = minimalCarryParts;
       return SpawnHelpers.sortCreep(workParts.concat(carryParts));
     },
+    miner: function(maxCost) {
+      // Like harvester, but maximum WORK parts
+      var maxCost = Math.min(maxCost - BODYPART_COST[CARRY], SpawnConstants.MAX_CREEP_COST);
+      return SpawnHelpers.sortCreep(SpawnHelpers.scaleCreep([WORK, WORK, MOVE], maxCost, true).concat([CARRY]));
+    },
     linker: function(maxCost) {
       // Move fast when empty; maximize carry
       // Max carry 400 energy (8x CARRY), derived from size of link (800 energy)
