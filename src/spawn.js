@@ -75,7 +75,8 @@ const SpawnHelpers = {
     },
     miner: function(maxCost) {
       // Like harvester, but maximum WORK parts
-      var maxCost = Math.min(maxCost - BODYPART_COST[CARRY], SpawnConstants.MAX_CREEP_COST);
+      // Ignore MAX_CREEP_COST and make the biggest miner possible
+      var maxCost = maxCost - BODYPART_COST[CARRY];
       return SpawnHelpers.sortCreep(SpawnHelpers.scaleCreep([WORK, WORK, MOVE], maxCost, true).concat([CARRY]));
     },
     linker: function(maxCost) {
@@ -107,6 +108,8 @@ const SpawnHelpers = {
 
   scaleCreep: function (body, maxCost, ensureNonEmpty) {
     var copies = Math.floor(maxCost / SpawnHelpers.creepCost(body));
+    // don't attempt impossibly large creeps
+    copies = Math.min(Math.floor(MAX_CREEP_SIZE / body.length), copies);
     if (ensureNonEmpty) copies = Math.max(1,copies);
     if (copies == 0) return [];
     return Array(copies).fill(body).reduce(
