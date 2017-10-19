@@ -81,6 +81,7 @@ const RoomManager = {
       return mineral && mineral.mineralAmount > 0;
     });
     room.memory.desiredCreepCounts.miner = extractors.length;
+    room.memory.desiredCreepCounts.minhauler = Math.min(1,extractors.length);
 
     if(!room.memory.roomsToClaim) room.memory.roomsToClaim = [];
     room.memory.roomsToClaim = room.memory.roomsToClaim.filter(function(rn){return !(Game.rooms[rn] && Game.rooms[rn].controller.my);});
