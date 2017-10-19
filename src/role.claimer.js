@@ -15,9 +15,14 @@ var roleClaimer = {
     }
 
     if (creep.room.name != creep.memory.assignedRoom) {
-      creep.memory.room = creep.memory.assignedRoom;
+      if (creep.memory.targetController) {
+        creep.moveTo(Game.getObjectById(creep.memory.targetController));
+      } else {
+        if (!creep.memory.room) creep.memory.room = creep.memory.assignedRoom;
+      }
       return;
     }
+    creep.memory.targetController = creep.room.controller.id;
 
     if (creep.room.controller.my) {
       creep.suicide();
