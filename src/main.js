@@ -264,6 +264,8 @@ var Main = {
 
       // Room memory evicted after 100 ticks
       room.memory.expiration = Game.time + 100;
+      // Set up a fresh, in-memory state object for every room
+      room.state = {};
 
       if(room.controller && room.controller.my) {
         roomManager.run(room);
