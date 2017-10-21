@@ -2,6 +2,21 @@ var _ = require('lodash');
 var helpers = require('helpers');
 
 var roleBuilder = {
+  isBlacklisted: function(creep, target) {
+    if (!creep.memory.blacklist) creep.memory.blacklist = {};
+    return creep.memory.blacklist[target.id] >= Game.time;
+  },
+  blacklistTarget: function(creep, target, ttl=10) {
+    if (!creep.memory.blacklist) creep.memory.blacklist = {};
+    creep.memory.blacklist[target.id] = Game.time + ttl;
+    creep.memory.target = null;
+  },
+  pruneBlacklist: function(creep) {
+    if (!creep.memory.blacklist) creep.memory.blacklist = {};
+    for (let tid in creep.memory.blacklist) {
+      if (!this.isBlacklisted(creep, Game.getObjectById(tid))) delete creep.memory.blacklist[tid];
+    }
+  },
 
   selectTarget: function(creep) {
     var target = null, targets = [], room = creep.room;
@@ -9,6 +24,10 @@ var roleBuilder = {
     // Prioritize critical repairs/fortification
     targets = creep.room.find(FIND_STRUCTURES, {
       filter: (structure) => {
+        // Ignore blacklisted targets
+        if (this.isBlacklisted(creep, structure)) return false;
+        // Don't repair if there are towers that could be doing that instead
+        if (helpers.structuresInRoom(creep.room, STRUCTURE_TOWER).length > 0) return false;
         if (structure.structureType == STRUCTURE_RAMPART ||
             structure.structureType == STRUCTURE_WALL) {
           return structure.hits < Math.min(room.memory.fortifyLevel, structure.hitsMax);
@@ -29,7 +48,13 @@ var roleBuilder = {
     //   room.memory.repairLevel = Math.min(room.memory.repairLevel, 0.5);
     }
 
-    targets = creep.room.find(FIND_CONSTRUCTION_SITES);
+    targets = creep.room.find(FIND_CONSTRUCTION_SITES, {
+      filter: (site) => {
+        // Ignore blacklisted targets
+        if (this.isBlacklisted(creep, site)) return false;
+        return true;
+      },
+    });
     target = creep.pos.findClosestByPath(targets);
     if (target) {
       return target;
@@ -51,12 +76,15 @@ var roleBuilder = {
     var act;
     if (target instanceof ConstructionSite) act = function(){return creep.build(target);};
     if (target instanceof Structure) act = function(){return creep.repair(target);};
-    if (act() == ERR_NOT_IN_RANGE) {
+    let ret = act();
+    if (ret == ERR_NOT_IN_RANGE) {
       creep.moveTo(target, {
         visualizePathStyle: {
           stroke: '#ffffff'
         }
       });
+    } else if (ret == ERR_RCL_NOT_ENOUGH) {
+      this.blacklistTarget(creep, target);
     }
   },
 
@@ -91,6 +119,7 @@ var roleBuilder = {
     } else {
       helpers.getEnergy(creep);
     }
+    this.pruneBlacklist(creep);
   },
 
   destruct: function (creep, flag) {
