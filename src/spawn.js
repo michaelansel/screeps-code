@@ -181,22 +181,13 @@ var Spawn = {
   run: function(room) {
     // Scale up builders if there is construction to do or damage to repair
     if(room.find(FIND_CONSTRUCTION_SITES).length > 0) {
-      room.memory.desiredCreepCounts['builder'] = Math.max(room.memory.desiredCreepCounts['builder'], 3);
+      // At least one builder per construction site
+      let minBuilders = Math.min(3, room.find(FIND_CONSTRUCTION_SITES).length);
+      console.log(room.name, 'ensuring at least', minBuilders, 'builders');
+      // Only increase number of builders until all construction is done
+      room.memory.desiredCreepCounts['builder'] = Math.max(room.memory.desiredCreepCounts['builder'], minBuilders);
     } else {
       room.memory.desiredCreepCounts['builder'] = 0;
-      for (const creep of helpers.creepsInRoomWithRole(room, 'builder')) {
-        creep.memory.role = 'recycle';
-      }
-    }
-    // Recycle miners if no more minerals to mine in creep's lifetime
-    const mineral = room.find(FIND_MINERALS)[0];
-    if (mineral && mineral.mineralAmount == 0) {
-      for (const creep of helpers.creepsInRoomWithRole(room, 'miner')) {
-        if (mineral.ticksToRegeneration > creep.ticksToLive) {
-          console.log('Recycling miner', creep.name);
-          creep.memory.role = 'recycle';
-        }
-      }
     }
     if (helpers.structuresInRoom(room, STRUCTURE_TOWER).length == 0) {
       var targets = room.find(FIND_STRUCTURES, {
@@ -211,6 +202,23 @@ var Spawn = {
       });
       if(targets.length > 0) {
         room.memory.desiredCreepCounts['builder'] = Math.max(room.memory.desiredCreepCounts['builder'], Math.min(3,targets.length));
+      }
+    }
+    if (room.memory.desiredCreepCounts['builder'] == 0) {
+      console.log(room.name, 'recycling unneeded builders');
+      for (const creep of helpers.creepsInRoomWithRole(room, 'builder')) {
+        console.log('recycling', creep.name, creep.room.name);
+        creep.memory.role = 'recycle';
+      }
+    }
+    // Recycle miners if no more minerals to mine in creep's lifetime
+    const mineral = room.find(FIND_MINERALS)[0];
+    if (mineral && mineral.mineralAmount == 0) {
+      for (const creep of helpers.creepsInRoomWithRole(room, 'miner')) {
+        if (mineral.ticksToRegeneration > creep.ticksToLive) {
+          console.log('Recycling miner', creep.name);
+          creep.memory.role = 'recycle';
+        }
       }
     }
 
