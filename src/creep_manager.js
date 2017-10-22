@@ -28,7 +28,8 @@ var CreepManager = {
     if (creep.spawning) return; // no logic when spawning
 
     const multiResourceRoles = [
-      "miner"
+      "miner",
+      "minhauler",
     ];
     let availableSpace = creep.carryCapacity - _.sum(creep.carry);
     if (availableSpace > 0) {
