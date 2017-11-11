@@ -31,6 +31,10 @@ const RoomManager = {
     // if (room.state.underAttack && !room.memory.underAttack) Game.notify("Hostiles detected at tick " + Game.time, 10);
     room.memory.underAttack = room.state.underAttack;
 
+    if (!Memory.stats.roomSummary[room.name]) Memory.stats.roomSummary[room.name] = {};
+    let stats = Memory.stats.roomSummary[room.name];
+    stats.num_creeps = helpers.allCreepsInRoom(room).length;
+
     var spawns = helpers.structuresInRoom(room, STRUCTURE_SPAWN);
     // Only run spawn logic if we aren't already occupied spawning things
     if(!spawns.every(function(spawn){return spawn.spawning;})) {

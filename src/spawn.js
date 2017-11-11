@@ -92,6 +92,7 @@ const SpawnHelpers = {
 
   creepCost: function (body) {
     return body.reduce(function(total, part){
+      if (!_.isString(part)) part = part.type; // creep.body is objects
       return total + BODYPART_COST[part];
     }, 0);
   },

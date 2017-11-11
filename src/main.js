@@ -72,13 +72,20 @@ var ConsoleHelpers = {
     console.log("Bucket: ", Game.cpu.bucket);
     for (var rn in Game.rooms) {
       const room = Game.rooms[rn];
+      if (!Memory.stats.roomSummary[room.name]) Memory.stats.roomSummary[room.name] = {};
+      let stats = Memory.stats.roomSummary[room.name];
       if (!room.controller) continue;
       if (room.controller.my) {
         console.log();
         console.log("Room: ", room.name);
 
         console.log("Controller: ", "RCL"+room.controller.level, ConsoleHelpers.largeNumberToString(room.controller.progress)+"/"+ConsoleHelpers.largeNumberToString(room.controller.progressTotal));
+        stats.controller_level = room.controller.level
+        stats.controller_progress = room.controller.progress;
+        stats.controller_needed = room.controller.progressTotal;
         console.log("Energy: ", room.energyAvailable+"/"+room.energyCapacityAvailable);
+        stats.energy_avail = room.energyAvailable;
+        stats.energy_cap = room.energyCapacityAvailable;
 
         const sources = room.find(FIND_SOURCES);
         var sourceStats = [];
@@ -90,6 +97,8 @@ var ConsoleHelpers = {
           sourceStats.push(stat);
         }
         console.log("Sources: ", sourceStats.join(", "));
+        stats.num_sources = sources.length;
+        stats.source_energy = _.sum(sources, s => s.energy);
 
         const containers = helpers.structuresInRoom(room, STRUCTURE_CONTAINER);
         var containerStats = [];
@@ -101,10 +110,17 @@ var ConsoleHelpers = {
           containerStats.push(stat);
         }
         console.log("Containers: ", containerStats.join(", "));
+        stats.num_containers = containers.length;
+        stats.container_energy = _.sum(containers, c => c.store[RESOURCE_ENERGY]);
 
         if (room.storage) {
           console.log("Storage: ", ConsoleHelpers.largeNumberToString(room.storage.store[RESOURCE_ENERGY]));
+          stats.storage_energy = room.storage.store[RESOURCE_ENERGY];
+          stats.storage_minerals = _.sum(room.storage.store) - room.storage.store[RESOURCE_ENERGY];
         }
+
+        const mineral = room.find(FIND_MINERALS)[0];
+        stats.mineral_amount = mineral ? mineral.mineralAmount : 0;
 
         const towers = helpers.structuresInRoom(room, STRUCTURE_TOWER);
         if (towers.length > 0) {
@@ -122,6 +138,7 @@ var ConsoleHelpers = {
           console.log("Construction Sites: ", helpers.runLengthEncoding(constructionStats));
           console.log("Energy to complete construction: ", totalConstructionEnergy);
         }
+        stats.num_construction_sites = constructionSites.length;
 
         console.log("Build Config: ", (100*room.memory.repairLevel)+"%", ConsoleHelpers.largeNumberToString(room.memory.fortifyLevel));
         console.log("Desired: ", JSON.stringify(room.memory.desiredCreepCounts));
@@ -134,11 +151,37 @@ var ConsoleHelpers = {
           return counts;
         },{});
         console.log("Current: ", JSON.stringify(creepCounts));
+
+        const roads = helpers.structuresInRoom(room, STRUCTURE_ROAD);
+        const ramparts = helpers.structuresInRoom(room, STRUCTURE_RAMPART);
+        const repairPower = 200/10; // worst case repair power for a tower -- spend 10, repair 200
+        const budgetWindow = 15000; //ticks ; LCM of decay/regen times (1500, 1000, 100, 100)
+        const sourceIncome = sources.length * SOURCE_ENERGY_CAPACITY * budgetWindow / ENERGY_REGEN_TIME;
+        const roadMaintenance = roads.length * ROAD_DECAY_AMOUNT * budgetWindow / ROAD_DECAY_TIME / repairPower;
+        const rampartMaintenance = ramparts.length * RAMPART_DECAY_AMOUNT * budgetWindow / RAMPART_DECAY_TIME / repairPower;
+        const containerMaintenance = containers.length * CONTAINER_DECAY * budgetWindow / CONTAINER_DECAY_TIME_OWNED / repairPower;
+        const creepMaintenance = helpers.allCreepsInRoom(room).reduce(function(cost,creep){return cost + spawnLogic.creepCost(creep.body);}, 0) * budgetWindow / CREEP_LIFE_TIME;
+        const totalMaintenance = _.sum([roadMaintenance, rampartMaintenance, containerMaintenance, creepMaintenance]);
+        console.log(
+          "15k tick energy budget: " +
+          [sourceIncome, roadMaintenance, rampartMaintenance, containerMaintenance, creepMaintenance].map(a => ConsoleHelpers.largeNumberToString(a)).join(' - ') + " = " +
+          (sourceIncome - totalMaintenance) +
+          " (" + Math.round(totalMaintenance / sourceIncome * 100) + "% allocated)"
+        );
       }
     }
     console.log();
     console.log("Total: ", Object.keys(Game.creeps).length, JSON.stringify(Memory.creepCounts));
     console.log();
+
+    let bestPrices = {};
+    for (let order of Game.market.getAllOrders({type: ORDER_BUY})) {
+      if (order.remainingAmount < 10000) continue;
+      const t = order.resourceType;
+      if (!bestPrices.hasOwnProperty(t)) bestPrices[t] = 0;
+      bestPrices[t] = Math.max(bestPrices[t], order.price);
+    }
+    Memory.stats.market.best_prices = bestPrices;
   },
 };
 
@@ -246,6 +289,7 @@ var Main = {
       "profiler",
       "roleCounts",
       "rooms",
+      "stats",
     ];
     for (var k in Memory) {
       if (protected.includes(k)) continue;
@@ -256,6 +300,17 @@ var Main = {
 
   loop: function() {
     if(sleepLogic()) return;
+
+    Memory.stats = {
+      cpu: Game.cpu,
+      gcl: Game.gcl,
+      tick: Game.time,
+      memory: {
+        used: RawMemory.get().length,
+      },
+      market: {},
+      roomSummary: {},
+    };
 
     Main._maintenance();
 
@@ -277,6 +332,7 @@ var Main = {
       creepManager.run(creep);
     }
 
+    Memory.stats.cpu.used = Game.cpu.getUsed();
     // Update the CPU timeout canary
     Memory.cpuCanary = Game.time + 1;
   },
