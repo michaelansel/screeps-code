@@ -50,8 +50,9 @@ var roleLongHauler = {
       if (transitTime > 10) {
         creep.memory.transitTime = transitTime;
       }
-
-      creep.memory.working = true;
+      
+      creep.memory.room = creep.memory.haulSourceRoom;
+      creep.memory.working = false;
     }
 
 
