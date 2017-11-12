@@ -172,6 +172,15 @@ var ConsoleHelpers = {
           (sourceIncome - totalMaintenance) +
           " (" + Math.round(totalMaintenance / sourceIncome * 100) + "% allocated)"
         );
+        stats.budget = {
+          sourceIncome,
+          roadMaintenance,
+          rampartMaintenance,
+          containerMaintenance,
+          creepMaintenance,
+          totalMaintenance,
+          profitLoss: sourceIncome - totalMaintenance,
+        }
       }
     }
     console.log();
