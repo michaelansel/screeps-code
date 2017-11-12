@@ -71,8 +71,13 @@ var roleLinker = {
     if (
       creep.room.terminal &&
       creep.carry[RESOURCE_ENERGY] > 0 &&
-      creep.room.storage.store[RESOURCE_ENERGY] > 10000 &&
-      creep.room.terminal.store[RESOURCE_ENERGY] < 10000
+      creep.room.terminal.store[RESOURCE_ENERGY] < 10000 &&
+      (
+        // storage has enough energy
+        creep.room.storage.store[RESOURCE_ENERGY] > 10000 ||
+        // storage can't hold any more energy
+        _.sum(creep.room.storage.store) > creep.room.storage.storeCapacity - 1000
+      )
     ) {
       // console.log(creep.room.name, creep.name, "energizing terminal");
       if (creep.transfer(creep.room.terminal, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
