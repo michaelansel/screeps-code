@@ -4,8 +4,6 @@ var helpers = require('helpers');
 var roleLongHauler = {
   /** @param {Creep} creep **/
   run: function(creep) {
-    console.log(creep.room.name, creep.name, 'alive')
-
     if (!creep.memory.haulSourceRoom) creep.memory.haulSourceRoom = creep.room.name;
     if (!creep.memory.haulTargetRoom) {
       const room = creep.room;
@@ -50,14 +48,13 @@ var roleLongHauler = {
       if (transitTime > 10) {
         creep.memory.transitTime = transitTime;
       }
-      
+
       creep.memory.room = creep.memory.haulSourceRoom;
       creep.memory.working = false;
     }
 
 
     if (creep.memory.working) {
-      console.log(creep.room.name, creep.name, 'working')
       let storage = Game.rooms[creep.memory.haulTargetRoom].storage;
       for (let k in creep.carry) {
         if (creep.transfer(storage, k) == ERR_NOT_IN_RANGE) {
