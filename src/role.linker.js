@@ -39,8 +39,9 @@ var roleLinker = {
   },
 
   collectFromLink: function(creep, link) {
+    let onlyDepositEnergy = false;
     if(link.energy > 0) {
-      if (creep.withdraw(link, RESOURCE_ENERGY) != 0) {
+      if (creep.withdraw(link, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
         creep.moveTo(link, {
           visualizePathStyle: {
             stroke: '#ffffff'
@@ -49,24 +50,70 @@ var roleLinker = {
       }
     } else {
       var links = helpers.structuresInRoom(creep.room, STRUCTURE_LINK);
+      let newUtilization = link.energy;
       for (var li in links) {
         if (link.id == li) continue;
         var l = links[li];
         if (l.energy >= Math.min(l.energyCapacity, creep.carryCapacity)) {
           l.transferEnergy(link);
+          newUtilization += l.energy;
         }
-        // If my link is full, stop trying
-        if (link.energy == link.energyCapacity) break;
+        // If my link is about to be full, stop trying
+        if (newUtilization == link.energyCapacity) break;
+      }
+      if (link.energy == 0 && newUtilization == 0) onlyDepositEnergy = this.populateTerminal(creep);
+    }
+    // Fill storage to 10000, then fill terminal to 10000, then put the rest in storage
+    if (
+      creep.room.terminal &&
+      creep.carry[RESOURCE_ENERGY] > 0 &&
+      creep.room.storage.store[RESOURCE_ENERGY] > 10000 &&
+      creep.room.terminal.store[RESOURCE_ENERGY] < 10000
+    ) {
+      // console.log(creep.room.name, creep.name, "energizing terminal");
+      if (creep.transfer(creep.room.terminal, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(creep.room.terminal);
+      }
+      return;
+    }
+    if (_.sum(creep.carry) > 0) {
+      for (const x in creep.carry) {
+        if (onlyDepositEnergy && x != RESOURCE_ENERGY) continue;
+        if (creep.transfer(creep.room.storage, x) == ERR_NOT_IN_RANGE) {
+          creep.moveTo(creep.room.storage, {
+            visualizePathStyle: {
+              stroke: '#ffffff'
+            }
+          });
+        }
       }
     }
-    if (creep.carry.energy > 0) {
-      if (creep.transfer(creep.room.storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(creep.room.storage, {
-          visualizePathStyle: {
-            stroke: '#ffffff'
-          }
-        });
+  },
+
+  populateTerminal: function(creep) {
+    if (!creep.room.terminal) return false;
+    if (_.sum(creep.carry) < creep.carryCapacity) {
+      let maxKey = _.max(Object.keys(creep.room.storage.store).filter(o => o != RESOURCE_ENERGY), function (o) { return creep.room.storage.store[o]; });
+      if (
+        creep.room.storage.store[maxKey] > 10000 &&
+        _.sum(creep.room.terminal.store) < creep.room.terminal.storeCapacity - 10000
+      ) {
+        // console.log(creep.name, "withdrawing", maxKey, "from storage");
+        if (creep.withdraw(creep.room.storage, maxKey) == ERR_NOT_IN_RANGE) {
+          creep.moveTo(creep.room.storage);
+        }
+        return true;
       }
+    } else {
+      let maxKey = _.max(Object.keys(creep.carry).filter(o => o != RESOURCE_ENERGY), function (o) { return creep.carry[o]; });
+      // console.log(creep.name, "transferring", maxKey, "to terminal");
+      if (creep.transfer(creep.room.terminal, maxKey) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(creep.room.terminal);
+      }
+      // Only block deposit-to-storage if the creep is full-up on the desired resource
+      // The idea here is to burn a tick to clear out anything that might be in the bag
+      // so that all future transfers are optimal
+      return (creep.carry[maxKey] == creep.carryCapacity);
     }
   },
 
