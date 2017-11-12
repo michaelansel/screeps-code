@@ -91,6 +91,17 @@ var roleHarvester = {
           }
         });
         if (res == ERR_NO_PATH) creep.memory.target = null;
+        helpers.optimizePosition(creep,
+            [source].concat(
+              helpers.structuresInRoom(creep.room, STRUCTURE_LINK).filter(function(structure){
+                return creep.pos.getRangeTo(structure) <= 2;
+              })
+            ).concat(
+              helpers.structuresInRoom(creep.room, STRUCTURE_CONTAINER).filter(function(structure){
+                return creep.pos.getRangeTo(structure) <= 2;
+              })
+            )
+        );
       }
     } else {
       if (creep.memory.returnToRole) {
