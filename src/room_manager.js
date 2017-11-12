@@ -6,6 +6,9 @@ var creepManager = require('creep_manager');
 const RoomManager = {
   marketSell: function (room) {
     if (_.isString(room)) room = Game.rooms[room];
+    // Terminal busy; try again later
+    if (room.terminal.cooldown > 0) return;
+
     const maxKey = _.max(Object.keys(room.terminal.store).filter(o => o != RESOURCE_ENERGY), function (o) { return room.terminal.store[o]; });
     let orders = Game.market.getAllOrders({type: ORDER_BUY, resourceType: maxKey});
     if (orders.length == 0) {
@@ -14,6 +17,10 @@ const RoomManager = {
     }
     orders = _.sortBy(orders, ['price'])
     const bestPrice = orders[orders.length-1].price;
+
+    // Hardcoded minimum price to prevent massive loss
+    if (bestPrice < 0.25) return;
+
     orders = _.filter(orders, {price: bestPrice});
     for (let order of orders) {
       order.energyCost = Game.market.calcTransactionCost(
@@ -30,10 +37,12 @@ const RoomManager = {
       room.terminal.store[maxKey],
       Math.floor(room.terminal.store[RESOURCE_ENERGY] / order.energyRate)
     );
-    console.log("Selected order:", JSON.stringify(order));
-    console.log("Deal amount:", dealAmount);
-    let ret = Game.market.deal(order.id, dealAmount, room.name);
-    if (ret != OK) console.log("Unable to deal: " + ret);
+    if (dealAmount > 0) {
+      console.log("Selected order:", JSON.stringify(order));
+      console.log("Deal amount:", dealAmount);
+      let ret = Game.market.deal(order.id, dealAmount, room.name);
+      if (ret != OK) console.log("Unable to deal: " + ret);
+    }
   },
 
   run: function (room) {
