@@ -28,7 +28,8 @@ var roleLongHauler = {
       if (creep.memory.transitTime > 0) {
         if (creep.ticksToLive < 1.1*creep.memory.transitTime) {
           // We won't make it in time; recycle instead
-          creep.memory.role = 'recycle;'
+          delete creep.memory.room; // Don't go anywhere; we won't make it in time
+          creep.memory.role = 'recycle';
           for (let k in creep.carry) {
             creep.transfer(creep.room.storage, k);
           }
