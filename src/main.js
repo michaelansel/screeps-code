@@ -123,6 +123,11 @@ var ConsoleHelpers = {
           stats.storage_minerals = _.sum(room.storage.store) - room.storage.store[RESOURCE_ENERGY];
         }
 
+        if (room.terminal) {
+          stats.terminal_energy = room.terminal.store[RESOURCE_ENERGY];
+          stats.terminal_minerals = _.sum(room.terminal.store) - room.terminal.store[RESOURCE_ENERGY];
+        }
+
         const mineral = room.find(FIND_MINERALS)[0];
         stats.mineral_amount = mineral ? mineral.mineralAmount : 0;
 
