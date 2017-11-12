@@ -361,10 +361,29 @@ var Helpers = {
       let excluded = [];
       for (const obj of objects) {
         candidates[obj.id] = [];
-        excluded.push([obj.pos.x, obj.pos.y].join(','));
+        if ( // exclude non-walkable structures
+          !(obj instanceof StructureContainer)
+        ) {
+          excluded.push([obj.pos.x, obj.pos.y].join(','));
+        }
         for (const dx of [-1,0,1]) {
           for (const dy of [-1,0,1]) {
-            candidates[obj.id].push([obj.pos.x+dx, obj.pos.y+dy].join(','));
+            let x = obj.pos.x+dx, y = obj.pos.y+dy;
+            let objs = creep.room.lookAt(x,y).filter(function(look){
+              // Filter out ramparts and containers (walkable structures)
+              return !(
+                (look.type == 'structure' && look.structure.structureType == STRUCTURE_RAMPART) ||
+                (look.type == 'structure' && look.structure.structureType == STRUCTURE_CONTAINER) ||
+                (look.type == 'creep' && look.creep.id == creep.id)
+              );
+            });
+            if (
+              objs.length == 1 &&
+              objs[0].type == 'terrain' &&
+              objs[0].terrain == 'plain'
+            ) {
+              candidates[obj.id].push([x, y].join(','));
+            }
           }
         }
       }
@@ -379,8 +398,8 @@ var Helpers = {
         creep.memory.optimalPosition = {
           valid: true,
           objects: objectsKey,
-          x: pos[0],
-          y: pos[1],
+          x: parseInt(pos[0]),
+          y: parseInt(pos[1]),
         };
       } else {
         console.log("Unable to locate optimal position");
