@@ -4,6 +4,7 @@ var roleClaimer = require('role.claimer');
 var roleHarvester = require('role.harvester');
 var roleHauler = require('role.hauler');
 var roleLinker = require('role.linker');
+var roleLongHauler = require('role.longhauler');
 var roleMiner = require('role.miner');
 var roleMineralHauler = require('role.minhauler');
 var roleRecycle = require('role.recycle');
@@ -16,6 +17,7 @@ var CreepManager = {
     harvester: roleHarvester,
     hauler: roleHauler,
     linker: roleLinker,
+    longhauler: roleLongHauler,
     miner: roleMiner,
     minhauler: roleMineralHauler,
     recycle: roleRecycle,
@@ -28,6 +30,8 @@ var CreepManager = {
     if (creep.spawning) return; // no logic when spawning
 
     const multiResourceRoles = [
+      "linker",
+      "longhauler",
       "miner",
       "minhauler",
     ];

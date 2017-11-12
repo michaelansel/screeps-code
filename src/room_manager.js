@@ -137,6 +137,19 @@ const RoomManager = {
     room.memory.roomsToClaim = room.memory.roomsToClaim.filter(function(rn){return !(Game.rooms[rn] && Game.rooms[rn].controller.my);});
     room.memory.desiredCreepCounts.claimer = room.memory.roomsToClaim.length;
 
+    if(
+      room.storage &&
+      _.sum(room.storage.store) > 50000 &&
+      !room.terminal &&
+      room.find(FIND_CONSTRUCTION_SITES, {filter: cs => cs.structureType == STRUCTURE_TERMINAL}).length == 0
+    ) {
+      let desiredLongHaulers = 1;
+      // Account for all longhaulers assigned to this room
+      room.memory.desiredCreepCounts.longhauler = Math.max(0, desiredLongHaulers - helpers.creepsWithRole('longhauler').filter(c => c.memory.haulSourceRoom == room.name));
+    } else {
+      room.memory.desiredCreepCounts.longhauler = 0;
+    }
+
     // Remove reservations from dead creeps
     room.memory.energyReservations = room.memory.energyReservations.filter(function(res){
       return !!Game.creeps[res.name];
