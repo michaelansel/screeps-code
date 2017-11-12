@@ -345,6 +345,65 @@ var Helpers = {
       return entry.reverse().join('x ');
     }).join(',');
   },
+
+  optimizePosition: function (creep, objects) {
+    // Filter out undefined entries
+    objects = objects.filter(o => !!o);
+    // Stable key for cache invalidation
+    objectsKey = objects.map(o => o.id).sort().join(',');
+
+    if (
+      !creep.memory.hasOwnProperty('optimalPosition') ||
+      creep.memory.optimalPosition.objects != objectsKey
+    ) {
+      // Get all potential optimal positions (within 1 space of each target)
+      let candidates = {};
+      let excluded = [];
+      for (const obj of objects) {
+        candidates[obj.id] = [];
+        excluded.push([obj.pos.x, obj.pos.y].join(','));
+        for (const dx of [-1,0,1]) {
+          for (const dy of [-1,0,1]) {
+            candidates[obj.id].push([obj.pos.x+dx, obj.pos.y+dy].join(','));
+          }
+        }
+      }
+      console.log("Candidates:", JSON.stringify(_.values(candidates)));
+      console.log("Excluded:", JSON.stringify(excluded));
+      let optimal = _.difference(_.intersection( ...(_.values(candidates)) ), excluded);
+      console.log("Optimal:", JSON.stringify(optimal));
+
+      if (optimal.length > 0) {
+        console.log("Found optimal position(s): ", optimal.join(';'))
+        let pos = optimal[0].split(',');
+        creep.memory.optimalPosition = {
+          valid: true,
+          objects: objectsKey,
+          x: pos[0],
+          y: pos[1],
+        };
+      } else {
+        console.log("Unable to locate optimal position");
+        creep.memory.optimalPosition = {
+          valid: false,
+          objects: objectsKey,
+        };
+      }
+    }
+
+    if (
+      creep.memory.optimalPosition.valid &&
+      !(
+        creep.pos.x == creep.memory.optimalPosition.x &&
+        creep.pos.y == creep.memory.optimalPosition.y
+      )
+    ) {
+      creep.moveTo(
+        creep.memory.optimalPosition.x,
+        creep.memory.optimalPosition.y
+      );
+    }
+  }
 };
 
 module.exports = Helpers;

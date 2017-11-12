@@ -39,6 +39,10 @@ var roleLinker = {
   },
 
   collectFromLink: function(creep, link) {
+    helpers.optimizePosition(creep, [
+      link, creep.room.storage, creep.room.terminal
+    ]);
+
     let onlyDepositEnergy = false;
     if(link.energy > 0) {
       if (creep.withdraw(link, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
