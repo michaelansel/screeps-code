@@ -37,7 +37,7 @@ const RoomManager = {
       room.terminal.store[maxKey],
       Math.floor(room.terminal.store[RESOURCE_ENERGY] / order.energyRate)
     );
-    if (dealAmount > 0) {
+    if (dealAmount > 1000) {
       console.log("Selected order:", JSON.stringify(order));
       console.log("Deal amount:", dealAmount);
       let ret = Game.market.deal(order.id, dealAmount, room.name);
@@ -76,7 +76,12 @@ const RoomManager = {
     let stats = Memory.stats.roomSummary[room.name];
     stats.num_creeps = helpers.allCreepsInRoom(room).length;
 
-    if (room.terminal && _.sum(room.terminal.store) > 0.9 * room.terminal.storeCapacity) {
+    if (
+      room.terminal &&
+      _.sum(room.terminal.store) > 0.9 * room.terminal.storeCapacity &&
+      room.storage &&
+      _.sum(room.storage.store) > 0.5 * room.storage.storeCapacity
+    ) {
       console.log(room.name, "terminal over 90% full; performing a market sale")
       RoomManager.marketSell(room);
     }
