@@ -4,6 +4,38 @@ var spawnLogic = require('spawn');
 var creepManager = require('creep_manager');
 
 const RoomManager = {
+  marketSell: function (room) {
+    if (_.isString(room)) room = Game.rooms[room];
+    const maxKey = _.max(Object.keys(room.terminal.store).filter(o => o != RESOURCE_ENERGY), function (o) { return room.terminal.store[o]; });
+    let orders = Game.market.getAllOrders({type: ORDER_BUY, resourceType: maxKey});
+    if (orders.length == 0) {
+      console.log('No open buy orders to deal with');
+      return;
+    }
+    orders = _.sortBy(orders, ['price'])
+    const bestPrice = orders[orders.length-1].price;
+    orders = _.filter(orders, {price: bestPrice});
+    for (let order of orders) {
+      order.energyCost = Game.market.calcTransactionCost(
+        Math.min(order.remainingAmount, room.terminal.store[maxKey]),
+        room.name,
+        order.roomName
+      );
+      order.energyRate = order.energyCost / order.remainingAmount;
+    }
+    orders = _.sortBy(orders, ['energyRate']);
+    const order = orders[0];
+    const dealAmount = Math.min(
+      order.remainingAmount,
+      room.terminal.store[maxKey],
+      Math.floor(room.terminal.store[RESOURCE_ENERGY] / order.energyRate)
+    );
+    console.log("Selected order:", JSON.stringify(order));
+    console.log("Deal amount:", dealAmount);
+    let ret = Game.market.deal(order.id, dealAmount, room.name);
+    if (ret != OK) console.log("Unable to deal: " + ret);
+  },
+
   run: function (room) {
     room.state = {};
     // Independent state
@@ -34,6 +66,11 @@ const RoomManager = {
     if (!Memory.stats.roomSummary[room.name]) Memory.stats.roomSummary[room.name] = {};
     let stats = Memory.stats.roomSummary[room.name];
     stats.num_creeps = helpers.allCreepsInRoom(room).length;
+
+    if (room.terminal && _.sum(room.terminal.store) > 0.9 * room.terminal.storeCapacity) {
+      console.log(room.name, "terminal over 90% full; performing a market sale")
+      RoomManager.marketSell(room);
+    }
 
     var spawns = helpers.structuresInRoom(room, STRUCTURE_SPAWN);
     // Only run spawn logic if we aren't already occupied spawning things

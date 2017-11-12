@@ -58,6 +58,10 @@ var ConsoleHelpers = {
     if(!sourceRoom.memory.roomsToClaim) sourceRoom.memory.roomsToClaim = [];
     sourceRoom.memory.roomsToClaim.push(targetRoom);
   },
+  sell: function(rn) {
+    const room = Game.rooms[rn];
+    roomManager.marketSell(room);
+  },
   largeNumberToString: function(num) {
     var exp = 0;
     while(num > 1000) {

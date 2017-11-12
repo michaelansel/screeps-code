@@ -96,6 +96,17 @@ var roleLinker = {
 
   populateTerminal: function(creep) {
     if (!creep.room.terminal) return false;
+
+    // Stop if we only have room left for energy
+    let mineralAmount = Object.keys(creep.room.terminal.store).reduce(function(sum, key){
+      if (key == RESOURCE_ENERGY) {
+        return sum;
+      } else {
+        return sum + creep.room.terminal.store[key];
+      }
+    }, 0);
+    if (creep.room.terminal.storeCapacity - mineralAmount < 10000) return false;
+
     if (_.sum(creep.carry) < creep.carryCapacity) {
       let maxKey = _.max(Object.keys(creep.room.storage.store).filter(o => o != RESOURCE_ENERGY), function (o) { return creep.room.storage.store[o]; });
       if (
