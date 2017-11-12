@@ -136,7 +136,13 @@ const RoomManager = {
       return mineral && mineral.mineralAmount > 0;
     });
     room.memory.desiredCreepCounts.miner = extractors.length;
-    room.memory.desiredCreepCounts.minhauler = Math.min(1,helpers.creepsInRoomWithRole(room, 'miner').length);
+    room.memory.desiredCreepCounts.minhauler = Math.min(
+      1,
+      // miner to populate container
+      helpers.creepsInRoomWithRole(room, 'miner').length,
+      // container near extractor
+      helpers.structuresInRoom(room, STRUCTURE_CONTAINER).filter(s => s.pos.findInRange(5, STRUCTURE_EXTRACTOR).length > 0)
+    );
 
     if(!room.memory.roomsToClaim) room.memory.roomsToClaim = [];
     room.memory.roomsToClaim = room.memory.roomsToClaim.filter(function(rn){return !(Game.rooms[rn] && Game.rooms[rn].controller.my);});
