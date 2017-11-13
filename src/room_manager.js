@@ -185,9 +185,12 @@ const RoomManager = {
       const nearestMarket = terminals.sort(function(a,b){
         return Game.map.findRoute(room, Game.rooms[a]).length - Game.map.findRoute(room, Game.rooms[b]).length;
       })[0];
-      let desiredLongHaulers = Game.map.findRoute(room, nearestMarket).length;
+      let desiredLongHaulers = 2 * Game.map.findRoute(room, nearestMarket).length;
       // Account for all longhaulers assigned to this room
-      room.memory.desiredCreepCounts.longhauler = Math.max(0, desiredLongHaulers - helpers.creepsWithRole('longhauler').filter(c => c.memory.haulSourceRoom == room.name));
+      room.memory.desiredCreepCounts.longhauler = Math.max(
+        0,
+        desiredLongHaulers - helpers.creepsWithRole('longhauler').filter(c => c.memory.haulSourceRoom == room.name).length
+      );
     } else {
       room.memory.desiredCreepCounts.longhauler = 0;
     }
