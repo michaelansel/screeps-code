@@ -148,13 +148,18 @@ const RoomManager = {
     room.memory.roomsToClaim = room.memory.roomsToClaim.filter(function(rn){return !(Game.rooms[rn] && Game.rooms[rn].controller.my);});
     room.memory.desiredCreepCounts.claimer = room.memory.roomsToClaim.length;
 
+    // Update desired number of longhaulers
     if(
       room.storage &&
       _.sum(room.storage.store) > 50000 &&
       !room.terminal &&
       room.find(FIND_CONSTRUCTION_SITES, {filter: cs => cs.structureType == STRUCTURE_TERMINAL}).length == 0
     ) {
-      let desiredLongHaulers = 1;
+      const terminals = Object.keys(Game.rooms).filter(r => Game.rooms[r].terminal && Game.rooms[r].terminal.my);
+      const nearestMarket = terminals.sort(function(a,b){
+        return Game.map.findRoute(room, Game.rooms[a]).length - Game.map.findRoute(room, Game.rooms[b]).length;
+      })[0];
+      let desiredLongHaulers = Game.map.findRoute(room, nearestMarket).length;
       // Account for all longhaulers assigned to this room
       room.memory.desiredCreepCounts.longhauler = Math.max(0, desiredLongHaulers - helpers.creepsWithRole('longhauler').filter(c => c.memory.haulSourceRoom == room.name));
     } else {
