@@ -72,6 +72,7 @@ var roleLinker = {
       creep.room.terminal &&
       creep.carry[RESOURCE_ENERGY] > 0 &&
       creep.room.terminal.store[RESOURCE_ENERGY] < 10000 &&
+      _.sum(creep.room.terminal.store) < creep.room.terminal.storeCapacity &&
       (
         // storage has enough energy
         creep.room.storage.store[RESOURCE_ENERGY] > 10000 ||
