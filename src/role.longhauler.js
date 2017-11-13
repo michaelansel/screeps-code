@@ -48,6 +48,13 @@ var roleLongHauler = {
       }
 
       creep.memory.room = creep.memory.haulSourceRoom;
+      
+      if (creep.ticksToLive < 2.2*creep.memory.transitTime) {
+        // We won't make it in time; recycle instead
+        delete creep.memory.room; // Don't go anywhere; we won't make it in time
+        creep.memory.role = 'recycle';
+      }
+
       creep.memory.working = false;
     }
 
