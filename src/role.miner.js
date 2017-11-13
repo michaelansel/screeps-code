@@ -17,7 +17,14 @@ var roleMiner = {
 
   /** @param {Creep} creep **/
   run: function(creep) {
-    if (_.sum(creep.carry) < creep.carryCapacity) {
+    if (creep.memory.working && _.sum(creep.carry) == creep.carryCapacity) {
+      creep.memory.working = false;
+    }
+    if (!creep.memory.working && _.sum(creep.carry) == 0) {
+      creep.memory.working = true;
+    }
+
+    if (creep.memory.working) {
       let mineral = this.mineral(creep);
       if (!mineral) {
         console.log(creep.name, "Unable to locate mineral");
