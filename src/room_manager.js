@@ -122,6 +122,32 @@ const RoomManager = {
     if(!room.memory.fortifyLevel) room.memory.fortifyLevel = 150000;
     if(!room.memory.repairLevel) room.memory.repairLevel = 0.75;
 
+    // Update desired number of upgraders
+    if (room.controller.level < 4) {
+      // If low RCL, upgrade freely
+      room.memory.desiredCreepCounts.upgrader = 1;
+    } else {
+      // If energy is bountiful, upgrade freely
+      if (room.storage && room.storage.store[RESOURCE_ENERGY] > 10000) {
+        room.memory.desiredCreepCounts.upgrader = 1;
+      } else {
+        // If controller is getting a bit low, upgrade it
+        if (room.controller.ticksToDowngrade < 0.5 * CONTROLLER_DOWNGRADE[room.controller.level]) {
+          room.memory.desiredCreepCounts.upgrader = 1;
+        } else {
+          // Energy is constrained, the controller is fine for at least 10k ticks (RCL4+), don't upgrade it
+          room.memory.desiredCreepCounts.upgrader = 0;
+          // Controller is full; recycle all upgraders until resources are unconstrained
+          if (room.controller.ticksToDowngrade >= 0.99 * CONTROLLER_DOWNGRADE[room.controller.level]) {
+            console.log(room.name, 'recycling unneeded upgraders');
+            for (let creep of helpers.creepsInRoomWithRole(room, 'upgrader')) {
+              creep.memory.role = 'recycle';
+            }
+          }
+        }
+      }
+    }
+
     // Update desired number of linkers
     const links = helpers.structuresInRoom(room, STRUCTURE_LINK).filter(function(link){
       // Keep it if there is not a source nearby
