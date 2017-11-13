@@ -30,9 +30,6 @@ var roleLongHauler = {
           // We won't make it in time; recycle instead
           delete creep.memory.room; // Don't go anywhere; we won't make it in time
           creep.memory.role = 'recycle';
-          for (let k in creep.carry) {
-            creep.transfer(creep.room.storage, k);
-          }
         }
       }
 
