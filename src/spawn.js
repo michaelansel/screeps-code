@@ -54,10 +54,11 @@ const SpawnHelpers = {
       return SpawnHelpers.sortCreep(SpawnHelpers.scaleCreep([CARRY, CARRY, MOVE], maxCost, true));
     },
     longhauler: function(maxCost) {
-      // Move fast when full; never work
+      // Move fast when full off road; never work
       // Max carry of 1000 (20x CARRY parts)
-      var maxCost = Math.min(10*SpawnHelpers.creepCost([CARRY, CARRY, MOVE]), maxCost, SpawnConstants.MAX_CREEP_COST);
-      return SpawnHelpers.sortCreep(SpawnHelpers.scaleCreep([CARRY, CARRY, MOVE], maxCost, true));
+      var maxCost = Math.min(20*SpawnHelpers.creepCost([CARRY, MOVE]), maxCost, SpawnConstants.MAX_CREEP_COST);
+      // Don't sort; we want the alternation
+      return SpawnHelpers.scaleCreep([CARRY, MOVE], maxCost, true);
     },
     upgrader: function(maxCost) {
       // Move fast when full on roads; maximize work speed
