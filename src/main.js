@@ -172,10 +172,11 @@ var ConsoleHelpers = {
         const rampartMaintenance = ramparts.length * RAMPART_DECAY_AMOUNT * budgetWindow / RAMPART_DECAY_TIME / repairPower;
         const containerMaintenance = containers.length * CONTAINER_DECAY * budgetWindow / CONTAINER_DECAY_TIME_OWNED / repairPower;
         const creepMaintenance = helpers.allCreepsInRoom(room).reduce(function(cost,creep){return cost + spawnLogic.creepCost(creep.body);}, 0) * budgetWindow / CREEP_LIFE_TIME;
-        const totalMaintenance = _.sum([roadMaintenance, rampartMaintenance, containerMaintenance, creepMaintenance]);
+        const constructionExpense = _.sum(room.find(FIND_CONSTRUCTION_SITES).map(cs => cs.progressTotal - cs.progress));
+        const totalMaintenance = _.sum([roadMaintenance, rampartMaintenance, containerMaintenance, creepMaintenance, constructionExpense]);
         console.log(
           "15k tick energy budget: " +
-          [sourceIncome, roadMaintenance, rampartMaintenance, containerMaintenance, creepMaintenance].map(a => ConsoleHelpers.largeNumberToString(a)).join(' - ') + " = " +
+          [sourceIncome, roadMaintenance, rampartMaintenance, containerMaintenance, creepMaintenance, constructionExpense].map(a => ConsoleHelpers.largeNumberToString(a)).join(' - ') + " = " +
           (sourceIncome - totalMaintenance) +
           " (" + Math.round(totalMaintenance / sourceIncome * 100) + "% allocated)"
         );
@@ -185,6 +186,7 @@ var ConsoleHelpers = {
           rampartMaintenance,
           containerMaintenance,
           creepMaintenance,
+          constructionExpense,
           totalMaintenance,
           profitLoss: sourceIncome - totalMaintenance,
         }
