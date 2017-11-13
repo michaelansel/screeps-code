@@ -141,7 +141,7 @@ const RoomManager = {
       // miner to populate container
       helpers.creepsInRoomWithRole(room, 'miner').length,
       // container near extractor
-      helpers.structuresInRoom(room, STRUCTURE_CONTAINER).filter(s => s.pos.findInRange(5, STRUCTURE_EXTRACTOR).length > 0)
+      helpers.structuresInRoom(room, STRUCTURE_CONTAINER).filter(s => s.pos.findInRange(extractors, 3).length > 0).length
     );
 
     if(!room.memory.roomsToClaim) room.memory.roomsToClaim = [];
