@@ -62,9 +62,11 @@ const SpawnHelpers = {
     },
     upgrader: function(maxCost) {
       // Move fast when full on roads; maximize work speed
+      var minimalWorkParts = [WORK];
       var minimalCarryParts = [CARRY, MOVE];
       var maxCost = Math.min(maxCost, SpawnConstants.MAX_CREEP_COST);
-      var workParts = SpawnHelpers.scaleCreep([WORK, WORK, MOVE], maxCost - SpawnHelpers.creepCost(minimalCarryParts), true);
+      var workParts = SpawnHelpers.scaleCreep([WORK, WORK, MOVE], maxCost - SpawnHelpers.creepCost(minimalCarryParts), false);
+      if(workParts.length == 0) workParts = minimalWorkParts;
       var carryParts = SpawnHelpers.scaleCreep([CARRY, CARRY, MOVE], maxCost - SpawnHelpers.creepCost(workParts), false);
       if(carryParts.length == 0) carryParts = minimalCarryParts;
       return SpawnHelpers.sortCreep(workParts.concat(carryParts));
