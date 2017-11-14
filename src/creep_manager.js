@@ -52,9 +52,12 @@ var CreepManager = {
         }});
       if (droppedEnergy.length > 0) {
         const closestEnergy = creep.pos.findClosestByPath(droppedEnergy);
-        if(creep.pickup(closestEnergy) != OK) {
-          creep.moveTo(closestEnergy);
-          return;
+        // Reject paths that move us out of range of the energy (results in oscillation)
+        if (closestEnergy && !creep.pos.findPathTo(closestEnergy).some(p => closestEnergy.pos.getRangeTo(p.x,p.y) > 3)) {
+          if(creep.pickup(closestEnergy) != OK) {
+            creep.moveTo(closestEnergy);
+            return;
+          }
         }
       }
     }
