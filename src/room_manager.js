@@ -138,7 +138,10 @@ const RoomManager = {
           // Energy is constrained, the controller is fine for at least 10k ticks (RCL4+), don't upgrade it
           room.memory.desiredCreepCounts.upgrader = 0;
           // Controller is full; recycle all upgraders until resources are unconstrained
-          if (room.controller.ticksToDowngrade >= 0.99 * CONTROLLER_DOWNGRADE[room.controller.level]) {
+          if (
+            room.controller.ticksToDowngrade >= 0.99 * CONTROLLER_DOWNGRADE[room.controller.level] &&
+            room.storage && room.storage.store[RESOURCE_ENERGY] < 8000
+          ) {
             console.log(room.name, 'recycling unneeded upgraders');
             for (let creep of helpers.creepsInRoomWithRole(room, 'upgrader')) {
               creep.memory.role = 'recycle';
