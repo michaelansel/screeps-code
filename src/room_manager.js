@@ -80,9 +80,9 @@ const RoomManager = {
       room.terminal &&
       _.sum(room.terminal.store) > 0.9 * room.terminal.storeCapacity &&
       room.storage &&
-      _.sum(room.storage.store) > 0.5 * room.storage.storeCapacity
+      _.sum(room.storage.store) > 0.9 * room.storage.storeCapacity
     ) {
-      console.log(room.name, "terminal over 90% full; performing a market sale")
+      console.log(room.name, "terminal and storage over 90% full; performing a market sale")
       RoomManager.marketSell(room);
     }
 
