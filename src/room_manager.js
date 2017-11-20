@@ -9,14 +9,22 @@ const RoomManager = {
     // Terminal busy; try again later
     if (room.terminal.cooldown > 0) return;
 
-    const maxKey = _.max(Object.keys(room.terminal.store).filter(o => o != RESOURCE_ENERGY), function (o) { return room.terminal.store[o]; });
-    let orders = Game.market.getAllOrders({type: ORDER_BUY, resourceType: maxKey});
+    const sortedKeys = _.sortBy(Object.keys(room.terminal.store).filter(o => o != RESOURCE_ENERGY), function (o) { return room.terminal.store[o]; }).reverse();
+    let maxKey, orders;
+    for (let key of sortedKeys) {
+      orders = Game.market.getAllOrders({type: ORDER_BUY, resourceType: key});
+      if (orders.length > 0) {
+        maxKey = key;
+        break;
+      }
+    }
     if (orders.length == 0) {
       console.log('No open buy orders to deal with');
       return;
     }
     orders = _.sortBy(orders, ['price'])
     const bestPrice = orders[orders.length-1].price;
+    console.log(room.name, 'Attempting to sell '+maxKey+' at '+bestPrice);
 
     // Hardcoded minimum price to prevent massive loss
     if (bestPrice < 0.25) return;
