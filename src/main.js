@@ -1,5 +1,7 @@
 if (!Memory.cpuCanary) Memory.cpuCanary = Game.time;
 function sleepLogic() {
+  // Ensure stats are wiped and not double counted
+  Memory["stats-str"] = "{}";
   if (Memory.sleepTimer > 0) {
     console.log('Sleeping');
     Memory.sleepTimer--;
@@ -327,6 +329,7 @@ var Main = {
       cpu: Game.cpu,
       gcl: Game.gcl,
       tick: Game.time,
+      time: Date.now(),
       memory: {
         used: RawMemory.get().length,
       },
@@ -355,6 +358,7 @@ var Main = {
     }
 
     Memory.stats.cpu.used = Game.cpu.getUsed();
+    Memory["stats-str"] = JSON.stringify(Memory.stats);
     // Update the CPU timeout canary
     Memory.cpuCanary = Game.time + 1;
   },
