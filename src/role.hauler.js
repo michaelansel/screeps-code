@@ -16,6 +16,15 @@ var roleHauler = {
       function() {
         if (creep.room.state.underAttack) {
           return helpers.structuresInRoom(creep.room, STRUCTURE_TOWER).filter(function(tower){
+            return tower.energy < tower.energyCapacity*9/10;
+          });
+        } else {
+          return [];
+        }
+      },
+      function() {
+        if (creep.room.state.underAttack) {
+          return helpers.structuresInRoom(creep.room, STRUCTURE_TOWER).filter(function(tower){
             return tower.energy < tower.energyCapacity;
           });
         } else {
@@ -31,6 +40,29 @@ var roleHauler = {
         return helpers.structuresInRoom(creep.room, STRUCTURE_TOWER).filter(function(tower){
           return tower.energy < tower.energyCapacity/10;
         });
+      },
+      function() {
+        return helpers.structuresInRoom(creep.room, STRUCTURE_TOWER).filter(function(tower){
+          return tower.energy < tower.energyCapacity*9/10;
+        });
+      },
+      function() {
+        if (creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY] > 100000) {
+          return helpers.structuresInRoom(creep.room, STRUCTURE_POWER_SPAWN).filter(function(structure){
+            return structure.energy < structure.energyCapacity;
+          });
+        } else {
+          return [];
+        }
+      },
+      function() {
+        if (creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY] > 100000) {
+          return helpers.structuresInRoom(creep.room, STRUCTURE_NUKER).filter(function(structure){
+            return structure.energy < structure.energyCapacity;
+          });
+        } else {
+          return [];
+        }
       },
       function() {
         return helpers.structuresInRoom(creep.room, STRUCTURE_TOWER).filter(function(tower){
@@ -87,6 +119,8 @@ var roleHauler = {
       STRUCTURE_TOWER,
       STRUCTURE_EXTENSION,
       STRUCTURE_SPAWN,
+      STRUCTURE_POWER_SPAWN,
+      STRUCTURE_NUKER,
     ];
 
     if (!validTargets.includes(target.structureType)) return false;
