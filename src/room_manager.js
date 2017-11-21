@@ -188,10 +188,11 @@ const RoomManager = {
     // Update desired number of longhaulers
     if(
       room.storage &&
-      _.sum(room.storage.store) > 50000 &&
+      _.sum(room.storage.store) > 500000 &&
       !room.terminal &&
       room.find(FIND_CONSTRUCTION_SITES, {filter: cs => cs.structureType == STRUCTURE_TERMINAL}).length == 0
     ) {
+      // TODO find the nearest non-full market so that we load balance
       const terminals = Object.keys(Game.rooms).filter(r => Game.rooms[r].terminal && Game.rooms[r].terminal.my);
       const nearestMarket = terminals.sort(function(a,b){
         return Game.map.findRoute(room, Game.rooms[a]).length - Game.map.findRoute(room, Game.rooms[b]).length;
