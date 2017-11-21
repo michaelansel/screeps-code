@@ -148,7 +148,7 @@ const RoomManager = {
           // Controller is full; recycle all upgraders until resources are unconstrained
           if (
             room.controller.ticksToDowngrade >= 0.99 * CONTROLLER_DOWNGRADE[room.controller.level] &&
-            room.storage && room.storage.store[RESOURCE_ENERGY] < 8000
+            room.storage && room.storage.store[RESOURCE_ENERGY] < 5000
           ) {
             console.log(room.name, 'recycling unneeded upgraders');
             for (let creep of helpers.creepsInRoomWithRole(room, 'upgrader')) {
