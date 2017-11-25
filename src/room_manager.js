@@ -188,7 +188,7 @@ const RoomManager = {
     // Update desired number of longhaulers
     if(
       room.storage &&
-      _.sum(room.storage.store) > 500000 &&
+      _.sum(room.storage.store) > 900000 &&
       !room.terminal &&
       room.find(FIND_CONSTRUCTION_SITES, {filter: cs => cs.structureType == STRUCTURE_TERMINAL}).length == 0
     ) {
