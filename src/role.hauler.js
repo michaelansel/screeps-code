@@ -65,6 +65,11 @@ var roleHauler = {
         }
       },
       function() {
+        return helpers.structuresInRoom(creep.room, STRUCTURE_LAB).filter(function(lab){
+          return lab.energy < lab.energyCapacity;
+        });
+      },
+      function() {
         return helpers.structuresInRoom(creep.room, STRUCTURE_TOWER).filter(function(tower){
           return tower.energy < tower.energyCapacity;
         });
@@ -121,6 +126,7 @@ var roleHauler = {
       STRUCTURE_SPAWN,
       STRUCTURE_POWER_SPAWN,
       STRUCTURE_NUKER,
+      STRUCTURE_LAB,
     ];
 
     if (!validTargets.includes(target.structureType)) return false;
