@@ -37,8 +37,8 @@ var roleBuilder = {
       }
     });
     target = creep.pos.findClosestByPath(targets);
-    room.memory.fortifyLevel = 50000;
-    room.memory.repairLevel = 0.5;
+    // room.memory.fortifyLevel = 50000;
+    // room.memory.repairLevel = 0.5;
     if (target) {
       // room.memory.fortifyLevel = Math.max(room.memory.fortifyLevel, 150000);
       // room.memory.repairLevel = Math.max(room.memory.repairLevel, 0.75);
