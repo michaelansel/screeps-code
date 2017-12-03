@@ -152,12 +152,24 @@ var roleBuilder = {
     } else {
       let target = Game.getObjectById(creep.memory.target);
       if (!target) {
-        let targets = helpers.structuresInRoom(creep.room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).filter(function(struct){
+        let targets = helpers.structuresInRoom(creep.room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE, STRUCTURE_LINK]).filter(function(struct){
           return (
             // Don't deposit in the structure we are dismantling
             struct.id != structure.id &&
-            // Don't pick storage/container that is full
-            _.sum(struct.store) < struct.storeCapacity
+            (
+              (
+                // storage/container
+                struct.storeCapacity &&
+                // Don't pick storage/container that is full
+                _.sum(struct.store) < struct.storeCapacity
+              ) ||
+              (
+                // link
+                struct.energyCapacity &&
+                // Don't pick link that is full
+                struct.energy < struct.energyCapacity
+              )
+            )
           );
         });
         target = creep.pos.findClosestByPath(targets);
