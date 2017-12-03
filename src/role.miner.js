@@ -37,6 +37,14 @@ var roleMiner = {
           }
         });
         if (res == ERR_NO_PATH) creep.memory.target = null;
+      } else {
+        helpers.optimizePosition(creep,
+            [mineral].concat(
+              helpers.structuresInRoom(creep.room, STRUCTURE_CONTAINER).filter(function(structure){
+                return creep.pos.getRangeTo(structure) <= 2;
+              })
+            )
+        );
       }
     } else {
       var structureSelectors = [

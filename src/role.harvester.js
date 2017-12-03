@@ -91,6 +91,7 @@ var roleHarvester = {
           }
         });
         if (res == ERR_NO_PATH) creep.memory.target = null;
+      } else {
         helpers.optimizePosition(creep,
             [source].concat(
               helpers.structuresInRoom(creep.room, STRUCTURE_LINK).filter(function(structure){
