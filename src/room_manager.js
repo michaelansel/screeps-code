@@ -207,6 +207,17 @@ const RoomManager = {
       room.memory.desiredCreepCounts.longhauler = 0;
     }
 
+    // Move excess energy into fortifications
+    if (
+      // All walls/ramparts fortified to the configured level
+      helpers.structuresInRoom(room, [STRUCTURE_WALL, STRUCTURE_RAMPART]).every((s) => s.hits > (room.memory.fortifyLevel * 99/100)) &&
+      // Too much energy in storage
+      room.storage && room.storage.store[RESOURCE_ENERGY] > 500*1000
+    ) {
+      room.memory.fortifyLevel += 50000;
+      console.log(room.name, 'increasing fortifyLevel to', room.memory.fortifyLevel);
+    }
+
     // Remove reservations from dead creeps
     room.memory.energyReservations = room.memory.energyReservations.filter(function(res){
       return !!Game.creeps[res.name];
