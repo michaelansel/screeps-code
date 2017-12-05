@@ -170,13 +170,13 @@ var roleHauler = {
       }
     }
 
-    if (creep.carry.energy == creep.carryCapacity) {
+    if (!creep.memory.working && creep.carry.energy == creep.carryCapacity) {
       // Full of energy
       creep.memory.working = true;
       creep.memory.target = null;
     }
 
-    if (creep.carry.energy == 0) {
+    if (creep.memory.working && creep.carry.energy == 0) {
       // Out of energy
       creep.memory.working = false;
       creep.memory.target = null;

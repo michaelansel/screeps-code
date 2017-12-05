@@ -90,14 +90,14 @@ var roleBuilder = {
 
   /** @param {Creep} creep **/
   construct: function(creep) {
-    if (creep.carry.energy == creep.carryCapacity) {
+    if (!creep.memory.working && creep.carry.energy == creep.carryCapacity) {
       if (!creep.memory.working) creep.say('🚧 build');
       // Full of energy
       creep.memory.working = true;
       creep.memory.target = null;
     }
 
-    if (creep.carry.energy == 0) {
+    if (creep.memory.working && creep.carry.energy == 0) {
       if (creep.memory.working) creep.say('🔄 harvest');
       // Out of energy
       creep.memory.working = false;
