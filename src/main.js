@@ -80,8 +80,8 @@ var ConsoleHelpers = {
     console.log("Bucket: ", Game.cpu.bucket);
     for (var rn in Game.rooms) {
       const room = Game.rooms[rn];
-      if (!Memory.stats.roomSummary[room.name]) Memory.stats.roomSummary[room.name] = {};
-      let stats = Memory.stats.roomSummary[room.name];
+      if (!Game.stats.roomSummary[room.name]) Game.stats.roomSummary[room.name] = {};
+      let stats = Game.stats.roomSummary[room.name];
       if (!room.controller) continue;
       if (room.controller.my) {
         console.log();
@@ -205,7 +205,7 @@ var ConsoleHelpers = {
       if (!bestPrices.hasOwnProperty(t)) bestPrices[t] = 0;
       bestPrices[t] = Math.max(bestPrices[t], order.price);
     }
-    Memory.stats.market.best_prices = bestPrices;
+    Game.stats.market.best_prices = bestPrices;
   },
 };
 
@@ -313,7 +313,7 @@ var Main = {
       "profiler",
       "roleCounts",
       "rooms",
-      "stats",
+      "stats-str",
     ];
     for (var k in Memory) {
       if (protected.includes(k)) continue;
@@ -325,7 +325,7 @@ var Main = {
   loop: function() {
     if(sleepLogic()) return;
 
-    Memory.stats = {
+    Game.stats = {
       cpu: Game.cpu,
       gcl: Game.gcl,
       tick: Game.time,
@@ -357,8 +357,8 @@ var Main = {
       creepManager.run(creep);
     }
 
-    Memory.stats.cpu.used = Game.cpu.getUsed();
-    Memory["stats-str"] = JSON.stringify(Memory.stats);
+    Game.stats.cpu.used = Game.cpu.getUsed();
+    Memory["stats-str"] = JSON.stringify(Game.stats);
     // Update the CPU timeout canary
     Memory.cpuCanary = Game.time + 1;
   },

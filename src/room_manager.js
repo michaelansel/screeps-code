@@ -80,8 +80,8 @@ const RoomManager = {
     // if (room.state.underAttack && !room.memory.underAttack) Game.notify("Hostiles detected at tick " + Game.time, 10);
     room.memory.underAttack = room.state.underAttack;
 
-    if (!Memory.stats.roomSummary[room.name]) Memory.stats.roomSummary[room.name] = {};
-    let stats = Memory.stats.roomSummary[room.name];
+    if (!Game.stats.roomSummary[room.name]) Game.stats.roomSummary[room.name] = {};
+    let stats = Game.stats.roomSummary[room.name];
     stats.num_creeps = helpers.allCreepsInRoom(room).length;
 
     if (
