@@ -2,6 +2,65 @@ var _ = require('lodash');
 var helpers = require('helpers');
 
 var roleMineralHauler = {
+  findReaction: function(compound) {
+    for (const a in REACTIONS) {
+      for (const b in REACTIONS[a]) {
+        if (REACTIONS[a][b] == compound) return [a,b];
+      }
+    }
+    return [];
+  },
+  chooseInputs: function(output) {
+    const room = output.room;
+    const reagents = this.findReaction(room.memory.labs[output.id].resource);
+
+    let inputs = [];
+    for (let reagent of reagents) {
+      const unassignedLabs = helpers.structuresInRoom(room, STRUCTURE_LAB).filter(function(lab){
+        return (
+          // Not assigned
+          !room.memory.labs[lab.id].resource &&
+          // In Range
+          output.pos.getRangeTo(lab) <= 2
+        );
+      });
+
+      const input = output.pos.findClosestByRange(unassignedLabs);
+      if (input) {
+        room.memory.labs[input.id].resource = reagent;
+        inputs.push(input);
+      }
+    }
+    return inputs;
+  },
+  assignLabs: function(room, desiredCompound = 'G') {
+    // Reset all labs
+    if (!room.memory.labs) room.memory.labs = {};
+    for (let lab of helpers.structuresInRoom(room, STRUCTURE_LAB)) {
+      room.memory.labs[lab.id] = {};
+    }
+
+    if (!Game.flags['LabOutput-'+room.name]) {
+      room.createFlag(helpers.structuresInRoom(room, STRUCTURE_LAB)[0].pos, 'LabOutput-'+room.name);
+    }
+
+    let output = Game.flags['LabOutput-'+room.name].pos.lookFor(LOOK_STRUCTURES, {filter: (s)=>s.structureType == STRUCTURE_LAB})[0];
+    room.memory.labs[output.id].resource = desiredCompound;
+
+    let outputs = [output];
+    let inputs = [];
+    while (true) {
+      for (let lab of outputs) {
+        inputs = inputs.concat(this.chooseInputs(lab));
+      }
+      if (inputs.length > 0) {
+        outputs = inputs;
+        inputs = [];
+      } else {
+        break;
+      }
+    }
+  },
   selectPickup: function(creep) {
     var structureSelectors = [
       function() {
