@@ -27,7 +27,7 @@ const RoomManager = {
     console.log(room.name, 'Attempting to sell '+maxKey+' at '+bestPrice);
 
     // Hardcoded minimum price to prevent massive loss
-    if (bestPrice < 0.25) return;
+    if (bestPrice < 0.05) return;
 
     orders = _.filter(orders, {price: bestPrice});
     for (let order of orders) {
