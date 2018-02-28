@@ -140,7 +140,17 @@ var roleHarvester = {
         },
         // Emergency mode: no haulers available and local containers full
         function() {
-          if (helpers.creepsInRoomWithRole(creep.room, 'hauler').length == 0) {
+          if (
+            (
+              // if there is actually a local container (and it doesn't have space based on last selector)
+              helpers.structuresInRoom(creep.room, [STRUCTURE_CONTAINER, STRUCTURE_STORAGE]).filter(function(structure){
+                return creep.pos.getRangeTo(structure) <= 2;
+              }).length == 0
+            ) || (
+              // if there aren't any haulers
+              helpers.creepsInRoomWithRole(creep.room, 'hauler').length == 0
+            )
+          ) {
             return helpers.structuresInRoom(creep.room, [STRUCTURE_SPAWN, STRUCTURE_EXTENSION]).filter(function(structure){
               return structure.energy < structure.energyCapacity;
             });
