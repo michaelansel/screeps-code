@@ -18,20 +18,20 @@ module.exports = function(grunt) {
         src: ['dist/*.js']
       },
       // Upload code to VPS private server
-      "vps": {
-        options: {
-          server: {
-            host: '10.67.14.7',
-            port: 21025,
-            http: true
-          },
-          email: 'mansel',
-          password: 'mansel',
-          branch: 'default',
-          ptr: false
-        },
-        src: ['dist/*.js']
-      },
+      // "vps": {
+      //   options: {
+      //     server: {
+      //       host: '10.67.14.7',
+      //       port: 21025,
+      //       http: true
+      //     },
+      //     email: 'mansel',
+      //     password: 'mansel',
+      //     branch: 'default',
+      //     ptr: false
+      //   },
+      //   src: ['dist/*.js']
+      // },
       // Upload code to local private server
       // "local": {
       //   options: {
