@@ -4,30 +4,48 @@ var spawnLogic = require('spawn');
 var creepManager = require('creep_manager');
 
 const RoomManager = {
-  marketSell: function (room) {
+  repairQueue: function (room) {
+    // Find all targets needing repair
+    // Assemble a pre-sorted list of targets for each tower to work on
+    // Prioritize "nearly dead defenses" (everybody pile on), then closest to the tower
+  },
+
+  marketSell: function (room, noLimit=false) {
     if (_.isString(room)) room = Game.rooms[room];
     // Terminal busy; try again later
     if (room.terminal.cooldown > 0) return;
 
     const sortedKeys = _.sortBy(Object.keys(room.terminal.store).filter(o => o != RESOURCE_ENERGY), function (o) { return room.terminal.store[o]; }).reverse();
-    let maxKey, orders;
+    let maxKey, orders, bestPrice;
     for (let key of sortedKeys) {
       orders = Game.market.getAllOrders({type: ORDER_BUY, resourceType: key});
       if (orders.length > 0) {
-        maxKey = key;
-        break;
+        bestPrice = 0;
+        for (let order of orders) {
+            if (order.remainingAmount > 0 && order['price'] > bestPrice) {
+                bestPrice = order['price'];
+            }
+        }
+        // orders = _.sortBy(orders, ['price'])
+        // bestPrice = orders[orders.length-1].price;
+        console.log(room.name, 'Considering selling '+key+' at '+bestPrice);
+    
+        // Hardcoded minimum price to prevent massive loss
+        if (bestPrice >= 0.05) {
+            maxKey = key;
+            console.log(room.name, 'Looks good to sell '+maxKey+' at '+bestPrice);
+            break;
+        } else {
+            bestPrice = null;
+            orders = [];
+        }
       }
     }
     if (orders.length == 0) {
       console.log('No open buy orders to deal with');
       return;
     }
-    orders = _.sortBy(orders, ['price'])
-    const bestPrice = orders[orders.length-1].price;
     console.log(room.name, 'Attempting to sell '+maxKey+' at '+bestPrice);
-
-    // Hardcoded minimum price to prevent massive loss
-    if (bestPrice < 0.05) return;
 
     orders = _.filter(orders, {price: bestPrice});
     for (let order of orders) {
@@ -92,6 +110,16 @@ const RoomManager = {
     ) {
       console.log(room.name, "terminal and storage over 90% full; performing a market sale")
       RoomManager.marketSell(room);
+    }
+    
+    if (
+      room.terminal &&
+      _.sum(room.terminal.store) > 0.99 * room.terminal.storeCapacity &&
+      room.storage &&
+      _.sum(room.storage.store) > 0.99 * room.storage.storeCapacity
+    ) {
+      console.log(room.name, "terminal and storage 99% full; performing a no-limit market sale")
+      RoomManager.marketSell(room, true);
     }
 
     var spawns = helpers.structuresInRoom(room, STRUCTURE_SPAWN);
