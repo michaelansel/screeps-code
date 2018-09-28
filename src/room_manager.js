@@ -31,7 +31,7 @@ const RoomManager = {
         console.log(room.name, 'Considering selling '+key+' at '+bestPrice);
     
         // Hardcoded minimum price to prevent massive loss
-        if (bestPrice >= 0.05) {
+        if (noLimit || bestPrice >= 0.05) {
             maxKey = key;
             console.log(room.name, 'Looks good to sell '+maxKey+' at '+bestPrice);
             break;
@@ -114,7 +114,7 @@ const RoomManager = {
     
     if (
       room.terminal &&
-      _.sum(room.terminal.store) > 0.99 * room.terminal.storeCapacity &&
+      _.sum(room.terminal.store) >= (room.terminal.storeCapacity - 10000) &&
       room.storage &&
       _.sum(room.storage.store) > 0.99 * room.storage.storeCapacity
     ) {
