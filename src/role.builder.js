@@ -47,6 +47,23 @@ var roleBuilder = {
     //   room.memory.fortifyLevel = Math.min(room.memory.fortifyLevel, 50000);
     //   room.memory.repairLevel = Math.min(room.memory.repairLevel, 0.5);
     }
+    
+    const constructionFlags = Object.values(Game.flags).filter(function(flag){
+      return (
+        flag.room &&
+        flag.room.name == creep.room.name &&
+        flag.color == COLOR_GREEN &&
+        flag.secondaryColor == COLOR_BROWN
+      );
+    });
+    if (constructionFlags.length > 0) {
+        const flag = creep.pos.findClosestByRange(constructionFlags);
+        target = flag.pos.lookFor(LOOK_CONSTRUCTION_SITES)[0];
+        if (!target) return flag.remove();
+    }
+    if (target) {
+      return target;
+    }
 
     targets = creep.room.find(FIND_CONSTRUCTION_SITES, {
       filter: (site) => {
