@@ -314,6 +314,7 @@ var Main = {
       "roleCounts",
       "rooms",
       "stats-str",
+      "lastroomprocessed",
     ];
     for (var k in Memory) {
       if (protected.includes(k)) continue;
@@ -341,7 +342,9 @@ var Main = {
     Game.stats.cpu.maintenanceTime = Game.cpu.getUsed();
     const limit = Game.cpu.bucket > 100 ? Game.cpu.tickLimit*0.9 : 15
 
-    for (var rn in Game.rooms) {
+    let rooms = Object.keys(Game.rooms).sort();
+    let roomOrder = rooms.slice(rooms.indexOf(Memory.lastroomprocessed)+1).concat( rooms.slice(0, rooms.indexOf(Memory.lastroomprocessed)+1) )
+    for (var rn of roomOrder) {
       var room = Game.rooms[rn];
 
       // Room memory evicted after 100 ticks
@@ -352,12 +355,19 @@ var Main = {
       if(room.controller && room.controller.my) {
         roomManager.run(room);
       }
+      Memory.lastroomprocessed = rn;
+      if (Game.cpu.getUsed() > limit) { console.log("Out of CPU! "+Game.cpu.getUsed()+" "+limit+" "+Game.cpu.bucket); break; }
     }
 
     // Process creeps in unowned rooms
     let creepStartTime = Game.cpu.getUsed();
     for (const creep of helpers.allCreeps()) {
-      creepManager.run(creep);
+      // Creep in room that was skipped
+      if (roomOrder.indexOf(creep.room.name) > roomOrder.indexOf(Memory.lastroomprocessed)) continue;
+      try {
+        creepManager.run(creep);
+      } catch(e) {console.log("Creep error " + creep + " " + e)}
+    }
     let creepEndTime = Game.cpu.getUsed();
     
     if (Game.cpu.getUsed() > limit) {
