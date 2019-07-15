@@ -72,6 +72,7 @@ const RoomManager = {
   },
 
   run: function (room) {
+    let startCpuUsed = Game.cpu.getUsed();
     room.state = {};
     // Independent state
     room.state.underAttack = (room.find(FIND_HOSTILE_CREEPS).length > 0);
@@ -142,6 +143,8 @@ const RoomManager = {
     for (const creep of helpers.allCreepsInRoom(room)) {
       creepManager.run(creep);
     }
+    
+    stats.processingTime = Game.cpu.getUsed() - startCpuUsed;
   },
 
   runPeriodic: function(room) {

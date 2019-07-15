@@ -338,6 +338,8 @@ var Main = {
     };
 
     Main._maintenance();
+    Game.stats.cpu.maintenanceTime = Game.cpu.getUsed();
+    const limit = Game.cpu.bucket > 100 ? Game.cpu.tickLimit*0.9 : 15
 
     for (var rn in Game.rooms) {
       var room = Game.rooms[rn];
@@ -353,12 +355,25 @@ var Main = {
     }
 
     // Process creeps in unowned rooms
+    let creepStartTime = Game.cpu.getUsed();
     for (const creep of helpers.allCreeps()) {
       creepManager.run(creep);
+    let creepEndTime = Game.cpu.getUsed();
+    
+    if (Game.cpu.getUsed() > limit) {
+      console.log("Timing information");
+      console.log("maintenance " + Math.round(Game.stats.cpu.maintenanceTime*100)/100);
+      for (var rn of roomOrder) {
+        if (Game.stats.roomSummary.hasOwnProperty(rn) && Game.stats.roomSummary[rn].hasOwnProperty('processingTime')) {
+          console.log(rn + " " + Math.round(Game.stats.roomSummary[rn].processingTime*100)/100);
+        }
+      }
+      console.log("creeps "+ Math.round((creepEndTime-creepStartTime)*100)/100);
     }
 
     Game.stats.cpu.used = Game.cpu.getUsed();
     Memory["stats-str"] = JSON.stringify(Game.stats);
+    console.log("final cpu "+Game.cpu.getUsed());
     // Update the CPU timeout canary
     Memory.cpuCanary = Game.time + 1;
   },
