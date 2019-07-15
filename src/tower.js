@@ -1,3 +1,6 @@
+const Allies = [
+];
+
 module.exports = {
   run: function(tower) {
     if(tower.energy == 0) return;
@@ -23,7 +26,9 @@ module.exports = {
     ];
     var i=0;
     while(!hostiles.length && i<hostileSelectors.length) {
-      hostiles = tower.room.find(FIND_HOSTILE_CREEPS, {filter: hostileSelectors[i++]});
+      hostiles = tower.room.find(FIND_HOSTILE_CREEPS, {filter: hostileSelectors[i++]}).filter(function(creep){
+        return !Allies.includes(creep.owner.username);
+      });
     }
     if (hostiles.length > 0) {
       var hostile = tower.pos.findClosestByRange(hostiles);
