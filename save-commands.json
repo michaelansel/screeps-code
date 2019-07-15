@@ -1,5 +1,0 @@
-{
-    "commands": [
-        "src/**/*.js : grunt"
-    ]
-}
