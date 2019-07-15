@@ -191,10 +191,9 @@ var roleBuilder = {
   },
 
   run: function (creep) {
-    const destructionFlags = Object.keys(Game.flags).map(function(flagname){
-      return Game.flags[flagname];
-    }).filter(function(flag){
+    const destructionFlags = Object.values(Game.flags).filter(function(flag){
       return (
+        flag.room &&
         flag.room.name == creep.room.name &&
         flag.color == COLOR_RED &&
         flag.secondaryColor == COLOR_BROWN
