@@ -1,0 +1,15 @@
+{
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "push-sim",
+			"problemMatcher": [],
+			"label": "npm: push-sim",
+			"detail": "rollup -c --environment DEST:sim",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		}
+	]
+}
