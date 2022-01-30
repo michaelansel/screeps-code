@@ -1,1 +1,2 @@
 - Refactor into multiple files
+- Rework initial commit into an empty merge commit for a clearer starting point (maybe use an empty Initial Commit)

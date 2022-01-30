@@ -1,3 +1,4 @@
+import * as Roles from "roles";
 import { ErrorMapper } from "utils/ErrorMapper";
 
 declare global {
@@ -29,12 +30,6 @@ declare global {
   }
 }
 
-const registeredCreepRoles: Array<typeof CreepRole> = [];
-function registerCreepRole<T extends typeof CreepRole>(target: T) {
-  registeredCreepRoles.push(target);
-  return target;
-}
-
 class CreepManager {
   constructor() { }
 
@@ -47,10 +42,12 @@ class CreepManager {
   }
 
   matchAndExecute(creep: Creep) {
-    const matchingRoles = registeredCreepRoles.filter((role) => role.matchesRole(creep));
+    const matchingRoles = Roles.registeredCreepRoles.filter((role) => role.matchesRole(creep));
     switch (matchingRoles.length) {
       case 0:
         console.log(`No matching roles for creep: ${creep.name}`);
+        creep.memory.role = Roles.registeredCreepRoles[0].RoleName;
+        console.log(`Assigning ${creep.memory.role} role to ${creep.name}`);
         break;
       case 1:
         new (matchingRoles[0])(creep).run();
@@ -58,69 +55,6 @@ class CreepManager {
       default:
         console.log(`Creep matches multiple roles: ${creep.name} ; roles: ${matchingRoles.join(', ')}`);
         break;
-    }
-  }
-}
-
-
-
-class CreepRole {
-  static readonly RoleName: string;
-  creep: Creep;
-
-  constructor(creep: Creep) {
-    this.matchRoleOrThrow(creep, Harvester.RoleName);
-    this.creep = creep;
-  }
-
-  private matchRoleOrThrow(creep: Creep, roleName: string) {
-    if (creep.memory.role != roleName) throw Error(`Unable to create creep with mismatched role (expected: ${roleName}; got: ${creep.memory.role})`);
-  }
-
-  static matchesRole(creep: Creep): boolean {
-    return creep.memory.role == this.RoleName;
-  }
-
-  run(): any {
-    console.log(`Executing CreepRole default logic for ${this.creep.name}`);
-  };
-}
-
-
-interface HarvesterMemory extends CreepMemory {
-  source: Id<Source>;
-}
-
-@registerCreepRole
-class Harvester extends CreepRole {
-  static readonly RoleName = "harvester";
-  memory: HarvesterMemory;
-  source: Source | null;
-
-  constructor(creep: Creep) {
-    super(creep);
-
-    this.memory = creep.memory as HarvesterMemory;
-    this.source = Game.getObjectById(this.memory.source);
-  }
-
-  run(): any {
-    console.log(`Executing Harvester logic for ${this.creep.name}`);
-    this.moveToSource();
-    this.harvestFromSource();
-  }
-
-  moveToSource() {
-    if (this.source) {
-      if (this.creep.pos.getRangeTo(this.source) > 1) {
-        this.creep.moveTo(this.source);
-      }
-    }
-  }
-
-  harvestFromSource() {
-    if (this.source && this.creep.pos.getRangeTo(this.source) <= 1) {
-      this.creep.harvest(this.source);
     }
   }
 }
