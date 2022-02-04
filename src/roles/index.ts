@@ -1,4 +1,4 @@
-import type {Task} from '../tasks';
+import type { Task } from '../tasks';
 import * as tasks from '../tasks';
 
 export const registeredCreepRoles: Array<typeof CreepRole> = [];
@@ -36,14 +36,14 @@ export class CreepRole {
     }
 
     run(): any {
-        console.log(`Executing ${(this.constructor as unknown as {RoleName : string}).RoleName} logic for ${this.creep.name}`);
+        console.log(`Executing ${(this.constructor as unknown as { RoleName: string }).RoleName} logic for ${this.creep.name}`);
         if (this.task === null) {
             this.task = this.nextTask();
         }
         this.task?.run(this);
     };
 
-    nextTask() : Task | null {
+    nextTask(): Task | null {
         if (this.fullOfEnergy()) {
             return tasks.DepositEnergyTask;
         } else {

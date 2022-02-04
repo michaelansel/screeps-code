@@ -32,7 +32,7 @@ declare global {
 }
 
 class CreepManager {
-  static run(creeps: { [creepName: string]: Creep }) : void {
+  static run(creeps: { [creepName: string]: Creep }): void {
     for (const name in creeps) {
       const creep = creeps[name];
       console.log(`Loading ${name}`);
@@ -40,7 +40,7 @@ class CreepManager {
     }
   }
 
-  static matchAndExecute(creep: Creep) : void {
+  static matchAndExecute(creep: Creep): void {
     const matchingRoles = Roles.registeredCreepRoles.filter((role) => role.matchesRole(creep));
     switch (matchingRoles.length) {
       case 0:
@@ -75,7 +75,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     // Keep draining the spawn so we have a place to put energy
     const cost = BODYPART_COST.work + BODYPART_COST.carry + BODYPART_COST.move;
     if (spawn.store[RESOURCE_ENERGY] > cost) {
-        spawn.spawnCreep([WORK, CARRY, MOVE], `Worker${(++Memory.creepCounter).toString()}`);
+      spawn.spawnCreep([WORK, CARRY, MOVE], `Worker${(++Memory.creepCounter).toString()}`);
     }
   }
 

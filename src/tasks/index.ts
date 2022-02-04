@@ -1,4 +1,4 @@
-import type {CreepRole} from '../roles';
+import type { CreepRole } from '../roles';
 
 export interface Task {
     id: Id<Task>;
@@ -12,5 +12,5 @@ function registerTask(task: Task) {
     Tasks[task.id] = task;
 }
 
-import {DepositEnergyTask} from './DepositEnergyTask.js' ; registerTask(DepositEnergyTask) ; export {DepositEnergyTask}
-import {HarvestEnergyTask} from './HarvestEnergyTask.js' ; registerTask(HarvestEnergyTask) ; export {HarvestEnergyTask}
+import { DepositEnergyTask } from './DepositEnergyTask.js'; registerTask(DepositEnergyTask); export { DepositEnergyTask }
+import { HarvestEnergyTask } from './HarvestEnergyTask.js'; registerTask(HarvestEnergyTask); export { HarvestEnergyTask }
