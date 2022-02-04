@@ -1,3 +1,6 @@
+import type {Task} from '../tasks';
+import * as tasks from '../tasks';
+
 export const registeredCreepRoles: Array<typeof CreepRole> = [];
 export function registerCreepRole<T extends typeof CreepRole>(target: T) {
     registeredCreepRoles.push(target);
@@ -42,9 +45,9 @@ export class CreepRole {
 
     nextTask() : Task | null {
         if (this.fullOfEnergy()) {
-            return DepositEnergyTask;
+            return tasks.DepositEnergyTask;
         } else {
-            return HarvestEnergyTask;
+            return tasks.HarvestEnergyTask;
         }
     }
 
@@ -53,7 +56,7 @@ export class CreepRole {
             if (this.creep.memory.task == undefined) {
                 return null;
             } else {
-                this._task = Tasks[this.creep.memory.task];
+                this._task = tasks.Tasks[this.creep.memory.task];
                 return this._task;
             }
         }
@@ -73,90 +76,3 @@ export class CreepRole {
         return this.creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0;
     }
 }
-
-interface Task {
-    id: Id<Task>;
-    start(creep: CreepRole): void;
-    run(creep: CreepRole): void;
-    stop(creep: CreepRole): void;
-};
-
-let Tasks: { [taskId: Id<Task>]: Task } = {};
-function registerTask(task: Task) {
-    Tasks[task.id] = task;
-}
-
-const HarvestEnergyTask = <Task>{
-    id: "HarvestEnergyTask", // TODO Consider using a Symbol https://www.typescriptlang.org/docs/handbook/symbols.html
-
-    // Is there a way I can add local helper functions without confusing the type system?
-
-    start(creep: CreepRole): void {
-        creep.task = this;
-    },
-
-    run(creep: CreepRole): void {
-        console.log(`Executing ${this.id} for ${creep.creep.name}`);
-        let source: Source | null = null;
-
-        if (creep.creep.memory.source == undefined) {
-            creep.creep.memory.source = creep.creep.pos.findClosestByPath(FIND_SOURCES, {range: 1})?.id;
-        }
-
-        if (creep.creep.memory.source != undefined) {
-            source = Game.getObjectById(creep.creep.memory.source);
-        }
-
-        if (source) {
-            if (creep.creep.pos.getRangeTo(source) > 1) {
-                creep.creep.moveTo(source, { range: 1 });
-            } else {
-                creep.creep.harvest(source);
-            }
-        }
-
-        if (creep.fullOfEnergy()) {
-            // All done
-            this.stop(creep);
-        }
-    },
-    stop(creep: CreepRole): void {
-        creep.creep.memory.source = undefined;
-        creep.task = null;
-    },
-};
-registerTask(HarvestEnergyTask);
-
-const DepositEnergyTask = <Task>{
-    id: "DepositEnergyTask",
-    start(creep: CreepRole): void {
-        creep.task = this;
-    },
-    run(creep: CreepRole): void {
-        console.log(`Executing ${this.id} for ${creep.creep.name}`);
-        let target: Structure | null = null;
-
-        if (!creep.creep.memory.target) {
-            creep.creep.memory.target = creep.creep.pos.findClosestByRange(FIND_MY_SPAWNS)?.id;
-        }
-
-        if (creep.creep.memory.target != undefined) {
-            target = Game.getObjectById(creep.creep.memory.target);
-        }
-
-        if (target) {
-            if (creep.creep.pos.getRangeTo(target) > 1) {
-                creep.creep.moveTo(target);
-            } else {
-                creep.creep.transfer(target, RESOURCE_ENERGY);
-                // All done
-                this.stop(creep);
-            }
-        }
-    },
-    stop(creep: CreepRole): void {
-        creep.creep.memory.target = undefined;
-        creep.task = null;
-    },
-}
-registerTask(DepositEnergyTask);
