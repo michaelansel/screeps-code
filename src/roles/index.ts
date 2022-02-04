@@ -100,7 +100,7 @@ const HarvestEnergyTask = <Task>{
         let source: Source | null = null;
 
         if (creep.creep.memory.source == undefined) {
-            creep.creep.memory.source = creep.creep.pos.findClosestByPath(FIND_SOURCES)?.id;
+            creep.creep.memory.source = creep.creep.pos.findClosestByPath(FIND_SOURCES, {range: 1})?.id;
         }
 
         if (creep.creep.memory.source != undefined) {
