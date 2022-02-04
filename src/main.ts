@@ -14,6 +14,7 @@ declare global {
   interface Memory {
     uuid: number;
     log: any;
+    creepCounter: number;
   }
 
   interface CreepMemory {
@@ -31,9 +32,7 @@ declare global {
 }
 
 class CreepManager {
-  constructor() { }
-
-  run(creeps: { [creepName: string]: Creep }) {
+  static run(creeps: { [creepName: string]: Creep }) : void {
     for (const name in creeps) {
       const creep = creeps[name];
       console.log(`Loading ${name}`);
@@ -41,11 +40,12 @@ class CreepManager {
     }
   }
 
-  matchAndExecute(creep: Creep) {
+  static matchAndExecute(creep: Creep) : void {
     const matchingRoles = Roles.registeredCreepRoles.filter((role) => role.matchesRole(creep));
     switch (matchingRoles.length) {
       case 0:
         console.log(`No matching roles for creep: ${creep.name}`);
+        // TODO filler for testing
         creep.memory.role = Roles.registeredCreepRoles[0].RoleName;
         console.log(`Assigning ${creep.memory.role} role to ${creep.name}`);
         break;
@@ -64,7 +64,20 @@ class CreepManager {
 export const loop = ErrorMapper.wrapLoop(() => {
   console.log(`Current game tick is ${Game.time}`);
 
-  new CreepManager().run(Game.creeps);
+  if (Memory.creepCounter == undefined) Memory.creepCounter = 0;
+
+  CreepManager.run(Game.creeps);
+
+  // TODO filler for testing
+  for (const spawnName in Game.spawns) {
+    const spawn = Game.spawns[spawnName];
+
+    // Keep draining the spawn so we have a place to put energy
+    const cost = BODYPART_COST.work + BODYPART_COST.carry + BODYPART_COST.move;
+    if (spawn.store[RESOURCE_ENERGY] > cost) {
+        spawn.spawnCreep([WORK, CARRY, MOVE], `Worker${(++Memory.creepCounter).toString()}`);
+    }
+  }
 
   // Automatically delete memory of missing creeps
   for (const name in Memory.creeps) {

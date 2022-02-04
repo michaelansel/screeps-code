@@ -110,12 +110,6 @@ export class Harvester extends CreepRole {
                 if (this.target) {
                     this.memory.target = this.target.id;
 
-                    // Keep draining the spawn so we have a place to put energy
-                    const cost = BODYPART_COST.work + BODYPART_COST.carry + BODYPART_COST.move;
-                    if (this.target.store[RESOURCE_ENERGY] > cost) {
-                        this.target.spawnCreep([WORK, CARRY, MOVE], (Math.random()*1000).toString());
-                    }
-
                     if (this.creep.pos.getRangeTo(this.target) > 1) {
                         this.creep.moveTo(this.target);
                     } else {
