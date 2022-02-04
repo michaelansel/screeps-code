@@ -1,14 +1,23 @@
-import { BasePrivateKeyEncodingOptions } from "crypto";
-
 export const registeredCreepRoles: Array<typeof CreepRole> = [];
 export function registerCreepRole<T extends typeof CreepRole>(target: T) {
     registeredCreepRoles.push(target);
     return target;
 }
 
+declare global {
+    interface CreepMemory {
+        task: Id<Task> | undefined;
+        // TODO Consider scoping these by Task ID instead of it being a shared top-level scope
+        source: Id<Source> | undefined;
+        target: Id<Structure> | undefined;
+    }
+}
+
+@registerCreepRole
 export class CreepRole {
-    static readonly RoleName: string;
+    static readonly RoleName: string = "DefaultRole";
     creep: Creep;
+    private _task: Task | undefined;
 
     constructor(creep: Creep) {
         this.matchRoleOrThrow(creep, (this.constructor as typeof CreepRole).RoleName);
@@ -24,124 +33,130 @@ export class CreepRole {
     }
 
     run(): any {
-        console.log(`Executing CreepRole default logic for ${this.creep.name}`);
+        console.log(`Executing ${(this.constructor as unknown as {RoleName : string}).RoleName} logic for ${this.creep.name}`);
+        if (this.task === null) {
+            this.task = this.nextTask();
+        }
+        this.task?.run(this);
     };
-}
 
-interface Project {};
-interface Task {};
+    nextTask() : Task | null {
+        if (this.fullOfEnergy()) {
+            return DepositEnergyTask;
+        } else {
+            return HarvestEnergyTask;
+        }
+    }
 
-const Projects : { [projectName : string]: Id<Project> } = {
-    HarvestEnergy: "HarvestEnergyProject" as Id<Project>,
-}
-
-const Tasks : { [taskName : string]: Id<Task> } = {
-    HarvestEnergy: "HarvestEnergyTask" as Id<Task>,
-    DepositEnergy: "DepositEnergyTask" as Id<Task>,
-}
-
-interface HarvesterMemory extends CreepMemory {
-    source: Id<Source> | undefined;
-    project: Id<Project> | undefined;
-    task: Id<Task> | undefined;
-    target: Id<StructureSpawn> | undefined;
-}
-
-@registerCreepRole
-export class Harvester extends CreepRole {
-    static readonly RoleName = "harvester";
-    memory: HarvesterMemory;
-    source: Source | null;
-    target: StructureSpawn | null;
-
-    constructor(creep: Creep) {
-        super(creep);
-
-        this.memory = creep.memory as HarvesterMemory;
-        this.source = this.memory.source ? Game.getObjectById(this.memory.source) : null;
-        this.target = this.memory.target ? Game.getObjectById(this.memory.target) : null;
+    get task(): Task | null {
+        if (this._task == undefined) {
+            if (this.creep.memory.task == undefined) {
+                return null;
+            } else {
+                this._task = Tasks[this.creep.memory.task];
+                return this._task;
+            }
+        }
+        return this._task ? this._task : null;
+    }
+    set task(task: Task | null) {
+        if (task == null) {
+            this._task = undefined;
+            this.creep.memory.task = undefined;
+        } else {
+            this._task = task;
+            this.creep.memory.task = task.id;
+        }
     }
 
     fullOfEnergy() {
         return this.creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0;
     }
+}
 
-    setProject(project : Id<Project> | undefined) {
-        if (project == undefined) {
-            this.memory.project = undefined;
-        } else {
-            this.memory.project = project;
+interface Task {
+    id: Id<Task>;
+    start(creep: CreepRole): void;
+    run(creep: CreepRole): void;
+    stop(creep: CreepRole): void;
+};
+
+let Tasks: { [taskId: Id<Task>]: Task } = {};
+function registerTask(task: Task) {
+    Tasks[task.id] = task;
+}
+
+const HarvestEnergyTask = <Task>{
+    id: "HarvestEnergyTask", // TODO Consider using a Symbol https://www.typescriptlang.org/docs/handbook/symbols.html
+
+    // Is there a way I can add local helper functions without confusing the type system?
+
+    start(creep: CreepRole): void {
+        creep.task = this;
+    },
+
+    run(creep: CreepRole): void {
+        console.log(`Executing ${this.id} for ${creep.creep.name}`);
+        let source: Source | null = null;
+
+        if (creep.creep.memory.source == undefined) {
+            creep.creep.memory.source = creep.creep.pos.findClosestByPath(FIND_SOURCES)?.id;
         }
-    }
-    setTask(task : Id<Task> | undefined) {
-        if (task == undefined) {
-            this.memory.task = undefined;
-        } else {
-            this.memory.task = task;
+
+        if (creep.creep.memory.source != undefined) {
+            source = Game.getObjectById(creep.creep.memory.source);
         }
-    }
-    getNextTask() {
-        if (!this.memory.project) {
-            this.getNextProject();
-        }
-        if (this.memory.project == Projects.HarvestEnergy) {
-            if (this.fullOfEnergy()) {
-                this.setTask(Tasks.DepositEnergy);
+
+        if (source) {
+            if (creep.creep.pos.getRangeTo(source) > 1) {
+                creep.creep.moveTo(source, { range: 1 });
             } else {
-                this.setTask(Tasks.HarvestEnergy);
+                creep.creep.harvest(source);
             }
         }
-    }
-    getNextProject() {
-        this.setProject(Projects.HarvestEnergy);
-    }
 
-    run(): any {
-        console.log(`Executing Harvester logic for ${this.creep.name}`);
-        if (!this.memory.task) {
-            this.getNextTask();
+        if (creep.fullOfEnergy()) {
+            // All done
+            this.stop(creep);
         }
-        switch(this.memory.task) {
-            case Tasks.DepositEnergy:
-                if (!this.memory.target) {
-                    this.target = this.creep.pos.findClosestByRange(FIND_MY_SPAWNS);
-                }
+    },
+    stop(creep: CreepRole): void {
+        creep.creep.memory.source = undefined;
+        creep.task = null;
+    },
+};
+registerTask(HarvestEnergyTask);
 
-                if (this.target) {
-                    this.memory.target = this.target.id;
+const DepositEnergyTask = <Task>{
+    id: "DepositEnergyTask",
+    start(creep: CreepRole): void {
+        creep.task = this;
+    },
+    run(creep: CreepRole): void {
+        console.log(`Executing ${this.id} for ${creep.creep.name}`);
+        let target: Structure | null = null;
 
-                    if (this.creep.pos.getRangeTo(this.target) > 1) {
-                        this.creep.moveTo(this.target);
-                    } else {
-                        this.creep.transfer(this.target, RESOURCE_ENERGY);
-                        this.setTask(undefined);
-                        this.memory.target = undefined;
-                    }
-                }
-                break;
-            case Tasks.HarvestEnergy:
-                if (!this.source) {
-                    this.source = this.creep.pos.findClosestByPath(FIND_SOURCES);
-                }
-
-                if (this.source) {
-                    this.memory.source = this.source.id;
-
-                    if (this.creep.pos.getRangeTo(this.source) > 1) {
-                        this.creep.moveTo(this.source);
-                    } else {
-                        this.creep.harvest(this.source);
-                    }
-                }
-
-                if (this.fullOfEnergy()) {
-                    // All done
-                    this.setTask(undefined);
-                    this.memory.source = undefined;
-                }
-                break;
-            default:
-                break;
+        if (!creep.creep.memory.target) {
+            creep.creep.memory.target = creep.creep.pos.findClosestByRange(FIND_MY_SPAWNS)?.id;
         }
-    }
+
+        if (creep.creep.memory.target != undefined) {
+            target = Game.getObjectById(creep.creep.memory.target);
+        }
+
+        if (target) {
+            if (creep.creep.pos.getRangeTo(target) > 1) {
+                creep.creep.moveTo(target);
+            } else {
+                creep.creep.transfer(target, RESOURCE_ENERGY);
+                // All done
+                this.stop(creep);
+            }
+        }
+    },
+    stop(creep: CreepRole): void {
+        creep.creep.memory.target = undefined;
+        creep.task = null;
+    },
 }
+registerTask(DepositEnergyTask);
