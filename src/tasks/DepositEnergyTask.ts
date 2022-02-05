@@ -1,35 +1,34 @@
-import type {Task} from './'
-import type {CreepRole} from '../roles'
+import type {Task} from './index.js'
 
 export const DepositEnergyTask = <Task>{
     id: "DepositEnergyTask",
-    start(creep: CreepRole): void {
-        creep.task = this;
+    start(creep: Creep): void {
+        creep.setTask(this, true);
     },
-    run(creep: CreepRole): void {
-        console.log(`Executing ${this.id} for ${creep.creep.name}`);
+    run(creep: Creep): void {
+        console.log(`Executing ${this.id} for ${creep.name}`);
         let target: Structure | null = null;
 
-        if (!creep.creep.memory.target) {
-            creep.creep.memory.target = creep.creep.pos.findClosestByRange(FIND_MY_SPAWNS)?.id;
+        if (!creep.memory.target) {
+            creep.memory.target = creep.pos.findClosestByRange(FIND_MY_SPAWNS)?.id;
         }
 
-        if (creep.creep.memory.target != undefined) {
-            target = Game.getObjectById(creep.creep.memory.target);
+        if (creep.memory.target != undefined) {
+            target = Game.getObjectById(creep.memory.target);
         }
 
         if (target) {
-            if (creep.creep.pos.getRangeTo(target) > 1) {
-                creep.creep.moveTo(target);
+            if (creep.pos.getRangeTo(target) > 1) {
+                creep.moveTo(target);
             } else {
-                creep.creep.transfer(target, RESOURCE_ENERGY);
+                creep.transfer(target, RESOURCE_ENERGY);
                 // All done
                 this.stop(creep);
             }
         }
     },
-    stop(creep: CreepRole): void {
-        creep.creep.memory.target = undefined;
-        creep.task = null;
+    stop(creep: Creep): void {
+        creep.memory.target = undefined;
+        creep.setTask(null, true);
     },
 }

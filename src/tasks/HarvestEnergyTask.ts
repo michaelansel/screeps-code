@@ -1,42 +1,41 @@
-import type {Task} from './'
-import type {CreepRole} from '../roles'
+import type { Task } from './index.js'
 
 export const HarvestEnergyTask = <Task>{
     id: "HarvestEnergyTask", // TODO Consider using a Symbol https://www.typescriptlang.org/docs/handbook/symbols.html
 
     // Is there a way I can add local helper functions without confusing the type system?
 
-    start(creep: CreepRole): void {
-        creep.task = this;
+    start(creep: Creep): void {
+        creep.setTask(this, true);
     },
 
-    run(creep: CreepRole): void {
-        console.log(`Executing ${this.id} for ${creep.creep.name}`);
+    run(creep: Creep): void {
+        console.log(`Executing ${this.id} for ${creep.name}`);
         let source: Source | null = null;
 
-        if (creep.creep.memory.source == undefined) {
-            creep.creep.memory.source = creep.creep.pos.findClosestByPath(FIND_SOURCES, {range: 1})?.id;
+        if (creep.memory.source == undefined) {
+            creep.memory.source = creep.pos.findClosestByPath(FIND_SOURCES, { range: 1 })?.id;
         }
 
-        if (creep.creep.memory.source != undefined) {
-            source = Game.getObjectById(creep.creep.memory.source);
+        if (creep.memory.source != undefined) {
+            source = Game.getObjectById(creep.memory.source);
         }
 
         if (source) {
-            if (creep.creep.pos.getRangeTo(source) > 1) {
-                creep.creep.moveTo(source, { range: 1 });
+            if (creep.pos.getRangeTo(source) > 1) {
+                creep.moveTo(source, { range: 1 });
             } else {
-                creep.creep.harvest(source);
+                creep.harvest(source);
             }
         }
 
-        if (creep.fullOfEnergy()) {
+        if (creep.isFullOfEnergy) {
             // All done
             this.stop(creep);
         }
     },
-    stop(creep: CreepRole): void {
-        creep.creep.memory.source = undefined;
-        creep.task = null;
+    stop(creep: Creep): void {
+        creep.memory.source = undefined;
+        creep.setTask(null, true);
     },
 };
