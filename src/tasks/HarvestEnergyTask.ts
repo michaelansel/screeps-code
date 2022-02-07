@@ -1,4 +1,5 @@
 import type { Task } from './index.js'
+import { TaskHelpers } from './Task.js';
 
 export const HarvestEnergyTask = <Task>{
     id: "HarvestEnergyTask", // TODO Consider using a Symbol https://www.typescriptlang.org/docs/handbook/symbols.html
@@ -6,9 +7,8 @@ export const HarvestEnergyTask = <Task>{
     // Is there a way I can add local helper functions without confusing the type system?
 
     start(creep: Creep): void {
-        creep.setTask(this, true);
+        TaskHelpers.start(creep, HarvestEnergyTask);
     },
-
     run(creep: Creep): void {
         console.log(`Executing ${this.id} for ${creep.name}`);
         let source: Source | null = null;
@@ -31,11 +31,10 @@ export const HarvestEnergyTask = <Task>{
 
         if (creep.isFullOfEnergy) {
             // All done
-            this.stop(creep);
+            creep.stopTask();
         }
     },
     stop(creep: Creep): void {
         creep.memory.source = undefined;
-        creep.setTask(null, true);
     },
 };

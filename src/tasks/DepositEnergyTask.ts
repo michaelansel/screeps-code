@@ -1,9 +1,10 @@
 import type {Task} from './index.js'
+import { TaskHelpers } from './Task.js';
 
 export const DepositEnergyTask = <Task>{
     id: "DepositEnergyTask",
     start(creep: Creep): void {
-        creep.setTask(this, true);
+        TaskHelpers.start(creep, DepositEnergyTask);
     },
     run(creep: Creep): void {
         console.log(`Executing ${this.id} for ${creep.name}`);
@@ -23,12 +24,11 @@ export const DepositEnergyTask = <Task>{
             } else {
                 creep.transfer(target, RESOURCE_ENERGY);
                 // All done
-                this.stop(creep);
+                creep.stopTask();
             }
         }
     },
     stop(creep: Creep): void {
         creep.memory.target = undefined;
-        creep.setTask(null, true);
     },
 }
