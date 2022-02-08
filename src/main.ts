@@ -1,5 +1,6 @@
 import './extensions';
 import { ErrorMapper } from "utils/ErrorMapper";
+import { HarvestEnergyProject } from 'projects';
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -21,7 +22,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
     // Keep draining the spawn so we have a place to put energy
     const cost = BODYPART_COST.work + BODYPART_COST.carry + BODYPART_COST.move;
     if (spawn.store[RESOURCE_ENERGY] > cost) {
-      spawn.spawnCreep([WORK, CARRY, MOVE], `Worker${(++Memory.creepCounter).toString()}`);
+      const memory: CreepMemory = {
+        project: HarvestEnergyProject.id, // TODO assign projects more dynamically
+      };
+      spawn.spawnCreep([WORK, CARRY, MOVE], `Worker${(++Memory.creepCounter).toString()}`, { memory: memory });
     }
   }
 

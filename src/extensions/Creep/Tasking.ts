@@ -23,16 +23,12 @@ export class CreepTaskingExtensionClass extends CreepBaseExtensionClass implemen
     run(): void {
         console.log(`Executing logic for ${this.creep.name}`);
 
-        // TODO link up with spawning
-        if (this.project === null) {
-            this.startProject(projects.HarvestEnergyProject);
-        }
-
         if (this.task === null) {
             this.project?.run(this.creep);
         }
 
         this.task?.run(this.creep);
+        // BUG? If no task, and no project, then we do nothing at all and depend on external stimuli.
     };
 
     private loadFromId<T>(id: Id<T> | undefined, lookupTable: { [id: Id<T>]: T }): T | undefined {
