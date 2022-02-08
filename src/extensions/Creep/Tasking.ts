@@ -45,7 +45,7 @@ export class CreepTaskingExtensionClass extends CreepBaseExtensionClass implemen
 
     get project(): Project | null {
         if (this._project === undefined) {
-            this._project = this.loadFromId(this.creep.memory.task, projects.Projects);
+            this._project = this.loadFromId(this.creep.memory.project, projects.Projects);
         }
         return this._project !== undefined ? this._project : null;
     }
@@ -58,8 +58,8 @@ export class CreepTaskingExtensionClass extends CreepBaseExtensionClass implemen
         }
 
         this._project = project;
-        this.creep.memory.task = project.id;
-        project.start(this.creep); // Can call stopTask right away if there is an error
+        this.creep.memory.project = project.id;
+        project.start(this.creep); // Can call stopProject right away if there is an error
     }
     stopProject(): void {
         this.stopTask();

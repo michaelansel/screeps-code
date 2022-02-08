@@ -1,4 +1,5 @@
 export interface Project {
+    readonly type: unique symbol;
     id: Id<Project>;
     start(creep: Creep): void;
     run(creep: Creep): void;

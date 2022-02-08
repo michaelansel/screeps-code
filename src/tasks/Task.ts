@@ -1,4 +1,5 @@
 export interface Task {
+    readonly type: unique symbol;
     id: Id<Task>;
     start(creep: Creep): void;
     run(creep: Creep): void;
