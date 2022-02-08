@@ -1,3 +1,4 @@
+import { SourcePlanner } from 'planners/SourcePlanner.js';
 import type { Task } from './index.js'
 import { TaskHelpers } from './Task.js';
 
@@ -8,13 +9,15 @@ export const HarvestEnergyTask = <Task>{
 
     start(creep: Creep): void {
         TaskHelpers.start(creep, HarvestEnergyTask);
+        SourcePlanner.instance.requestSourceAssignment(creep);
     },
     run(creep: Creep): void {
         console.log(`Executing ${this.id} for ${creep.name}`);
         let source: Source | null = null;
 
         if (creep.memory.source == undefined) {
-            creep.memory.source = creep.pos.findClosestByPath(FIND_SOURCES, { range: 1 })?.id;
+            // creep.memory.source = creep.pos.findClosestByPath(FIND_SOURCES, { range: 1 })?.id;
+            SourcePlanner.instance.requestSourceAssignment(creep);
         }
 
         if (creep.memory.source != undefined) {

@@ -1,6 +1,7 @@
 import './extensions';
 import { ErrorMapper } from "utils/ErrorMapper";
 import { HarvestEnergyProject } from 'projects';
+import { SourcePlanner } from 'planners/SourcePlanner.js';
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -14,6 +15,8 @@ export const loop = ErrorMapper.wrapLoop(() => {
     const creep = Game.creeps[name];
     creep.run();
   }
+
+  SourcePlanner.instance.assignSources();
 
   // TODO filler for testing
   for (const spawnName in Game.spawns) {
