@@ -1,5 +1,5 @@
-import type {Task} from './index.js'
-import { TaskHelpers } from './Task.js';
+import type {Task} from '.'
+import { TaskHelpers } from './Task';
 
 export const DepositEnergyTask = <Task>{
     id: "DepositEnergyTask",

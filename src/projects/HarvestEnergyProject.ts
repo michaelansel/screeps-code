@@ -1,6 +1,6 @@
-import type { Project } from './index.js'
-import { ProjectHelpers } from './Project.js';
-import * as tasks from '../tasks';
+import type { Project } from '.'
+import { ProjectHelpers } from './Project';
+import * as tasks from 'tasks';
 
 export const HarvestEnergyProject = <Project>{
     id: "HarvestEnergyProject",

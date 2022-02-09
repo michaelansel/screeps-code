@@ -1,6 +1,6 @@
-import { SourcePlanner } from 'planners/SourcePlanner.js';
-import type { Task } from './index.js'
-import { TaskHelpers } from './Task.js';
+import { SourcePlanner } from 'planners/SourcePlanner';
+import type { Task } from '.'
+import { TaskHelpers } from './Task';
 
 export const HarvestEnergyTask = <Task>{
     id: "HarvestEnergyTask", // TODO Consider using a Symbol https://www.typescriptlang.org/docs/handbook/symbols.html

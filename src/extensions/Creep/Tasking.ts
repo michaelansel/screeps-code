@@ -1,8 +1,8 @@
-import { CreepBaseExtensionClass } from './Base.js';
-import type { Task } from '../../tasks';
-import type { Project } from '../../projects';
-import * as tasks from '../../tasks';
-import * as projects from '../../projects';
+import { CreepBaseExtensionClass } from './Base';
+import type { Task } from 'tasks';
+import type { Project } from 'projects';
+import * as tasks from 'tasks';
+import * as projects from 'projects';
 
 export interface CreepTaskingExtension {
     run(): void;

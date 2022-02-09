@@ -1,5 +1,5 @@
-export { Task, Tasks } from './Task.js'
-import { registerTask } from './Task.js'
+export { Task, Tasks } from './Task'
+import { registerTask } from './Task'
 
-import { DepositEnergyTask } from './DepositEnergyTask.js'; registerTask(DepositEnergyTask); export { DepositEnergyTask }
-import { HarvestEnergyTask } from './HarvestEnergyTask.js'; registerTask(HarvestEnergyTask); export { HarvestEnergyTask }
+import { DepositEnergyTask } from './DepositEnergyTask'; registerTask(DepositEnergyTask); export { DepositEnergyTask }
+import { HarvestEnergyTask } from './HarvestEnergyTask'; registerTask(HarvestEnergyTask); export { HarvestEnergyTask }

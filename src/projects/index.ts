@@ -1,4 +1,4 @@
-export { Project, Projects } from './Project.js'
-import { registerProject } from './Project.js'
+export { Project, Projects } from './Project'
+import { registerProject } from './Project'
 
-import { HarvestEnergyProject } from './HarvestEnergyProject.js'; registerProject(HarvestEnergyProject); export { HarvestEnergyProject }
+import { HarvestEnergyProject } from './HarvestEnergyProject'; registerProject(HarvestEnergyProject); export { HarvestEnergyProject }

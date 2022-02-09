@@ -1,4 +1,4 @@
-import { CreepBaseExtensionClass } from './Base.js';
+import { CreepBaseExtensionClass } from './Base';
 
 export interface CreepLogicExtension {
     get isFullOfEnergy(): boolean;

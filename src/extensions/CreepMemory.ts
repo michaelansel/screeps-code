@@ -1,6 +1,6 @@
 export { }
-import type { Project } from '../projects';
-import type { Task } from '../tasks';
+import type { Project } from 'projects';
+import type { Task } from 'tasks';
 
 declare global {
     interface CreepMemory extends CreepMemoryExtension { }

@@ -1,3 +1,3 @@
-import './Creep.js'
-import './CreepMemory.js'
-import './Memory.js'
+import './Creep'
+import './CreepMemory'
+import './Memory'

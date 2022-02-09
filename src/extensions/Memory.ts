@@ -1,6 +1,6 @@
 export { }
 
-import { SourcePlannerMemory } from '../planners/SourcePlanner.js';
+import { SourcePlannerMemory } from 'planners/SourcePlanner.js';
 
 declare global {
     interface Memory extends MemoryExtension { }
