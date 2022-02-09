@@ -21,7 +21,7 @@ export class CreepTaskingExtensionClass extends CreepBaseExtensionClass implemen
     private _task: Task | undefined;
 
     run(): void {
-        console.log(`Executing logic for ${this.creep.name}`);
+        // console.log(`Executing logic for ${this.creep.name}`);
 
         if (this.task === null) {
             this.project?.run(this.creep);

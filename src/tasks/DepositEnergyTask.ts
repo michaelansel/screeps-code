@@ -7,7 +7,7 @@ export const DepositEnergyTask = <Task>{
         TaskHelpers.start(creep, DepositEnergyTask);
     },
     run(creep: Creep): void {
-        console.log(`Executing ${this.id} for ${creep.name}`);
+        // console.log(`Executing ${this.id} for ${creep.name}`);
         let target: Structure | null = null;
 
         if (!creep.memory.target) {

@@ -16,6 +16,8 @@ export const loop = ErrorMapper.wrapLoop(() => {
     creep.run();
   }
 
+  // @ts-ignore
+  Game.SourcePlanner = () => { return SourcePlanner; };
   SourcePlanner.instance.assignSources();
 
   // TODO filler for testing

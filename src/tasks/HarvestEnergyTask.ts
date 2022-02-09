@@ -12,7 +12,7 @@ export const HarvestEnergyTask = <Task>{
         SourcePlanner.instance.requestSourceAssignment(creep);
     },
     run(creep: Creep): void {
-        console.log(`Executing ${this.id} for ${creep.name}`);
+        // console.log(`Executing ${this.id} for ${creep.name}`);
         let source: Source | null = null;
 
         if (creep.memory.source == undefined) {
