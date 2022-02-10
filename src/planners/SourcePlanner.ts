@@ -77,7 +77,8 @@ export class SourcePlanner extends MemoryBackedClass {
     assignSources(): void {
         for (const name in this.creeps) {
             // Only maintain request until task changes
-            if (Game.creeps[name].task !== this.creeps[name].task) {
+            // TODO figure out why the typechecker doesn't alert on Game.creeps[name] could be undefined
+            if (Game.creeps[name]?.task !== this.creeps[name].task) {
                 delete this.creeps[name];
             }
         }
