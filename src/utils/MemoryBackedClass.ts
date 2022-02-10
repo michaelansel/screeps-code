@@ -62,7 +62,7 @@ export class MemoryBackedClass {
                     const proxy = proxyMember(() => {return fetchMemory()[prop];});
                     if (proxy !== undefined) {
                         target[prop] = proxy;
-                        console.log(`Loaded ${prop} from memory: ${target[prop]}`);
+                        // console.log(`Loaded ${prop} from memory: ${target[prop]}`);
                     }
                     return proxy;
                 }
@@ -78,10 +78,9 @@ export class MemoryBackedClass {
                     delete memory[key];
                     return false;
                 } else {
-                    console.log(`Saving new record to memory: ${key} : ${JSON.stringify(memoryRecord)}`);
+                    // console.log(`Saving new record to memory: ${key} : ${JSON.stringify(memoryRecord)}`);
                     target[key] = proxy;
-                    console.log(`Full proxy memory: ${JSON.stringify(memory)}`);
-                    console.log(`Sameness check: ${memory === Memory.SourcePlanner?.creeps}`);
+                    // console.log(`Full proxy memory: ${JSON.stringify(memory)}`);
                     return true;
                 }
             },
@@ -116,10 +115,10 @@ export class MemoryBackedClass {
             for (const prop in serde) {
                 serde[prop].toMemory(memory, cache[prop]);
             }
-            console.log("Overwriting memory with new values: " + JSON.stringify(memory));
+            // console.log("Overwriting memory with new values: " + JSON.stringify(memory));
         }
         if (cache === undefined) {
-            console.log('wtf');
+            // This should be impossible
             return undefined;
         }
         return new Proxy<CacheRecord>(cache, {
@@ -131,7 +130,7 @@ export class MemoryBackedClass {
                     let value = serde[prop as keyof typeof memory].fromMemory(memory);
                     if (value !== undefined) {
                         target[prop as keyof typeof memory] = value;
-                        console.log(`Loaded ${prop} from memory: ${target[prop as keyof typeof memory]}`);
+                        // console.log(`Loaded ${prop} from memory: ${target[prop as keyof typeof memory]}`);
                     }
                     return value;
                 }

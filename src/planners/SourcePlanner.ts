@@ -97,7 +97,7 @@ export class SourcePlanner extends MemoryBackedClass {
                     assignedCreeps.push(Game.creeps[nextCreepName]);
                     this.creeps[nextCreepName].source = source;
                     console.log(`Assigning ${nextCreepName} to Source[${source.id}]`);
-                    console.log(JSON.stringify(Memory.SourcePlanner?.creeps));
+                    // console.log(JSON.stringify(Memory.SourcePlanner?.creeps));
                 }
             }
             for (const sourceId of creepsBySource.keys()) {
