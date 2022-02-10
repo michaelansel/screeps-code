@@ -27,32 +27,27 @@ export class SourcePlanner extends MemoryBackedClass {
 
     private proxySourcePlannerCreepData(memory: SourcePlannerCreepDataMemory, cache?: SourcePlannerCreepData): SourcePlannerCreepData | undefined {
         const serde: SerDeFunctions<SourcePlannerCreepData> = {
-            fromMemory: {
-                required: {
-                    'task': (m: SourcePlannerCreepDataMemory) => { return this.loadByIdFromTable(m.task, Tasks); },
+            task: {
+                required: true,
+                fromMemory: (m: SourcePlannerCreepDataMemory) => { return this.loadByIdFromTable(m.task, Tasks); },
+                toMemory: (m: SourcePlannerCreepDataMemory, task: Task) => {
+                    m.task = task.id;
+                    return true;
                 },
-                optional: {
-                    'source': (m: SourcePlannerCreepDataMemory) => { return this.loadGameObjectById(m.source); },
-                }
             },
-            toMemory: {
-                required: {
-                    'task': (m: SourcePlannerCreepDataMemory, task: Task) => {
-                        m.task = task.id;
-                        return true;
-                    },
+            source: {
+
+                required: false,
+                fromMemory: (m: SourcePlannerCreepDataMemory) => { return this.loadGameObjectById(m.source); },
+                toMemory: (m: SourcePlannerCreepDataMemory, source: Source | undefined) => {
+                    if (source === undefined) {
+                        m.source = undefined;
+                    } else {
+                        m.source = source.id;
+                    }
+                    return true;
                 },
-                optional: {
-                    'source': (m: SourcePlannerCreepDataMemory, source: Source | undefined) => {
-                        if (source === undefined) {
-                            m.source = undefined;
-                        } else {
-                            m.source = source.id;
-                        }
-                        return true;
-                    },
-                }
-            }
+            },
         };
         function fetchMemory() {
             // TODO this is wrong; need to retrieve from Memory path

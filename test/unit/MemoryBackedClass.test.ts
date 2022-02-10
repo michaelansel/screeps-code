@@ -69,31 +69,25 @@ class TestClass extends MemoryBackedClass {
 
     private proxyTestData(memory: TestDataMemory, cache?: TestData): TestData | undefined {
         const serde: SerDeFunctions<TestData> = {
-            fromMemory: {
-                required: {
-                    'task': (m: TestDataMemory) => { return this.loadByIdFromTable(m.task, Tasks); },
+            task: {
+                required: true,
+                fromMemory: (m: TestDataMemory) => { return this.loadByIdFromTable(m.task, Tasks); },
+                toMemory: (m: TestDataMemory, task: Task) => {
+                    m.task = task.id;
+                    return true;
                 },
-                optional: {
-                    'source': (m: TestDataMemory) => { return this.loadGameObjectById(m.source); },
-                }
             },
-            toMemory: {
-                required: {
-                    'task': (m: TestDataMemory, task: Task) => {
-                        m.task = task.id;
-                        return true;
-                    },
+            source: {
+                required: false,
+                fromMemory: (m: TestDataMemory) => { return this.loadGameObjectById(m.source); },
+                toMemory: (m: TestDataMemory, source: Source | undefined) => {
+                    if (source === undefined) {
+                        m.source = undefined;
+                    } else {
+                        m.source = source.id;
+                    }
+                    return true;
                 },
-                optional: {
-                    'source': (m: TestDataMemory, source: Source | undefined) => {
-                        if (source === undefined) {
-                            m.source = undefined;
-                        } else {
-                            m.source = source.id;
-                        }
-                        return true;
-                    },
-                }
             }
         };
         function fetchMemory() {

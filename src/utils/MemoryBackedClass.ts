@@ -9,22 +9,11 @@ export type BackingMemoryRecord<Record extends object> = {
     : never;
 }
 export type SerDeFunctions<Record extends object> = {
-    toMemory: {
-        required: Required<{
-            [Property in RequiredKeys<Record>]: (memory: BackingMemoryRecord<Record>, value: Record[Property]) => boolean;
-        }>,
-        optional: Required<{
-            [Property in OptionalKeys<Record>]: (memory: BackingMemoryRecord<Record>, value: Record[Property]) => boolean;
-        }>,
-    },
-    fromMemory: {
-        required: Required<{
-            [Property in RequiredKeys<Record>]: (memory: BackingMemoryRecord<Record>) => Record[Property] | undefined;
-        }>,
-        optional: Required<{
-            [Property in OptionalKeys<Record>]: (memory: BackingMemoryRecord<Record>) => Record[Property] | undefined;
-        }>,
-    },
+    [Property in keyof Record]-?: {
+        required: Property extends RequiredKeys<Record> ? true : false,
+        fromMemory: (memory: BackingMemoryRecord<Record>) => Record[Property] | undefined,
+        toMemory: (memory: BackingMemoryRecord<Record>, value: Record[Property]) => boolean,
+    };
 }
 type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
 type OptionalKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? K : never }[keyof T];
@@ -114,20 +103,17 @@ export class MemoryBackedClass {
         if (cache === undefined) {
             // Pre-load required properties from memory; not sure how to make the type system happy here
             cache = <CacheRecord>{};
-            const required = serde.fromMemory.required;
-            for (const key in required) {
+            for (const key in serde) {
+                if (!serde[key].required) continue;
                 // TODO Pretty sure "as keyof typeof" is just telling the type system to pound sand, which is bad
-                let value = required[key as keyof typeof required](memory);
+                let value = serde[key].fromMemory(memory);
                 if (value == undefined) { return undefined; }
-                cache[key as keyof typeof required] = value;
+                cache[key] = value;
             }
         } else {
             // Overwrite memory with state in CacheRecord
-            for (const funcs of Object.values(serde.toMemory)) {
-                for (const func in funcs) {
-                    // @ts-ignore I don't understand what the heck is going on here type-wise
-                    funcs[func](memory, cache[func]);
-                }
+            for (const prop in serde) {
+                serde[prop].toMemory(memory, cache[prop]);
             }
             console.log("Overwriting memory with new values: " + JSON.stringify(memory));
         }
@@ -141,26 +127,21 @@ export class MemoryBackedClass {
                 if (!target) return undefined;
                 if (prop in target) return target[prop as keyof typeof target];
                 if (prop in memory) {
-                    if (prop in serde.fromMemory.optional) {
-                        let value = serde.fromMemory.optional[prop as keyof typeof serde.fromMemory.optional](memory);
-                        if (value !== undefined) {
-                            target[prop as keyof typeof target] = value;
-                            console.log(`Loaded ${prop} from memory: ${target[prop as keyof typeof target]}`);
-                        }
-                        return value;
+                    let value = serde[prop as keyof typeof memory].fromMemory(memory);
+                    if (value !== undefined) {
+                        target[prop as keyof typeof memory] = value;
+                        console.log(`Loaded ${prop} from memory: ${target[prop as keyof typeof memory]}`);
                     }
+                    return value;
                 }
                 return undefined;
             },
             set: (target, prop: string | Symbol, value) => {
                 const memory = fetchMemory();
                 if (typeof prop !== 'string') return false;
-                target[prop as keyof typeof target] = value;
-                for (const funcs of Object.values(serde.toMemory)) {
-                    if (prop in funcs) {
-                        funcs[prop as keyof typeof funcs](memory, value);
-                        return true;
-                    }
+                if (prop in serde) {
+                    target[prop as keyof typeof target] = value;
+                    return serde[prop as keyof typeof serde].toMemory(memory, value);
                 }
                 return false;
             },
