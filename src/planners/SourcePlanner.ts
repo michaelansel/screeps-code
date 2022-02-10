@@ -25,7 +25,7 @@ export class SourcePlanner extends MemoryBackedClass {
 
     private _creeps: SourcePlannerCreeps | undefined;
 
-    private proxySourcePlannerCreepData(memory: SourcePlannerCreepDataMemory, cache?: SourcePlannerCreepData): SourcePlannerCreepData | undefined {
+    private proxySourcePlannerCreepData(fetchMemory: () => BackingMemoryRecord<SourcePlannerCreepDataMemory>, cache?: SourcePlannerCreepData): SourcePlannerCreepData | undefined {
         const serde: SerDeFunctions<SourcePlannerCreepData> = {
             task: {
                 required: true,
@@ -49,10 +49,6 @@ export class SourcePlanner extends MemoryBackedClass {
                 },
             },
         };
-        function fetchMemory() {
-            // TODO this is wrong; need to retrieve from Memory path
-            return memory;
-        }
         return this.proxyGenericRecord(serde, fetchMemory, cache);
     }
 

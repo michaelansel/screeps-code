@@ -67,7 +67,7 @@ class TestClass extends MemoryBackedClass {
         return this._data;
     }
 
-    private proxyTestData(memory: TestDataMemory, cache?: TestData): TestData | undefined {
+    private proxyTestData(fetchMemory: () => BackingMemoryRecord<TestData>, cache?: TestData): TestData | undefined {
         const serde: SerDeFunctions<TestData> = {
             task: {
                 required: true,
@@ -90,10 +90,6 @@ class TestClass extends MemoryBackedClass {
                 },
             }
         };
-        function fetchMemory() {
-            // TODO this is wrong; need to retrieve from Memory path
-            return memory;
-        }
         return this.proxyGenericRecord(serde, fetchMemory, cache);
     }
 }
@@ -132,5 +128,17 @@ describe("MemoryBackedClass", () => {
         assert.strictEqual(test.data.a.task, HarvestEnergyTask);
         assert.strictEqual(test.data.b.task, HarvestEnergyTask);
         assert.equal(test.data.b.source, MockSource);
-    })
+    });
+
+    it("should work across multiple ticks", () => {
+        // @ts-ignore : allow adding Memory to global
+        global.Memory = _.clone(EmptyMemory);
+        const test = new TestClass();
+        test.data["a"] = { task: HarvestEnergyTask };
+        test.data["b"] = { task: HarvestEnergyTask };
+        // @ts-ignore : allow overwriting Memory
+        global.Memory = JSON.parse(JSON.stringify(Memory));
+        test.data["b"].source = <Source>{ id: "1234567890" };
+        assert.strictEqual(JSON.stringify(Memory), JSON.stringify(FilledMemory));
+    });
 });

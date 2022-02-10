@@ -49,7 +49,7 @@ export class MemoryBackedClass {
     }
 
     protected proxyGenericObject<CacheRecord extends object>(
-        proxyCacheRecord: (memory: BackingMemoryRecord<CacheRecord>, cache?: CacheRecord) => CacheRecord | undefined,
+        proxyMember: (fetchMemory: () => BackingMemoryRecord<CacheRecord>, cache?: CacheRecord) => CacheRecord | undefined,
         fetchMemory: () => Record<string, BackingMemoryRecord<CacheRecord>>,
         cache: Record<string, CacheRecord>,
     ): Record<string, CacheRecord> {
@@ -59,8 +59,7 @@ export class MemoryBackedClass {
                 if (!target) return undefined;
                 if (prop in target) return target[prop];
                 if (prop in memory) {
-                    const data = memory[prop];
-                    const proxy = proxyCacheRecord(data);
+                    const proxy = proxyMember(() => {return fetchMemory()[prop];});
                     if (proxy !== undefined) {
                         target[prop] = proxy;
                         console.log(`Loaded ${prop} from memory: ${target[prop]}`);
@@ -72,13 +71,15 @@ export class MemoryBackedClass {
             set: (target, key: string, value: CacheRecord) => {
                 const memory = fetchMemory();
                 const memoryRecord: BackingMemoryRecord<CacheRecord> = {};
-                const proxy = proxyCacheRecord(memoryRecord, value);
+                memory[key] = memoryRecord;
+                const proxy = proxyMember(() => {return fetchMemory()[key];}, value);
                 if (proxy === undefined) {
+                    // Cleanup non-proxiable entity; this results in also deleting any existing value prior to the attempted overwrite
+                    delete memory[key];
                     return false;
                 } else {
                     console.log(`Saving new record to memory: ${key} : ${JSON.stringify(memoryRecord)}`);
                     target[key] = proxy;
-                    memory[key] = memoryRecord;
                     console.log(`Full proxy memory: ${JSON.stringify(memory)}`);
                     console.log(`Sameness check: ${memory === Memory.SourcePlanner?.creeps}`);
                     return true;
