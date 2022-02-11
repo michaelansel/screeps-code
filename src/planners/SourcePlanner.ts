@@ -86,11 +86,25 @@ export class SourcePlanner extends MemoryBackedClass {
             const sources = Game.rooms[room].find(FIND_SOURCES);
             let unassignedCreeps = Object.keys(this.creeps).filter((name) => { return Game.creeps[name].room.name == room; })
             let creepsBySource = new Map<Id<Source>, Creep[]>();
+            // Rebuild assignment index
+            for (const name in this.creeps) {
+                const creep = Game.creeps[name];
+                if (creep == undefined) {
+                    // Creep is dead; cleanup
+                    delete this.creeps[name];
+                    continue;
+                }
+                const creepData = this.creeps[name];
+                if (creepData.source !== undefined) {
+                    const assignedCreeps = creepsBySource.get(creepData.source.id) || [];
+                    assignedCreeps.push(creep);
+                    creepsBySource.set(creepData.source.id, assignedCreeps);
+                }
+            }
             // TODO Optimize requests based on number of WORK parts and path distance to Source
             for (const source of sources) {
-                if (!creepsBySource.has(source.id)) creepsBySource.set(source.id, []);
-                // Override the type checker because we know assignedCreeps isn't empty via the above test
-                const assignedCreeps = <Creep[]>creepsBySource.get(source.id);
+                const assignedCreeps = creepsBySource.get(source.id) || [];
+                creepsBySource.set(source.id, assignedCreeps);
                 while (assignedCreeps.length < 3 && unassignedCreeps.length > 0) {
                     // Override the type checker because we know unassignedCreeps isn't empty via the while condition
                     const nextCreepName: string = <string>unassignedCreeps.shift();
