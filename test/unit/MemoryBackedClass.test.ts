@@ -141,4 +141,17 @@ describe("MemoryBackedClass", () => {
         test.data["b"].source = <Source>{ id: "1234567890" };
         assert.strictEqual(JSON.stringify(Memory), JSON.stringify(FilledMemory));
     });
+
+    it("should have all keys in memory", () => {
+        global.Game.getObjectById = (id: Id<any>): any => {
+            assert.equal(id, MockSource.id);
+            return MockSource;
+        };
+
+        // @ts-ignore : allow adding Memory to global
+        global.Memory = _.clone(FilledMemory);
+        const test = new TestClass();
+        assert.deepEqual(Object.keys(test.data), ["a", "b"]);
+        assert.isTrue("a" in test.data);
+    });
 });

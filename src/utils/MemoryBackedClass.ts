@@ -90,7 +90,25 @@ export class MemoryBackedClass {
                 delete target[prop];
                 delete memory[prop];
                 return true;
-            }
+            },
+            has: (target, prop) => {
+                const memory = fetchMemory();
+                return prop in memory;
+            },
+            ownKeys: (target) => {
+                const memory = fetchMemory();
+                return Object.keys(memory);
+            },
+            getOwnPropertyDescriptor: (target, prop) => {
+                const memory = fetchMemory();
+                if (prop in memory) {
+                    return {
+                        enumerable: true,
+                        configurable: true,
+                      };
+                }
+                return undefined;
+            },
         });
     }
 
