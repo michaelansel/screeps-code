@@ -1,12 +1,21 @@
 type JsonNativeTypes = string | number | bigint | boolean;
+type SeriablizableById = {id: Id<any>};
+
+type Serialized<T> =
+// If type is native, serialize directly
+T extends JsonNativeTypes ? T :
+// If type has id, then use the Id<> tag for serialization
+T extends SeriablizableById ? Id<Exclude<T, undefined>> :
+// If type is array, serialize objects
+T extends Array<infer O> ? Array<Serialized<O>> :
+// If type is a generic object, serialize each property
+T extends object ? BackingMemoryRecord<Exclude<T, undefined>> :
+// Fail on other types (i.e. come update here when that happens)
+never;
+
 export type BackingMemoryRecord<Record extends object> = {
-    [Property in keyof Record]?:
-    // If type has id, then use the Id<> tag for serialization; undefined is allowed here so that data objects can have optional properties
-    Record[Property] extends { id: Id<any> } | undefined ? Id<Extract<Record[Property], { id: Id<any> }>> // Extract is used to remove the undefined possibility from the Id generic
-    // If type is native, serialize directly
-    : Record[Property] extends JsonNativeTypes | undefined ? Record[Property]
-    // Fail on other types (i.e. come update here when that happens)
-    : never;
+    // Undefined is excluded because data objects can have optional properties and we don't serialize "undefined"
+    [Property in keyof Record]?: Serialized<Exclude<Record[Property], undefined>>;
 }
 export type SerDeFunctions<Record extends object> = {
     [Property in keyof Record]-?: {
@@ -48,6 +57,9 @@ export class MemoryBackedClass {
         return input;
     }
 
+    // Create a memory-backed proxy for Record<string, CacheRecord>
+    // where all values are of the same shape. proxyMember is used to
+    // create individual proxies for each of the values
     protected proxyGenericObject<CacheRecord extends object>(
         proxyMember: (fetchMemory: () => BackingMemoryRecord<CacheRecord>, cache?: CacheRecord) => CacheRecord | undefined,
         fetchMemory: () => Record<string, BackingMemoryRecord<CacheRecord>>,
@@ -112,6 +124,9 @@ export class MemoryBackedClass {
         });
     }
 
+    // Create a memory-backed proxy for a single object of shape CacheRecord
+    // serde functions convert each property of CacheRecord to/from memory
+    // cache can be provided to overwrite memory with a specific set of values (vs loading from memory)
     protected proxyGenericRecord<CacheRecord extends object>(
         serde: SerDeFunctions<CacheRecord>,
         fetchMemory: () => BackingMemoryRecord<CacheRecord>,
