@@ -2,44 +2,39 @@ import { assert } from "chai";
 import { HarvestEnergyTask, Task, Tasks } from "tasks";
 import { BackingMemoryRecord, MemoryBackedClass, SerDeFunctions } from "utils/MemoryBackedClass";
 
-interface TestDataRecord {
+// Types
+interface ObjectRecord {
     task: Task,
     source?: Source
 };
-type TestDataRecordCollection = Record<string, TestDataRecord>;
-interface TestData {
-    records: TestDataRecordCollection;
-}
-type TestMemory = BackingMemoryRecord<TestData>;
+type ObjectRecordCollection = Record<string, ObjectRecord>;
+type ObjectMemory = BackingMemoryRecord<ObjectRecordCollection>;
 
-type MockMemory = { Test?: TestMemory };
+type MockMemory = { Object?: ObjectMemory };
+declare global {
+    interface Memory extends MockMemory { }
+}
+
+// Fixtures
 const MockSource: Source = <Source>{ id: "1234567890" };
 const EmptyMemory: MockMemory = {}
-const FilledMemory: MockMemory = {
-    Test: {
-        records: {
-            a: {
-                task: "HarvestEnergyTask" as Id<Task>,
-            },
-            b: {
-                task: "HarvestEnergyTask" as Id<Task>,
-                source: "1234567890" as Id<Source>,
-            }
+const FilledMemoryObject: MockMemory = {
+    Object: {
+        a: {
+            task: "HarvestEnergyTask" as Id<Task>,
+        },
+        b: {
+            task: "HarvestEnergyTask" as Id<Task>,
+            source: "1234567890" as Id<Source>,
         }
     }
 }
 const InvalidMemory: MockMemory = {
-    Test: {
-        records: {
-            a: {
-                task: "InvalidRequiredParameter" as Id<Task>,
-            },
-        }
-    }
-}
-
-declare global {
-    interface Memory extends MockMemory { }
+    Object: {
+        a: {
+            task: "InvalidRequiredParameter" as Id<Task>,
+        },
+    },
 }
 
 const Game: object = {};
@@ -51,34 +46,33 @@ global.Creep = Creep;
 class TestClass extends MemoryBackedClass {
     constructor() { super(); }
 
-    private _data: TestDataRecordCollection | undefined;
-    get data(): TestDataRecordCollection {
+    private _data: ObjectRecordCollection | undefined;
+    get data(): ObjectRecordCollection {
         if (this._data === undefined) {
             function fetchMemory() {
                 // TODO this is the wrong place for this check
-                if (Memory.Test === undefined) Memory.Test = {};
-                if (Memory.Test.records === undefined) Memory.Test.records = {};
-                return Memory.Test.records;
+                if (Memory.Object === undefined) Memory.Object = {};
+                return Memory.Object;
             }
             this._data = this.proxyMapOfRecords(this.proxyTestData.bind(this), fetchMemory, {}, {});
         }
         return this._data;
     }
 
-    private proxyTestData(fetchMemory: () => BackingMemoryRecord<TestDataRecord>, cache?: TestDataRecord): TestDataRecord | undefined {
-        const serde: SerDeFunctions<TestDataRecord> = {
+    private proxyTestData(fetchMemory: () => BackingMemoryRecord<ObjectRecord>, cache?: ObjectRecord): ObjectRecord | undefined {
+        const serde: SerDeFunctions<ObjectRecord> = {
             task: {
                 required: true,
-                fromMemory: (m: BackingMemoryRecord<TestDataRecord>) => { return this.loadByIdFromTable(m.task, Tasks); },
-                toMemory: (m: BackingMemoryRecord<TestDataRecord>, task: Task) => {
+                fromMemory: (m: BackingMemoryRecord<ObjectRecord>) => { return this.loadByIdFromTable(m.task, Tasks); },
+                toMemory: (m: BackingMemoryRecord<ObjectRecord>, task: Task) => {
                     m.task = task.id;
                     return true;
                 },
             },
             source: {
                 required: false,
-                fromMemory: (m: BackingMemoryRecord<TestDataRecord>) => { return this.loadGameObjectById(m.source); },
-                toMemory: (m: BackingMemoryRecord<TestDataRecord>, source: Source | undefined) => {
+                fromMemory: (m: BackingMemoryRecord<ObjectRecord>) => { return this.loadGameObjectById(m.source); },
+                toMemory: (m: BackingMemoryRecord<ObjectRecord>, source: Source | undefined) => {
                     if (source === undefined) {
                         m.source = undefined;
                     } else {
@@ -111,7 +105,7 @@ describe("MemoryBackedClass", () => {
         const test = new TestClass();
         test.data["a"] = { task: HarvestEnergyTask };
         test.data["b"] = { task: HarvestEnergyTask, source: <Source>{ id: "1234567890" } };
-        assert.strictEqual(JSON.stringify(Memory), JSON.stringify(FilledMemory));
+        assert.strictEqual(JSON.stringify(Memory), JSON.stringify(FilledMemoryObject));
     });
 
     it("should load saved values from memory", () => {
@@ -121,7 +115,7 @@ describe("MemoryBackedClass", () => {
         };
 
         // @ts-ignore : allow adding Memory to global
-        global.Memory = _.clone(FilledMemory);
+        global.Memory = _.clone(FilledMemoryObject);
         const test = new TestClass();
         assert.strictEqual(test.data.a.task, HarvestEnergyTask);
         assert.strictEqual(test.data.b.task, HarvestEnergyTask);
@@ -137,7 +131,7 @@ describe("MemoryBackedClass", () => {
         // @ts-ignore : allow overwriting Memory
         global.Memory = JSON.parse(JSON.stringify(Memory));
         test.data["b"].source = <Source>{ id: "1234567890" };
-        assert.strictEqual(JSON.stringify(Memory), JSON.stringify(FilledMemory));
+        assert.strictEqual(JSON.stringify(Memory), JSON.stringify(FilledMemoryObject));
     });
 
     it("should have all keys in memory", () => {
@@ -147,7 +141,7 @@ describe("MemoryBackedClass", () => {
         };
 
         // @ts-ignore : allow adding Memory to global
-        global.Memory = _.clone(FilledMemory);
+        global.Memory = _.clone(FilledMemoryObject);
         const test = new TestClass();
         assert.deepEqual(Object.keys(test.data), ["a", "b"]);
         assert.isTrue("a" in test.data);
