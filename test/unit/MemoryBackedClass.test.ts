@@ -2,17 +2,15 @@ import { assert } from "chai";
 import { HarvestEnergyTask, Task, Tasks } from "tasks";
 import { BackingMemoryRecord, MemoryBackedClass, SerDeFunctions } from "utils/MemoryBackedClass";
 
-interface TestData {
+interface TestDataRecord {
     task: Task,
     source?: Source
 };
-type TestDataMemory = BackingMemoryRecord<TestData>;
-
-type TestCollection = Record<string, TestData>;
-type TestCollectionMemory = Record<string, TestDataMemory>;
-export interface TestMemory {
-    records?: TestCollectionMemory;
+type TestDataRecordCollection = Record<string, TestDataRecord>;
+interface TestData {
+    records: TestDataRecordCollection;
 }
+type TestMemory = BackingMemoryRecord<TestData>;
 
 type MockMemory = { Test?: TestMemory };
 const MockSource: Source = <Source>{ id: "1234567890" };
@@ -53,8 +51,8 @@ global.Creep = Creep;
 class TestClass extends MemoryBackedClass {
     constructor() { super(); }
 
-    private _data: TestCollection | undefined;
-    get data(): TestCollection {
+    private _data: TestDataRecordCollection | undefined;
+    get data(): TestDataRecordCollection {
         if (this._data === undefined) {
             function fetchMemory() {
                 // TODO this is the wrong place for this check
@@ -62,25 +60,25 @@ class TestClass extends MemoryBackedClass {
                 if (Memory.Test.records === undefined) Memory.Test.records = {};
                 return Memory.Test.records;
             }
-            this._data = this.proxyGenericObject(this.proxyTestData.bind(this), fetchMemory, {});
+            this._data = this.proxyGenericObject(this.proxyTestData.bind(this), fetchMemory, {}, {});
         }
         return this._data;
     }
 
-    private proxyTestData(fetchMemory: () => BackingMemoryRecord<TestData>, cache?: TestData): TestData | undefined {
-        const serde: SerDeFunctions<TestData> = {
+    private proxyTestData(fetchMemory: () => BackingMemoryRecord<TestDataRecord>, cache?: TestDataRecord): TestDataRecord | undefined {
+        const serde: SerDeFunctions<TestDataRecord> = {
             task: {
                 required: true,
-                fromMemory: (m: TestDataMemory) => { return this.loadByIdFromTable(m.task, Tasks); },
-                toMemory: (m: TestDataMemory, task: Task) => {
+                fromMemory: (m: BackingMemoryRecord<TestDataRecord>) => { return this.loadByIdFromTable(m.task, Tasks); },
+                toMemory: (m: BackingMemoryRecord<TestDataRecord>, task: Task) => {
                     m.task = task.id;
                     return true;
                 },
             },
             source: {
                 required: false,
-                fromMemory: (m: TestDataMemory) => { return this.loadGameObjectById(m.source); },
-                toMemory: (m: TestDataMemory, source: Source | undefined) => {
+                fromMemory: (m: BackingMemoryRecord<TestDataRecord>) => { return this.loadGameObjectById(m.source); },
+                toMemory: (m: BackingMemoryRecord<TestDataRecord>, source: Source | undefined) => {
                     if (source === undefined) {
                         m.source = undefined;
                     } else {

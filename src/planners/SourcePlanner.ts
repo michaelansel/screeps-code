@@ -60,7 +60,7 @@ export class SourcePlanner extends MemoryBackedClass {
                 if (Memory.SourcePlanner.creeps === undefined) Memory.SourcePlanner.creeps = {};
                 return Memory.SourcePlanner.creeps;
             }
-            this._creeps = this.proxyGenericObject(this.proxySourcePlannerCreepData.bind(this), fetchMemory, {});
+            this._creeps = this.proxyGenericObject(this.proxySourcePlannerCreepData.bind(this), fetchMemory, {}, {});
         }
         return this._creeps;
     };

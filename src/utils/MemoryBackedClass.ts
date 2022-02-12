@@ -62,7 +62,8 @@ export class MemoryBackedClass {
     // create individual proxies for each of the values
     protected proxyGenericObject<CacheRecord extends object>(
         proxyMember: (fetchMemory: () => BackingMemoryRecord<CacheRecord>, cache?: CacheRecord) => CacheRecord | undefined,
-        fetchMemory: () => Record<string, BackingMemoryRecord<CacheRecord>>,
+        fetchMemory: () => BackingMemoryRecord<Record<string, CacheRecord>>,
+        emptyRecord: Serialized<Exclude<CacheRecord, undefined>>,
         cache: Record<string, CacheRecord>,
     ): Record<string, CacheRecord> {
         return new Proxy<Record<string, CacheRecord>>(cache, {
@@ -71,7 +72,11 @@ export class MemoryBackedClass {
                 if (!target) return undefined;
                 if (prop in target) return target[prop];
                 if (prop in memory) {
-                    const proxy = proxyMember(() => {return fetchMemory()[prop];});
+                    const proxy = proxyMember(() => {
+                        const m = fetchMemory()[prop]
+                        if (m === undefined) throw new Error(`Unable to retrieve memory object for ${prop}`);
+                        return m;
+                    });
                     if (proxy !== undefined) {
                         target[prop] = proxy;
                         // console.log(`Loaded ${prop} from memory: ${target[prop]}`);
@@ -82,9 +87,12 @@ export class MemoryBackedClass {
             },
             set: (target, key: string, value: CacheRecord) => {
                 const memory = fetchMemory();
-                const memoryRecord: BackingMemoryRecord<CacheRecord> = {};
-                memory[key] = memoryRecord;
-                const proxy = proxyMember(() => {return fetchMemory()[key];}, value);
+                memory[key] = _.clone(emptyRecord);
+                const proxy = proxyMember(() => {
+                    const m = fetchMemory()[key]
+                        if (m === undefined) throw new Error(`Unable to retrieve memory object for ${key}`);
+                        return m;
+                }, value);
                 if (proxy === undefined) {
                     // Cleanup non-proxiable entity; this results in also deleting any existing value prior to the attempted overwrite
                     delete memory[key];
