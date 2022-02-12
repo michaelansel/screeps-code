@@ -60,19 +60,19 @@ export class MemoryBackedClass {
     // Create a memory-backed proxy for Record<string, CacheRecord>
     // where all values are of the same shape. proxyMember is used to
     // create individual proxies for each of the values
-    protected proxyGenericObject<CacheRecord extends object>(
-        proxyMember: (fetchMemory: () => BackingMemoryRecord<CacheRecord>, cache?: CacheRecord) => CacheRecord | undefined,
-        fetchMemory: () => BackingMemoryRecord<Record<string, CacheRecord>>,
-        emptyRecord: Serialized<Exclude<CacheRecord, undefined>>,
-        cache: Record<string, CacheRecord>,
-    ): Record<string, CacheRecord> {
-        return new Proxy<Record<string, CacheRecord>>(cache, {
-            get: (target: Record<string, CacheRecord>, prop: string): CacheRecord | undefined => {
+    protected proxyMapOfRecords<SingleRecord extends object>(
+        proxySingleRecord: (fetchMemory: () => BackingMemoryRecord<SingleRecord>, record?: SingleRecord) => SingleRecord | undefined,
+        fetchMemory: () => BackingMemoryRecord<Record<string, SingleRecord>>,
+        emptyRecord: Serialized<Exclude<SingleRecord, undefined>>,
+        backingMapOfRecords: Record<string, SingleRecord>,
+    ): Record<string, SingleRecord> {
+        return new Proxy<Record<string, SingleRecord>>(backingMapOfRecords, {
+            get: (target: Record<string, SingleRecord>, prop: string): SingleRecord | undefined => {
                 const memory = fetchMemory();
                 if (!target) return undefined;
                 if (prop in target) return target[prop];
                 if (prop in memory) {
-                    const proxy = proxyMember(() => {
+                    const proxy = proxySingleRecord(() => {
                         const m = fetchMemory()[prop]
                         if (m === undefined) throw new Error(`Unable to retrieve memory object for ${prop}`);
                         return m;
@@ -85,10 +85,10 @@ export class MemoryBackedClass {
                 }
                 return undefined;
             },
-            set: (target, key: string, value: CacheRecord) => {
+            set: (target, key: string, value: SingleRecord) => {
                 const memory = fetchMemory();
                 memory[key] = _.clone(emptyRecord);
-                const proxy = proxyMember(() => {
+                const proxy = proxySingleRecord(() => {
                     const m = fetchMemory()[key]
                         if (m === undefined) throw new Error(`Unable to retrieve memory object for ${key}`);
                         return m;
@@ -135,35 +135,35 @@ export class MemoryBackedClass {
     // Create a memory-backed proxy for a single object of shape CacheRecord
     // serde functions convert each property of CacheRecord to/from memory
     // cache can be provided to overwrite memory with a specific set of values (vs loading from memory)
-    protected proxyGenericRecord<CacheRecord extends object>(
-        serde: SerDeFunctions<CacheRecord>,
-        fetchMemory: () => BackingMemoryRecord<CacheRecord>,
-        cache?: CacheRecord,
-    ): CacheRecord | undefined {
+    protected proxyGenericRecord<SingleRecord extends object>(
+        serde: SerDeFunctions<SingleRecord>,
+        fetchMemory: () => BackingMemoryRecord<SingleRecord>,
+        backingRecord?: SingleRecord,
+    ): SingleRecord | undefined {
         const memory = fetchMemory();
-        if (cache === undefined) {
+        if (backingRecord === undefined) {
             // Pre-load required properties from memory; not sure how to make the type system happy here
-            cache = <CacheRecord>{};
+            backingRecord = <SingleRecord>{};
             for (const key in serde) {
                 if (!serde[key].required) continue;
                 // TODO Pretty sure "as keyof typeof" is just telling the type system to pound sand, which is bad
                 let value = serde[key].fromMemory(memory);
                 if (value == undefined) { return undefined; }
-                cache[key] = value;
+                backingRecord[key] = value;
             }
         } else {
             // Overwrite memory with state in CacheRecord
             for (const prop in serde) {
-                serde[prop].toMemory(memory, cache[prop]);
+                serde[prop].toMemory(memory, backingRecord[prop]);
             }
             // console.log("Overwriting memory with new values: " + JSON.stringify(memory));
         }
-        if (cache === undefined) {
+        if (backingRecord === undefined) {
             // This should be impossible
             return undefined;
         }
-        return new Proxy<CacheRecord>(cache, {
-            get: (target: CacheRecord, prop: string) => {
+        return new Proxy<SingleRecord>(backingRecord, {
+            get: (target: SingleRecord, prop: string) => {
                 const memory = fetchMemory();
                 if (!target) return undefined;
                 if (prop in target) return target[prop as keyof typeof target];

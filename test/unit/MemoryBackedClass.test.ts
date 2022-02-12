@@ -60,7 +60,7 @@ class TestClass extends MemoryBackedClass {
                 if (Memory.Test.records === undefined) Memory.Test.records = {};
                 return Memory.Test.records;
             }
-            this._data = this.proxyGenericObject(this.proxyTestData.bind(this), fetchMemory, {}, {});
+            this._data = this.proxyMapOfRecords(this.proxyTestData.bind(this), fetchMemory, {}, {});
         }
         return this._data;
     }
