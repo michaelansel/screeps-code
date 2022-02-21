@@ -1,29 +1,33 @@
 type JsonNativeTypes = string | number | bigint | boolean;
-type SeriablizableById = {id: Id<any>};
+type SeriablizableById = { id: Id<any> };
 
 type Serialized<T> =
-// If type is native, serialize directly
-T extends JsonNativeTypes ? T :
-// If type has id, then use the Id<> tag for serialization
-T extends SeriablizableById ? Id<Exclude<T, undefined>> :
-// If type is array, serialize objects
-T extends Array<infer O> ? Array<Serialized<O>> :
-// If type is a generic object, serialize each property
-T extends object ? BackingMemoryRecord<Exclude<T, undefined>> :
-// Fail on other types (i.e. come update here when that happens)
-never;
+    // If type is native, serialize directly
+    T extends JsonNativeTypes ? T :
+    // If type has id, then use the Id<> tag for serialization
+    T extends SeriablizableById ? Id<Exclude<T, undefined>> :
+    // If type is array, serialize objects
+    T extends Array<infer O> ? Array<Serialized<O>> : // proxyArray
+    // If type is a generic object, serialize each property
+    T extends object ? BackingMemoryRecord<Exclude<T, undefined>> : // proxyObject
+    // Fail on other types (i.e. come update here when that happens)
+    never;
 
 export type BackingMemoryRecord<Record extends object> = {
     // Undefined is excluded because data objects can have optional properties and we don't serialize "undefined"
     [Property in keyof Record]?: Serialized<Exclude<Record[Property], undefined>>;
 }
-export type SerDeFunctions<Record extends object> = {
-    [Property in keyof Record]-?: {
-        required: Property extends RequiredKeys<Record> ? true : false,
-        fromMemory: (memory: BackingMemoryRecord<Record>) => Record[Property] | undefined,
-        toMemory: (memory: BackingMemoryRecord<Record>, value: Record[Property]) => boolean,
+export type SerDeFunctions<Record extends object> =
+    { // For objects with per-property serialization routines
+        [Property in keyof Record]-?: {
+            required: Property extends RequiredKeys<Record> ? true : false,
+            fromMemory: (memory: BackingMemoryRecord<Record>) => Record[Property] | undefined,
+            toMemory: (memory: BackingMemoryRecord<Record>, value: Record[Property]) => boolean,
+        };
+    } | { // For values that don't feel like objects or have complex serialization behavior
+        __fromMemory__: (memory: BackingMemoryRecord<Record>) => Record | undefined,
+        __toMemory__: (memory: BackingMemoryRecord<Record>, value: Record) => boolean,
     };
-}
 type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
 type OptionalKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? K : never }[keyof T];
 type OnlyRequiredKeys<T> = { [Property in RequiredKeys<T>]: T[Property] };
@@ -90,8 +94,8 @@ export class MemoryBackedClass {
                 memory[key] = _.clone(emptyRecord);
                 const proxy = proxySingleRecord(() => {
                     const m = fetchMemory()[key]
-                        if (m === undefined) throw new Error(`Unable to retrieve memory object for ${key}`);
-                        return m;
+                    if (m === undefined) throw new Error(`Unable to retrieve memory object for ${key}`);
+                    return m;
                 }, value);
                 if (proxy === undefined) {
                     // Cleanup non-proxiable entity; this results in also deleting any existing value prior to the attempted overwrite
@@ -125,7 +129,7 @@ export class MemoryBackedClass {
                     return {
                         enumerable: true,
                         configurable: true,
-                      };
+                    };
                 }
                 return undefined;
             },
@@ -138,35 +142,48 @@ export class MemoryBackedClass {
     protected proxyGenericRecord<SingleRecord extends object>(
         serde: SerDeFunctions<SingleRecord>,
         fetchMemory: () => BackingMemoryRecord<SingleRecord>,
-        backingRecord?: SingleRecord,
+        emptyRecord: SingleRecord,
+        initialValue?: SingleRecord,
     ): SingleRecord | undefined {
         const memory = fetchMemory();
-        if (backingRecord === undefined) {
+        if (initialValue === undefined) {
             // Pre-load required properties from memory; not sure how to make the type system happy here
-            backingRecord = <SingleRecord>{};
-            for (const key in serde) {
-                if (!serde[key].required) continue;
-                // TODO Pretty sure "as keyof typeof" is just telling the type system to pound sand, which is bad
-                let value = serde[key].fromMemory(memory);
-                if (value == undefined) { return undefined; }
-                backingRecord[key] = value;
+            if ("__fromMemory__" in serde) {
+                initialValue = serde.__fromMemory__(memory);
+            } else {
+                initialValue = _.clone(emptyRecord);
+                for (const key in serde) {
+                    if (!serde[key].required) continue;
+                    // TODO Pretty sure "as keyof typeof" is just telling the type system to pound sand, which is bad
+                    let value = serde[key].fromMemory(memory);
+                    if (value == undefined) { return undefined; }
+                    initialValue[key] = value;
+                }
             }
         } else {
             // Overwrite memory with state in CacheRecord
-            for (const prop in serde) {
-                serde[prop].toMemory(memory, backingRecord[prop]);
+            if ("__toMemory__" in serde) {
+                serde.__toMemory__(memory, initialValue);
+            } else {
+                for (const prop in serde) {
+                    serde[prop].toMemory(memory, initialValue[prop]);
+                }
             }
             // console.log("Overwriting memory with new values: " + JSON.stringify(memory));
         }
-        if (backingRecord === undefined) {
+        if (initialValue === undefined) {
             // This should be impossible
             return undefined;
         }
-        return new Proxy<SingleRecord>(backingRecord, {
+        return new Proxy<SingleRecord>(initialValue, {
             get: (target: SingleRecord, prop: string) => {
                 const memory = fetchMemory();
                 if (!target) return undefined;
                 if (prop in target) return target[prop as keyof typeof target];
+                if ("__fromMemory__" in serde) {
+                    // Object is loaded all at once; can't continue with a partial load
+                    return undefined;
+                }
                 if (prop in memory) {
                     let value = serde[prop as keyof typeof memory].fromMemory(memory);
                     if (value !== undefined) {
@@ -179,6 +196,10 @@ export class MemoryBackedClass {
             },
             set: (target, prop: string | Symbol, value) => {
                 const memory = fetchMemory();
+                if ("__toMemory__" in serde) {
+                    // Object is written all at once
+                    return serde.__toMemory__(memory, value);
+                }
                 if (typeof prop !== 'string') return false;
                 if (prop in serde) {
                     target[prop as keyof typeof target] = value;

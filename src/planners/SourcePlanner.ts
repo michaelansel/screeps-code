@@ -49,7 +49,7 @@ export class SourcePlanner extends MemoryBackedClass {
                 },
             },
         };
-        return this.proxyGenericRecord(serde, fetchMemory, cache);
+        return this.proxyGenericRecord<SourcePlannerCreepData>(serde, fetchMemory, <SourcePlannerCreepData>{}, cache);
     }
 
     get creeps(): SourcePlannerCreeps {
