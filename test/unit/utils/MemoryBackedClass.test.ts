@@ -13,7 +13,9 @@ type ObjectMemory = BackingMemoryRecord<ObjectRecordCollection>;
 type ArrayRecord = Task[]
 type ArrayMemory = BackingMemoryRecord<ArrayRecord>;
 
-type MockMemory = { Object?: ObjectMemory, Array?: ArrayMemory, Test?: { Object?: ObjectMemory, Array?: ArrayMemory, }, };
+type TestClassMemory = { Object?: ObjectMemory, Array?: ArrayMemory, };
+
+type MockMemory = { Test?: TestClassMemory, };
 declare global {
     interface Memory extends MockMemory { }
 }
@@ -222,7 +224,7 @@ describe("MemoryBackedClass", () => {
         // @ts-ignore : allow adding Memory to global
         global.Memory = _.clone(FilledMemoryArray);
         const test = new TestClass();
-        //assert.deepEqual(test.arrayData[0], HarvestEnergyTask);
+        assert.deepEqual(test.arrayData[0], HarvestEnergyTask);
         assert.deepEqual(test.arrayData, [HarvestEnergyTask, HarvestEnergyTask]);
     });
 
