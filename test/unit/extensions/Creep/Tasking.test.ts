@@ -1,12 +1,18 @@
-import 'test/unit/globals';
-import 'extensions';
+import { globalsSetup, globalsCleanup } from 'test/unit/globals';
 
-import { DoNothingTask, Task } from "tasks";
+import { DoNothingTask } from "tasks";
 import { DoNothingProject } from 'projects';
 
 import { assert } from "chai";
 
 describe("CreepTaskingExtension", () => {
+    beforeEach(() => {
+        globalsSetup();
+    })
+    afterEach(() => {
+        globalsCleanup();
+    })
+
     it("should save task ID to memory on start", () => {
         const creep = new Creep("test" as Id<Creep>);
         creep.startTask(DoNothingTask);
