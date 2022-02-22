@@ -1,5 +1,6 @@
+export const ProjectSymbol: unique symbol = Symbol();
 export interface Project {
-    readonly type: unique symbol;
+    readonly type: typeof ProjectSymbol;
     id: Id<Project>;
     start(creep: Creep): void;
     run(creep: Creep): void;

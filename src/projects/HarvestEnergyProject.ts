@@ -1,11 +1,10 @@
 import type { Project } from '.'
-import { ProjectHelpers } from './Project';
+import { ProjectHelpers, ProjectSymbol } from './Project';
 import * as tasks from 'tasks';
 
-export const HarvestEnergyProject = <Project>{
-    id: "HarvestEnergyProject",
-    // Is there a way I can add local helper functions without confusing the type system?
-
+export const HarvestEnergyProject: Project = {
+    type: ProjectSymbol,
+    id: "HarvestEnergyProject" as Id<Project>,
     start(creep: Creep): void {
         ProjectHelpers.start(creep, HarvestEnergyProject);
     },

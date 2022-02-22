@@ -1,8 +1,9 @@
-import type {Task} from '.'
-import { TaskHelpers } from './Task';
+import type { Task } from '.'
+import { TaskHelpers, TaskSymbol } from './Task';
 
-export const DepositEnergyTask = <Task>{
-    id: "DepositEnergyTask",
+export const DepositEnergyTask: Task = {
+    type: TaskSymbol,
+    id: "DepositEnergyTask" as Id<Task>,
     start(creep: Creep): void {
         TaskHelpers.start(creep, DepositEnergyTask);
     },

@@ -1,12 +1,10 @@
 import { SourcePlanner } from 'planners/SourcePlanner';
 import type { Task } from '.'
-import { TaskHelpers } from './Task';
+import { TaskHelpers, TaskSymbol } from './Task';
 
-export const HarvestEnergyTask = <Task>{
-    id: "HarvestEnergyTask", // TODO Consider using a Symbol https://www.typescriptlang.org/docs/handbook/symbols.html
-
-    // Is there a way I can add local helper functions without confusing the type system?
-
+export const HarvestEnergyTask: Task = {
+    type: TaskSymbol,
+    id: "HarvestEnergyTask" as Id<Task>,
     start(creep: Creep): void {
         TaskHelpers.start(creep, HarvestEnergyTask);
         SourcePlanner.instance.requestSourceAssignment(creep);
