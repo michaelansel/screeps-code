@@ -70,15 +70,16 @@ class TestClass extends MemoryBackedClass {
     }
 
     private _objectData: ObjectRecordCollection | undefined;
+    private fetchObjectMemoryFunction(): () => BackingMemoryRecord<ObjectRecordCollection> {
+        return function (this: TestClass) {
+            const base = this.fetchMemory();
+            if (base.Object === undefined) base.Object = {};
+            return base.Object;
+        }.bind(this);
+    }
     get objectData(): ObjectRecordCollection {
         if (this._objectData === undefined) {
-            function fetchMemory() {
-                const base = this.fetchMemory();
-                // TODO this is the wrong place for this check
-                if (Memory.Test.Object === undefined) Memory.Test.Object = {};
-                return this.fetchMemory().Object;
-            }
-            this._objectData = this.proxyMapOfRecords(this.proxyTestObjectData.bind(this), fetchMemory, {}, {});
+            this._objectData = this.proxyMapOfRecords(this.proxyTestObjectData.bind(this), this.fetchObjectMemoryFunction(), {}, {});
         }
         return this._objectData;
     }
@@ -110,11 +111,12 @@ class TestClass extends MemoryBackedClass {
     }
 
     private _arrayData: ArrayRecord | undefined;
-    private fetchArrayMemory() {
-        // TODO this is the wrong place for this check
-        if (Memory.Test === undefined) Memory.Test = {}
-        if (Memory.Test.Array === undefined) Memory.Test.Array = [];
-        return Memory.Test.Array;
+    private fetchArrayMemoryFunction(): () => BackingMemoryRecord<ArrayRecord> {
+        return function (this: TestClass) {
+            const base = this.fetchMemory();
+            if (base.Array === undefined) base.Array = [];
+            return base.Array;
+        }.bind(this);
     }
     private readonly _arrayDataSerDe: SerDeFunctions<ArrayRecord> = {
         __fromMemory__: (memory) => {
@@ -136,7 +138,7 @@ class TestClass extends MemoryBackedClass {
     }
     get arrayData(): ArrayRecord {
         if (this._arrayData === undefined) {
-            this._arrayData = this.proxyGenericRecord<ArrayRecord>(this._arrayDataSerDe, this.fetchArrayMemory, []);
+            this._arrayData = this.proxyGenericRecord<ArrayRecord>(this._arrayDataSerDe, this.fetchArrayMemoryFunction(), []);
         }
         if (this._arrayData == undefined) throw new Error("Unable to create arrayData proxy");
         return this._arrayData;
@@ -145,7 +147,7 @@ class TestClass extends MemoryBackedClass {
         if (value == undefined) {
             this._arrayData = undefined;
         } else {
-            this._arrayData = this.proxyGenericRecord<ArrayRecord>(this._arrayDataSerDe, this.fetchArrayMemory, [], value);
+            this._arrayData = this.proxyGenericRecord<ArrayRecord>(this._arrayDataSerDe, this.fetchArrayMemoryFunction(), [], value);
         }
 
     }
