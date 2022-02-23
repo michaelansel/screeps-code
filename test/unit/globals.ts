@@ -2,7 +2,6 @@ export { };
 
 // Base class that will receive extensions
 class TestCreepClass {
-    memory = {};
 }
 
 
