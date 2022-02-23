@@ -3,9 +3,9 @@ class Creep implements Creep {
 // @ts-ignore
 global.Creep = Creep;
 
-import {assert} from "chai";
-import {loop} from "../../src/main";
-import {Game, Memory} from "./mock"
+import { assert } from "chai";
+import { loop } from "../../src/main";
+import { Game, Memory } from "./mock"
 
 describe("main", () => {
   before(() => {
