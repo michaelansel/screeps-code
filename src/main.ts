@@ -17,9 +17,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
     creep.run && creep.run();
   }
 
-  // @ts-ignore
-  Game.SourcePlanner = () => { return SourcePlanner; };
-  SourcePlanner.instance.assignSources();
+  // Run room-specific logic
+  for (const room of Object.values(Game.rooms)) {
+    SourcePlanner.instance.assignSources(room);
+  }
 
   // TODO filler for testing
   for (const spawnName in Game.spawns) {
