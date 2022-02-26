@@ -1,5 +1,6 @@
 import { Task, Tasks } from "tasks";
 import { BackingMemoryRecord, MemoryBackedClass, SerDeFunctions } from "utils/MemoryBackedClass";
+import { IdMap } from "utils/IdMap";
 
 interface SourcePlannerCreepData {
     task: Task,
@@ -119,7 +120,7 @@ export class SourcePlanner extends MemoryBackedClass {
                 map[creep.name] = creep;
                 return map;
             }, {});
-        let creepsBySource = new Map<Source, Creep[]>();
+        let creepsBySource = new IdMap<Source, Creep[]>();
         // Rebuild assignment index
         for (const creep of allRequestingCreeps) {
             const creepData = this.creeps[creep.name];
