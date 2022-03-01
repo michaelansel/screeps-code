@@ -1,6 +1,7 @@
 import { Task, Tasks } from "tasks";
 import { BackingMemoryRecord, MemoryBackedClass, SerDeFunctions } from "utils/MemoryBackedClass";
 import { IdMap } from "utils/IdMap";
+import { Logger } from "utils/Logger";
 
 interface SourcePlannerCreepData {
     task: Task,
@@ -25,9 +26,11 @@ export class SourcePlanner extends MemoryBackedClass {
 
 
     private creeps: SourcePlannerCreeps;
+    private logger: Logger;
 
     private constructor() {
         super();
+        this.logger = Logger.get("SourcePlanner");
         this.creeps = this.proxyMapOfRecords<SourcePlannerCreepData>(this.proxySourcePlannerCreepData.bind(this), this.fetchCreepsMemory.bind(this), {}, {});
     };
 
@@ -70,7 +73,7 @@ export class SourcePlanner extends MemoryBackedClass {
 
     private _addRequest(creep: Creep) {
         if (creep.task === null) {
-            console.log(`Ignoring source request from ${creep.name} because task is null`);
+            this.logger.warn(`Ignoring source request from ${creep.name} because task is null`);
         } else {
             this.creeps[creep.name] = {
                 task: creep.task
@@ -89,6 +92,7 @@ export class SourcePlanner extends MemoryBackedClass {
                 continue;
             } else {
                 // Creep is dead or has changed task
+                this.logger.debug('cleaning up old creep data for ' + name);
                 delete this.creeps[name];
             }
         }
@@ -125,7 +129,7 @@ export class SourcePlanner extends MemoryBackedClass {
         for (const creep of allRequestingCreeps) {
             const creepData = this.creeps[creep.name];
             if (creepData.source !== undefined) {
-                console.log(`${creep.name} previously assigned to ${creepData.source.id}`);
+                this.logger.debug(`${creep.name} previously assigned to ${creepData.source.id}`);
                 const assignedCreeps = creepsBySource.get(creepData.source) || [];
                 assignedCreeps.push(creep);
                 creepsBySource.set(creepData.source, assignedCreeps);
@@ -137,7 +141,7 @@ export class SourcePlanner extends MemoryBackedClass {
 
     // Request SourcePlanner to assign a Source by the end of the tick; may or may not happen
     requestSourceAssignment(creep: Creep): void {
-        console.log(`${creep.name} would like to harvest from an available Source`);
+        this.logger.info(`${creep.name} would like to harvest from an available Source`);
         this._addRequest(creep);
     }
 
@@ -154,14 +158,33 @@ export class SourcePlanner extends MemoryBackedClass {
                     }, {});
         let creepsBySource: Map<Source, Creep[]> = this.creepsBySourceInRoom(room);
 
+        const allSourcesInMap = sources.reduce(
+            (output: boolean, source: Source) => {
+                return output && creepsBySource.has(source);
+            }, true);
+        this.logger.debug("All Sources in Map? ", allSourcesInMap);
+        this.logger.debug("Source.length vs Map.length", sources.length, Array.from(creepsBySource.keys()).length);
+
+        const noCreepsAssigned = sources.reduce(
+            (output: boolean, source: Source) => {
+                return output && (creepsBySource.get(source) || []).length == 0;
+            }, true);
+        this.logger.debug("No Creeps Assigned? ", noCreepsAssigned);
+
         // TODO Optimize requests based on number of WORK parts and path distance to Source
         for (const source of sources) {
             const assignedCreeps = creepsBySource.get(source) || [];
             creepsBySource.set(source, assignedCreeps);
+            if (assignedCreeps.length > 3) {
+                this.logger.warn(`Recorded state oversubscribes ${source.id}. Expected: 3 ; Actual: ${assignedCreeps.length}`);
+            } else {
+                this.logger.debug(`Source[${source.id}]: ${assignedCreeps.length}`);
+            }
             while (assignedCreeps.length < 3 && Object.keys(unassignedCreeps).length > 0) {
                 const nextCreepName = Object.keys(unassignedCreeps)[0];
                 const nextCreep = unassignedCreeps[nextCreepName];
                 if (nextCreep === undefined) break; // this should be impossible, so bail rather than possibly infinite loop
+                this.logger.info(`Assigning ${nextCreep.name} to Source[${source.id}]`);
                 assignedCreeps.push(nextCreep);
                 delete unassignedCreeps[nextCreepName];
             }
@@ -171,7 +194,7 @@ export class SourcePlanner extends MemoryBackedClass {
             let creeps = creepsBySource.get(source);
             if (creeps === undefined) continue;
             for (const creep of creeps) {
-                console.log(`Assigning ${creep.name} to Source[${source.id}]`);
+                this.logger.debug(`Persisting assignment: ${creep.name} assigned to Source[${source.id}]`);
                 // Save in planner memory
                 this._assignCreepToSource(creep, source);
                 // Save in creep memory
@@ -179,7 +202,7 @@ export class SourcePlanner extends MemoryBackedClass {
             }
         }
         if (Object.keys(unassignedCreeps).length > 0) {
-            console.log("Ran out of space at Sources for waiting creeps: " + Object.values(unassignedCreeps).map((creep) => { return creep.name; }).join(', '));
+            this.logger.warn("Ran out of space at Sources for waiting creeps: " + Object.values(unassignedCreeps).map((creep) => { return creep.name; }).join(', '));
         }
     }
 }

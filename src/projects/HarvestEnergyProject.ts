@@ -1,6 +1,9 @@
 import type { Project } from '.'
 import { ProjectHelpers, ProjectSymbol } from './Project';
 import * as tasks from 'tasks';
+import { Logger } from 'utils/Logger';
+
+const logger = Logger.get("HarvestEnergyProject");
 
 export const HarvestEnergyProject: Project = {
     type: ProjectSymbol,
@@ -9,7 +12,7 @@ export const HarvestEnergyProject: Project = {
         ProjectHelpers.start(creep, HarvestEnergyProject);
     },
     run(creep: Creep): void {
-        console.log(`Executing ${this.id} for ${creep.name}`);
+        logger.info(`Executing ${this.id} for ${creep.name}`);
 
         if (creep.isFullOfEnergy) {
             creep.startTask(tasks.DepositEnergyTask);

@@ -122,7 +122,6 @@ class TestClass extends MemoryBackedClass {
     }
     private readonly _arrayDataSerDe: SerDeFunctions<ArrayRecord> = {
         __fromMemory__: (memory) => {
-            //console.log("loading array from memory");
             let ret: ArrayRecord = [];
             for (const t of memory) {
                 const task = this.loadByIdFromTable(t, Tasks);

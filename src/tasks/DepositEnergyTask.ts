@@ -1,5 +1,8 @@
 import type { Task } from '.'
 import { TaskHelpers, TaskSymbol } from './Task';
+import { Logger } from 'utils/Logger';
+
+const logger = Logger.get("DepositEnergyTask");
 
 export const DepositEnergyTask: Task = {
     type: TaskSymbol,
@@ -8,7 +11,7 @@ export const DepositEnergyTask: Task = {
         TaskHelpers.start(creep, DepositEnergyTask);
     },
     run(creep: Creep): void {
-        // console.log(`Executing ${this.id} for ${creep.name}`);
+        logger.info(`Executing ${this.id} for ${creep.name}`);
         let target: Structure | null = null;
 
         if (!creep.memory.target) {

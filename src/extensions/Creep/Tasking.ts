@@ -3,6 +3,9 @@ import type { Task } from 'tasks';
 import type { Project } from 'projects';
 import * as tasks from 'tasks';
 import * as projects from 'projects';
+import { Logger } from 'utils/Logger';
+
+const logger = Logger.get("Tasking");
 
 export interface CreepTaskingExtension {
     run(): void;
@@ -21,7 +24,7 @@ export class CreepTaskingExtensionClass extends CreepBaseExtensionClass implemen
     private _task: Task | undefined;
 
     run(): void {
-        // console.log(`Executing logic for ${this.creep.name}`);
+        logger.info(`Executing logic for ${this.creep.name}`);
 
         if (this.task === null) {
             this.project?.run(this.creep);

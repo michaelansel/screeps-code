@@ -1,3 +1,7 @@
+import { Logger } from 'utils/Logger';
+
+const logger = Logger.get("MemoryBackedClass");
+
 type JsonNativeTypes = string | number | bigint | boolean;
 type SeriablizableById = { id: Id<any> };
 
@@ -83,7 +87,7 @@ export class MemoryBackedClass {
                     });
                     if (proxy !== undefined) {
                         target[prop] = proxy;
-                        // console.log(`Loaded ${prop} from memory: ${target[prop]}`);
+                        logger.debug(`Loaded ${prop} from memory: ${target[prop]}`);
                     }
                     return proxy;
                 }
@@ -102,9 +106,9 @@ export class MemoryBackedClass {
                     delete memory[key];
                     return false;
                 } else {
-                    // console.log(`Saving new record to memory: ${key} : ${JSON.stringify(memoryRecord)}`);
+                    logger.debug(`Saving new record to memory: ${key} : ${JSON.stringify(proxy)}`);
                     target[key] = proxy;
-                    // console.log(`Full proxy memory: ${JSON.stringify(memory)}`);
+                    logger.debug(`Full proxy memory: ${JSON.stringify(memory)}`);
                     return true;
                 }
             },
@@ -169,7 +173,7 @@ export class MemoryBackedClass {
                     serde[prop].toMemory(memory, initialValue[prop]);
                 }
             }
-            // console.log("Overwriting memory with new values: " + JSON.stringify(memory));
+            logger.debug("Overwriting memory with new values: " + JSON.stringify(memory));
         }
         if (initialValue === undefined) {
             // This should be impossible
@@ -188,7 +192,7 @@ export class MemoryBackedClass {
                     let value = serde[prop as keyof typeof memory].fromMemory(memory);
                     if (value !== undefined) {
                         target[prop as keyof typeof memory] = value;
-                        // console.log(`Loaded ${prop} from memory: ${target[prop as keyof typeof memory]}`);
+                        logger.debug(`Loaded ${prop} from memory: ${target[prop as keyof typeof memory]}`);
                     }
                     return value;
                 }

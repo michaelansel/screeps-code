@@ -3,6 +3,7 @@ import { ErrorMapper } from "utils/ErrorMapper";
 import { HarvestEnergyProject } from 'projects';
 import { SourcePlanner } from 'planners/SourcePlanner';
 import { Console } from 'utils/Console';
+import { Logger } from 'utils/Logger';
 
 // @ts-ignore Expose in the game console
 global.C = Console;
@@ -10,7 +11,8 @@ global.C = Console;
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = ErrorMapper.wrapLoop(() => {
-  console.log(`Current game tick is ${Game.time}`);
+  const logger = Logger.get("main");
+  logger.info(`Current game tick is ${Game.time}`);
 
   if (Memory.creepCounter == undefined) Memory.creepCounter = 0;
 
