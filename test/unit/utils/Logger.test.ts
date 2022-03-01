@@ -41,4 +41,6 @@ describe("Logger", () => {
         Logger.get("test").debug("test");
         assert.notCalled(consoleLog);
     });
+
+    it("should remember the logging configuration across ticks");
 });
