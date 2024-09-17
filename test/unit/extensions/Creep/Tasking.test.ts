@@ -4,6 +4,8 @@ import { DoNothingTask } from "tasks";
 import { DoNothingProject } from 'projects';
 
 import { assert } from "chai";
+import { TaskHelpers, TaskId } from 'tasks/Task';
+import { DoNothingTaskConfig } from 'tasks/DoNothingTask';
 
 describe("CreepTaskingExtension", () => {
     beforeEach(() => {
@@ -41,4 +43,26 @@ describe("CreepTaskingExtension", () => {
 
     it("handles a task stopping itself right away");
     it("stops running tasks");
+
+    describe("TaskHelpers", () => {
+        describe("#loadConfig", () => {
+            it("returns a type-matched config object", () => {
+                const creep = new Creep("test" as Id<Creep>);
+                creep.memory = { task: { id: DoNothingTask.id, config: <DoNothingTaskConfig>{} } };
+                const config = TaskHelpers.loadConfig<DoNothingTaskConfig>(creep, DoNothingTask);
+                assert.deepEqual(config, <DoNothingTaskConfig>{});
+            });
+
+            it("fails when requested config type and running task don't match", () => {
+                const creep = new Creep("test" as Id<Creep>);
+                creep.memory = { task: { id: "SomeOtherTask" as TaskId } };
+                assert.throws(
+                    () => {
+                        TaskHelpers.loadConfig<DoNothingTaskConfig>(creep, DoNothingTask);
+                    },
+                    "Running TaskBehavior method on a Creep that isn't assigned to the Task"
+                )
+            });
+        });
+    });
 });

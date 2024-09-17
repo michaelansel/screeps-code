@@ -30,6 +30,7 @@ export const TaskHelpers = {
     start(creep: Creep, TaskType: Task) {
         if (creep.task !== TaskType) { throw new Error("Starting task for creep that doesn't know it is doing that task. This usually happens if you call Task.start directly instead of using Creep.startTask."); }
     },
+    // Call with loadConfig<MyConfigType>(creep, MyBehaviorObject)
     loadConfig<C extends TaskConfig<any>>(creep: Creep, TaskType: TaskBehaviorForConfig<C>) : C {
         // TODO how can I get the config without leaking the Tasking memory abstraction?
         if (creep.task != TaskType) {
