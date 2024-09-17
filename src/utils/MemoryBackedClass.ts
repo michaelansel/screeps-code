@@ -40,7 +40,7 @@ type OnlyOptionalKeys<T> = { [Property in OptionalKeys<T>]: T[Property] };
 export class MemoryBackedClass {
     protected constructor() { }
 
-    protected loadByIdFromTable<T>(id: Id<T> | undefined, lookupTable: { [id: Id<T>]: T }): T | undefined {
+    protected loadByIdFromTable<T extends SeriablizableById>(id: Id<T> | undefined, lookupTable: { [id: Id<T>]: T }): T | undefined {
         if (id == undefined) {
             return undefined;
         } else {
@@ -52,7 +52,7 @@ export class MemoryBackedClass {
         return undefined;
     }
 
-    protected loadGameObjectById<T>(id: Id<T> | undefined): T | undefined {
+    protected loadGameObjectById<T extends SeriablizableById>(id: Id<T> | undefined): T | undefined {
         if (id == undefined) {
             return undefined;
         } else {
@@ -60,12 +60,12 @@ export class MemoryBackedClass {
             return obj ? obj : undefined;
         }
     }
-    protected nullToUndefined(input: any): any {
-        if (input === null) return undefined;
-        return input;
-    }
+    // protected nullToUndefined(input: any): any {
+    //     if (input === null) return undefined;
+    //     return input;
+    // }
 
-    // Create a memory-backed proxy for Record<string, CacheRecord>
+    // Create a memory-backed proxy for Record<string, SingleRecord>
     // where all values are of the same shape. proxyMember is used to
     // create individual proxies for each of the values
     protected proxyMapOfRecords<SingleRecord extends object>(
@@ -140,8 +140,8 @@ export class MemoryBackedClass {
         });
     }
 
-    // Create a memory-backed proxy for a single object of shape CacheRecord
-    // serde functions convert each property of CacheRecord to/from memory
+    // Create a memory-backed proxy for a single object of shape SingleRecord
+    // serde functions convert each property of SingleRecord to/from memory
     // cache can be provided to overwrite memory with a specific set of values (vs loading from memory)
     protected proxyGenericRecord<SingleRecord extends object>(
         serde: SerDeFunctions<SingleRecord>,
@@ -158,14 +158,13 @@ export class MemoryBackedClass {
                 initialValue = _.clone(emptyRecord);
                 for (const key in serde) {
                     if (!serde[key].required) continue;
-                    // TODO Pretty sure "as keyof typeof" is just telling the type system to pound sand, which is bad
                     let value = serde[key].fromMemory(memory);
                     if (value == undefined) { return undefined; }
                     initialValue[key] = value;
                 }
             }
         } else {
-            // Overwrite memory with state in CacheRecord
+            // Overwrite memory with state in SingleRecord
             if ("__toMemory__" in serde) {
                 serde.__toMemory__(memory, initialValue);
             } else {
