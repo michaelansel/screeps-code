@@ -48,5 +48,5 @@ export class IdMap<K extends { id: Id<K>; }, V> implements Map<K, V> {
     [Symbol.iterator](): IterableIterator<[K, V]> {
         throw new Error("Method not implemented.");
     }
-    [Symbol.toStringTag]: string;
+    readonly [Symbol.toStringTag]: string = "IdMap";
 }
