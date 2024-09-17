@@ -29,21 +29,25 @@ export class IdMap<K extends { id: Id<K>; }, V> implements Map<K, V> {
         throw new Error("Method not implemented.");
     }
     keys(): IterableIterator<K> {
-        return Array.from(this.map.keys())
+        const keys = Array.from(this.map.keys())
             .map(
-                (key) => {
-                    const obj = this.map.get(key);
+                (id) => {
+                    const obj = this.map.get(id);
                     if (obj !== undefined)
                         return obj.key;
                     throw new Error("Impossible: key is both in and not in map");
                 }
-            )[Symbol.iterator]();
+            );
+        // Do something spooky to make eslint happy
+        return Array.prototype[Symbol.iterator].bind(keys)();
     }
     values(): IterableIterator<V> {
-        return Array.from(this.map.values())
+        const values = Array.from(this.map.values())
             .map(
                 (obj) => { return obj.value; }
-            )[Symbol.iterator]();
+            );
+        // Do something spooky to make eslint happy
+        return Array.prototype[Symbol.iterator].bind(values)();
     }
     [Symbol.iterator](): IterableIterator<[K, V]> {
         throw new Error("Method not implemented.");

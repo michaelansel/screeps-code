@@ -6,18 +6,10 @@
   "//": "If you add or change the names of destinations in screeps.json, make sure you update these scripts to reflect the changes",
   "scripts": {
     "lint": "eslint \"src/**/*.ts\"",
-    "build": "rollup -c",
-    "push-main": "rollup -c --environment DEST:main",
-    "push-pserver": "rollup -c --environment DEST:pserver",
-    "push-season": "rollup -c --environment DEST:season",
-    "push-sim": "rollup -c --environment DEST:sim",
+    "build": "esbuild src/main.ts --bundle --external:main.js.map --minify --sourcemap --outfile=dist/main.js",
     "test": "npm run test-unit",
     "test-unit": "mocha \"test/unit/**/*.test.ts\"",
-    "test-integration": "echo 'See docs/in-depth/testing.md for instructions on enabling integration tests'",
-    "watch-main": "rollup -cw --environment DEST:main",
-    "watch-pserver": "rollup -cw --environment DEST:pserver",
-    "watch-season": "rollup -cw --environment DEST:season",
-    "watch-sim": "rollup -cw --environment DEST:sim"
+    "test-integration": "echo 'See docs/in-depth/testing.md for instructions on enabling integration tests'"
   },
   "repository": {
     "type": "git",
@@ -33,8 +25,6 @@
     "node": ">= 20.x"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "*",
-    "@rollup/plugin-node-resolve": "*",
     "@types/chai": "*",
     "@types/lodash": "*",
     "@types/mocha": "*",
@@ -46,6 +36,7 @@
     "@typescript-eslint/parser": "*",
     "@typescript-eslint/typescript-estree": "*",
     "chai": "*",
+    "esbuild": "~0.23.1",
     "eslint": "*",
     "eslint-config-prettier": "*",
     "eslint-import-resolver-typescript": "*",
@@ -54,14 +45,9 @@
     "lodash": "*",
     "mocha": "*",
     "prettier": "*",
-    "rollup": "*",
-    "rollup-plugin-clear": "*",
-    "rollup-plugin-screeps": "*",
-    "rollup-plugin-typescript2": "*",
     "sinon": "*",
     "sinon-chai": "*",
     "ts-node": "*",
-    "tsconfig-paths": "*",
     "typescript": "*"
   },
   "dependencies": {
