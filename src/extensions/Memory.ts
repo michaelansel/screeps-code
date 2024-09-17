@@ -6,7 +6,7 @@ declare global {
     interface Memory extends MemoryExtension { }
 
     interface MemoryExtension {
-        creepCounter?: number;
+        creepCounter?: number; // main.ts for generating unique creep names
         SourcePlanner?: SourcePlannerMemory;
     }
 }
