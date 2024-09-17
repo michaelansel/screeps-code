@@ -1,10 +1,12 @@
-import { Task, Tasks } from "tasks";
+import { HarvestEnergyTask, Tasks } from "tasks";
 import { BackingMemoryRecord, MemoryBackedClass, SerDeFunctions } from "utils/MemoryBackedClass";
 import { IdMap } from "utils/IdMap";
 import { Logger } from "utils/Logger";
+import { TaskBehavior, TaskId } from "tasks/Task";
+import { HarvestEnergyTaskConfig } from "tasks/HarvestEnergyTask";
 
 interface SourcePlannerCreepData {
-    task: Task,
+    task: TaskBehavior<TaskId>,
     source?: Source,
 };
 type SourcePlannerCreepDataMemory = BackingMemoryRecord<SourcePlannerCreepData>;
@@ -16,6 +18,7 @@ export interface SourcePlannerMemory {
 }
 
 export class SourcePlanner extends MemoryBackedClass {
+    // Singleton
     private static _instance: SourcePlanner;
     static get instance(): SourcePlanner {
         if (!SourcePlanner._instance) {
@@ -50,7 +53,7 @@ export class SourcePlanner extends MemoryBackedClass {
             task: {
                 required: true,
                 fromMemory: (m: SourcePlannerCreepDataMemory) => { return this.loadByIdFromTable(m.task, Tasks); },
-                toMemory: (m: SourcePlannerCreepDataMemory, task: Task) => {
+                toMemory: (m: SourcePlannerCreepDataMemory, task: TaskBehavior<TaskId>) => {
                     m.task = task.id;
                     return true;
                 },
@@ -143,6 +146,7 @@ export class SourcePlanner extends MemoryBackedClass {
     requestSourceAssignment(creep: Creep): void {
         this.logger.info(`${creep.name} would like to harvest from an available Source`);
         this._addRequest(creep);
+        // TODO if source assigned, return it
     }
 
     // Request SourcePlanner to assign Creeps to Sources in a given room
@@ -198,7 +202,10 @@ export class SourcePlanner extends MemoryBackedClass {
                 // Save in planner memory
                 this._assignCreepToSource(creep, source);
                 // Save in creep memory
-                creep.memory.source = source.id;
+                // TODO this is an incredibly leaky abstraction
+                if (creep.task == HarvestEnergyTask) {
+                    HarvestEnergyTask.updateSource(creep, source);
+                }
             }
         }
         if (Object.keys(unassignedCreeps).length > 0) {

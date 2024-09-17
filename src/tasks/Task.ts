@@ -1,3 +1,5 @@
+import { CreepLogicExtensionClass } from "extensions/Creep/Logic";
+
 export const TaskBehaviorSymbol: unique symbol = Symbol();
 export const TaskConfigSymbol: unique symbol = Symbol();
 
@@ -22,8 +24,19 @@ export function registerTask(task: Task) {
     Tasks[task.id] = task;
 }
 
+type TaskBehaviorForConfig<C extends TaskConfig<TaskId>> = TaskBehavior<TaskId>;
+
 export const TaskHelpers = {
     start(creep: Creep, TaskType: Task) {
         if (creep.task !== TaskType) { throw new Error("Starting task for creep that doesn't know it is doing that task. This usually happens if you call Task.start directly instead of using Creep.startTask."); }
+    },
+    loadConfig<C extends TaskConfig<any>>(creep: Creep, TaskType: TaskBehaviorForConfig<C>) : C {
+        // TODO how can I get the config without leaking the Tasking memory abstraction?
+        if (creep.task != TaskType) {
+            throw new Error("Running TaskBehavior method on a Creep that isn't assigned to the Task");
+        }
+        if (creep.memory.task === undefined) throw new Error("Corrupt Creep memory: no CreepTaskMemory structure when assigned Task");
+        if (creep.memory.task.config === undefined) creep.memory.task.config = <C>{};
+        return <C>creep.memory.task.config;
     },
 }

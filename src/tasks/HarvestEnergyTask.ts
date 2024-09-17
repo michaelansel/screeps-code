@@ -9,9 +9,13 @@ export interface HarvestEnergyTaskConfig extends TaskConfig<typeof HarvestEnergy
     source: Id<Source>,
 }
 
+export interface HarvestEnergyTaskBehavior extends TaskBehavior<typeof HarvestEnergyTaskId> {
+    updateSource(creep: Creep, source: Source): void;
+}
+
 const logger = Logger.get("HarvestEnergyTask");
 
-const HarvestEnergyTaskBehavior: TaskBehavior<typeof HarvestEnergyTaskId> = {
+const HarvestEnergyTaskBehavior: HarvestEnergyTaskBehavior = {
     type: TaskBehaviorSymbol,
     id: HarvestEnergyTaskId,
     start(creep: Creep, config?: HarvestEnergyTaskConfig): void {
@@ -52,6 +56,10 @@ const HarvestEnergyTaskBehavior: TaskBehavior<typeof HarvestEnergyTaskId> = {
     },
     stop(creep: Creep): void {
         // TODO notify SourcePlanner
+    },
+    updateSource(creep: Creep, source: Source): void {
+        let config = TaskHelpers.loadConfig<HarvestEnergyTaskConfig>(creep, this);
+        config.source = source.id;
     },
 }
 
