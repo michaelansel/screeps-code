@@ -1,11 +1,6 @@
-class Creep implements Creep {
-}
-// @ts-ignore
-global.Creep = Creep;
-
 import { assert } from "chai";
 import { loop } from "../../src/main";
-import { Game, Memory } from "./mock"
+import { Game, Memory, Creep } from "./mock"
 
 describe("main", () => {
   before(() => {
@@ -29,10 +24,12 @@ describe("main", () => {
   });
 
   it("Automatically delete memory of missing creeps", () => {
+    // Simulate that notPersistValue recently died
     Memory.creeps.persistValue = "any value";
     Memory.creeps.notPersistValue = "any value";
 
-    Game.creeps.persistValue = "any value";
+    // Indicate an active creep called persistValue
+    Game.creeps.persistValue = _.clone(Creep);
 
     loop();
 

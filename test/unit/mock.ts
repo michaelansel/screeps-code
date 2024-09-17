@@ -15,3 +15,9 @@ export const Memory: {
 } = {
   creeps: {}
 };
+
+export const Creep: {
+  run(): void
+} = {
+  run: () => { }
+};

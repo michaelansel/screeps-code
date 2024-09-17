@@ -19,8 +19,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
   // Run all creeps
   for (const name in Game.creeps) {
     const creep = Game.creeps[name];
-    // TODO this is an ugly workaround to address the mock object not having all the methods on it
-    creep.run && creep.run();
+    creep.run();
   }
 
   // Run room-specific logic
