@@ -6,6 +6,7 @@ import { Projects } from 'projects';
 import { Logger } from 'utils/Logger';
 import { loadByIdFromTable } from 'utils/MemoryHelpers';
 import { Task, TaskBehavior, TaskId } from 'tasks/Task';
+import { ProjectBehavior, ProjectId } from 'projects/Project';
 
 const logger = Logger.get("Tasking");
 
@@ -17,8 +18,8 @@ export interface CreepTaskMemory {
 
 // CreepMemory.project
 export interface CreepProjectMemory {
-    id: Id<Project>;
-    config?: ProjectConfig;
+    id: ProjectId;
+    config?: ProjectConfig<any>;
 }
 
 export interface CreepTaskingExtension {
@@ -97,7 +98,7 @@ export class CreepTaskingExtensionClass extends CreepBaseExtensionClass implemen
         return this._project !== undefined ? this._project : null;
     }
 
-    startProject(project: Project, config?: ProjectConfig): void {
+    startProject<T extends ProjectId>(project: ProjectBehavior<T>, config?: ProjectConfig<T>): void {
         // Stop any previously running project
         if (this._project !== undefined) {
             this.stopProject();
@@ -106,7 +107,7 @@ export class CreepTaskingExtensionClass extends CreepBaseExtensionClass implemen
         this._project = project;
         this.creep.memory.project = {
             id: project.id,
-            config: config === undefined ? {} as ProjectConfig : config
+            config: config === undefined ? {} as ProjectConfig<typeof project.id> : config
         };
         project.start(this.creep, this.creep.memory.project.config); // Project can call stopProject before returning
     }

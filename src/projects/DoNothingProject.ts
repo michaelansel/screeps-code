@@ -1,15 +1,22 @@
-import type { Project } from '.'
-import { ProjectHelpers, ProjectSymbol } from './Project';
+import type { ProjectBehavior, ProjectConfig, ProjectId } from './Project';
+import { ProjectBehaviorSymbol, ProjectHelpers } from './Project';
 
-export const DoNothingProject: Project = {
-    type: ProjectSymbol,
-    id: "DoNothingProject" as Id<Project>,
-    start(creep: Creep): void {
-        ProjectHelpers.start(creep, DoNothingProject);
+const DoNothingProjectId = <ProjectId>"DoNothingProject";
+
+export interface DoNothingProjectConfig extends ProjectConfig<typeof DoNothingProjectId> {
+}
+
+const DoNothingProjectBehavior: ProjectBehavior<typeof DoNothingProjectId> = {
+    type: ProjectBehaviorSymbol,
+    id: DoNothingProjectId,
+    start(creep: Creep, config?: DoNothingProjectConfig): void {
+        ProjectHelpers.start(creep, this);
     },
-    run(creep: Creep): void {
+    run(creep: Creep, config?: DoNothingProjectConfig): void {
     },
     stop(creep: Creep): void {
-        ProjectHelpers.stop(creep, DoNothingProject);
+        ProjectHelpers.stop(creep, this);
     },
-};
+}
+
+export const DoNothingProject = DoNothingProjectBehavior;

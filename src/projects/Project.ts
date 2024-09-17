@@ -1,10 +1,20 @@
-export const ProjectSymbol: unique symbol = Symbol();
-export interface Project {
-    readonly type: typeof ProjectSymbol;
-    id: Id<Project>;
-    start(creep: Creep): void;
-    run(creep: Creep): void;
+export const ProjectBehaviorSymbol: unique symbol = Symbol();
+export const ProjectConfigSymbol: unique symbol = Symbol();
+
+export type Project = ProjectBehavior<any>;
+export type ProjectId = Id<Project>;
+
+export interface ProjectBehavior<T extends ProjectId> {
+    readonly type: typeof ProjectBehaviorSymbol;
+    readonly id: T;
+    start(creep: Creep, config?: ProjectConfig<T>): void;
+    run(creep: Creep, config?: ProjectConfig<T>): void;
     stop(creep: Creep): void;
+};
+
+export interface ProjectConfig<T extends ProjectId> {
+    readonly type: typeof ProjectConfigSymbol,
+    readonly id: T,
 };
 
 export let Projects: { [projectId: Id<Project>]: Project } = {};

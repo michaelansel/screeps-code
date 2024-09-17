@@ -1,4 +1,4 @@
-export { Project, Projects } from './Project'
+export { Project, Projects, ProjectConfig } from './Project'
 import { registerProject } from './Project'
 
 import { HarvestEnergyProject } from './HarvestEnergyProject'; registerProject(HarvestEnergyProject); export { HarvestEnergyProject }
