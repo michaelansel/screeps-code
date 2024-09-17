@@ -36,7 +36,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
     const cost = BODYPART_COST.work + BODYPART_COST.carry + BODYPART_COST.move;
     if (spawn.store[RESOURCE_ENERGY] > cost) {
       const memory: CreepMemory = {
-        project: HarvestEnergyProject.id, // TODO assign projects more dynamically
+        project: {
+          id: HarvestEnergyProject.id, // TODO assign projects more dynamically
+        },
       };
       spawn.spawnCreep([WORK, CARRY, MOVE], `Worker${(++Memory.creepCounter).toString()}`, { memory: memory });
     }

@@ -1,13 +1,21 @@
-import { Task, TaskHelpers, TaskSymbol } from './Task';
+import type { TaskBehavior, TaskConfig, TaskId } from './Task';
+import { TaskBehaviorSymbol, TaskHelpers } from './Task';
 
-export const DoNothingTask: Task = {
-    type: TaskSymbol,
-    id: "DoNothingTask" as Id<Task>,
-    start(creep: Creep): void {
-        TaskHelpers.start(creep, DoNothingTask);
+const DoNothingTaskId = <TaskId>"DoNothingTask";
+
+export interface DoNothingTaskConfig extends TaskConfig<typeof DoNothingTaskId> {
+}
+
+const DoNothingTaskBehavior: TaskBehavior<typeof DoNothingTaskId> = {
+    type: TaskBehaviorSymbol,
+    id: DoNothingTaskId,
+    start(creep: Creep, config?: DoNothingTaskConfig): void {
+        TaskHelpers.start(creep, this);
     },
-    run(creep: Creep): void {
+    run(creep: Creep, config?: DoNothingTaskConfig): void {
     },
     stop(creep: Creep): void {
     },
 }
+
+export const DoNothingTask = DoNothingTaskBehavior;

@@ -1,4 +1,4 @@
-export { Task, Tasks } from './Task'
+export { Tasks, TaskConfig } from './Task'
 import { registerTask } from './Task'
 
 import { DepositEnergyTask } from './DepositEnergyTask'; registerTask(DepositEnergyTask); export { DepositEnergyTask }

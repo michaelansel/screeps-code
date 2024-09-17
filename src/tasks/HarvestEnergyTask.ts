@@ -1,28 +1,40 @@
 import { SourcePlanner } from 'planners/SourcePlanner';
-import type { Task } from '.'
-import { TaskHelpers, TaskSymbol } from './Task';
+import type { TaskBehavior, TaskConfig, TaskId } from './Task';
+import { TaskBehaviorSymbol, TaskHelpers } from './Task';
 import { Logger } from 'utils/Logger';
+
+const HarvestEnergyTaskId = <TaskId>"HarvestEnergyTask";
+
+export interface HarvestEnergyTaskConfig extends TaskConfig<typeof HarvestEnergyTaskId> {
+    source: Id<Source>,
+}
 
 const logger = Logger.get("HarvestEnergyTask");
 
-export const HarvestEnergyTask: Task = {
-    type: TaskSymbol,
-    id: "HarvestEnergyTask" as Id<Task>,
-    start(creep: Creep): void {
-        TaskHelpers.start(creep, HarvestEnergyTask);
-        SourcePlanner.instance.requestSourceAssignment(creep);
+const HarvestEnergyTaskBehavior: TaskBehavior<typeof HarvestEnergyTaskId> = {
+    type: TaskBehaviorSymbol,
+    id: HarvestEnergyTaskId,
+    start(creep: Creep, config?: HarvestEnergyTaskConfig): void {
+        TaskHelpers.start(creep, this);
+        // SourcePlanner.instance.requestSourceAssignment(creep);
     },
-    run(creep: Creep): void {
-        logger.info(`Executing ${this.id} for ${creep.name}`);
+    run(creep: Creep, config?: HarvestEnergyTaskConfig): void {
+        logger.info(`Executing ${String(this.id)} for ${creep.name}`);
         let source: Source | null = null;
 
-        if (creep.memory.source == undefined) {
-            // creep.memory.source = creep.pos.findClosestByPath(FIND_SOURCES, { range: 1 })?.id;
-            SourcePlanner.instance.requestSourceAssignment(creep);
+        // Prefer configured/remembered source
+        if (config?.source != undefined) {
+            source = Game.getObjectById(config.source);
         }
 
-        if (creep.memory.source != undefined) {
-            source = Game.getObjectById(creep.memory.source);
+        if (source == undefined) {
+            source = creep.pos.findClosestByPath(FIND_SOURCES, { range: 1 });
+            // SourcePlanner.instance.requestSourceAssignment(creep); // TODO return a source object directly
+        }
+
+        // Save it if we can
+        if (config && source) {
+            config.source = source.id;
         }
 
         if (source) {
@@ -39,6 +51,8 @@ export const HarvestEnergyTask: Task = {
         }
     },
     stop(creep: Creep): void {
-        creep.memory.source = undefined;
+        // TODO notify SourcePlanner
     },
-};
+}
+
+export const HarvestEnergyTask = HarvestEnergyTaskBehavior;
