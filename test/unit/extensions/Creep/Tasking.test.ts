@@ -1,4 +1,4 @@
-import { globalsSetup, globalsCleanup } from 'test/unit/globals';
+import { globalsSetup, globalsCleanup } from '../../globals';
 
 import { DoNothingTask } from "tasks";
 import { DoNothingProject } from 'projects';
