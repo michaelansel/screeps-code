@@ -12,15 +12,15 @@ type LogLevel = "DEBUG" | "INFO" | "WARN" | "ERROR";
 export const DEFAULT_COMPONENT: string = "DEFAULT_COMPONENT";
 
 export class Logger implements LogInterface {
-  static _instance: Logger;
-  static get instance() {
+  public static _instance: Logger;
+  public static get instance() {
     if (this._instance === undefined) {
       this._instance = new Logger(DEFAULT_COMPONENT);
     }
     return this._instance;
   }
 
-  static get(component: string) {
+  public static get(component: string) {
     return new Logger(component, Logger.instance);
   }
 
@@ -67,16 +67,16 @@ export class Logger implements LogInterface {
     }
   }
 
-  debug(message: string, ...data: any[]): void {
+  public debug(message: string, ...data: any[]): void {
     this.emitLogMessage("DEBUG", message, data);
   }
-  info(message: string, ...data: any[]): void {
+  public info(message: string, ...data: any[]): void {
     this.emitLogMessage("INFO", message, data);
   }
-  warn(message: string, ...data: any[]): void {
+  public warn(message: string, ...data: any[]): void {
     this.emitLogMessage("WARN", message, data);
   }
-  error(message: string, ...data: any[]): void {
+  public error(message: string, ...data: any[]): void {
     this.emitLogMessage("ERROR", message, data);
   }
 

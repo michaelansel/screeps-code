@@ -1,5 +1,5 @@
 import { Logger } from "utils/Logger";
-import * as _ from "lodash";
+import _ from "lodash";
 
 const logger = Logger.get("MemoryBackedClass");
 
@@ -54,7 +54,7 @@ export class MemoryBackedClass {
     id: Id<T> | undefined,
     lookupTable: { [id: Id<T>]: T }
   ): T | undefined {
-    if (id == undefined) {
+    if (id === undefined) {
       return undefined;
     } else {
       if (id in lookupTable) {
@@ -66,7 +66,7 @@ export class MemoryBackedClass {
   }
 
   protected loadGameObjectById<T extends SeriablizableById>(id: Id<T> | undefined): T | undefined {
-    if (id == undefined) {
+    if (id === undefined) {
       return undefined;
     } else {
       const obj = Game.getObjectById(id);
@@ -97,7 +97,7 @@ export class MemoryBackedClass {
         if (prop in target) return target[prop];
         if (prop in memory) {
           // TODO ignore this until the entire class is reworked
-          // @ts-ignore
+          // @ts-expect-error this is a mess
           const proxy = proxySingleRecord(() => {
             const m = fetchMemory()[prop];
             if (m === undefined) throw new Error(`Unable to retrieve memory object for ${prop}`);
@@ -105,7 +105,7 @@ export class MemoryBackedClass {
           });
           if (proxy !== undefined) {
             target[prop] = proxy;
-            logger.debug(`Loaded ${prop} from memory: ${target[prop]}`);
+            logger.debug(`Loaded ${prop} from memory: ${String(target[prop])}`);
           }
           return proxy;
         }
@@ -115,7 +115,7 @@ export class MemoryBackedClass {
         const memory = fetchMemory();
         memory[key] = _.clone(emptyRecord);
         // TODO ignore this until the entire class is reworked
-        // @ts-ignore
+        // @ts-expect-error this is a mess
         const proxy = proxySingleRecord(() => {
           const m = fetchMemory()[key];
           if (m === undefined) throw new Error(`Unable to retrieve memory object for ${key}`);
@@ -202,33 +202,33 @@ export class MemoryBackedClass {
     }
     return new Proxy<SingleRecord>(initialValue, {
       get: (target: SingleRecord, prop: string) => {
-        const memory = fetchMemory();
+        const myMemory = fetchMemory();
         if (!target) return undefined;
         if (prop in target) return target[prop as keyof typeof target];
         if ("__fromMemory__" in serde) {
           // Object is loaded all at once; can't continue with a partial load
           return undefined;
         }
-        if (prop in memory) {
-          const value = serde[prop as keyof typeof memory].fromMemory(memory);
+        if (prop in myMemory) {
+          const value = serde[prop as keyof typeof myMemory].fromMemory(myMemory);
           if (value !== undefined) {
-            target[prop as keyof typeof memory] = value;
-            logger.debug(`Loaded ${prop} from memory: ${target[prop as keyof typeof memory]}`);
+            target[prop as keyof typeof myMemory] = value;
+            logger.debug(`Loaded ${prop} from memory: ${String(target[prop as keyof typeof myMemory])}`);
           }
           return value;
         }
         return undefined;
       },
       set: (target, prop: string | symbol, value) => {
-        const memory = fetchMemory();
+        const myMemory = fetchMemory();
         if ("__toMemory__" in serde) {
           // Object is written all at once
-          return serde.__toMemory__(memory, value);
+          return serde.__toMemory__(myMemory, value);
         }
         if (typeof prop !== "string") return false;
         if (prop in serde) {
           target[prop as keyof typeof target] = value;
-          return serde[prop as keyof typeof serde].toMemory(memory, value);
+          return serde[prop as keyof typeof serde].toMemory(myMemory, value);
         }
         return false;
       }

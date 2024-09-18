@@ -1,11 +1,11 @@
 import { discover as discoverExtendables, use as useExtensions } from "./extensions";
+import { Console } from "./utils/Console.js";
 import { ErrorMapper } from "./utils/ErrorMapper.js";
 import { HarvestEnergyProject } from "./projects/index.js";
-import { SourcePlanner } from "./planners/SourcePlanner.js";
-import { Console } from "./utils/Console.js";
 import { Logger } from "./utils/Logger.js";
+import { SourcePlanner } from "./planners/SourcePlanner.js";
 
-// @ts-ignore Expose in the game console
+// @ts-expect-error Expose in the game console
 global.C = Console;
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
@@ -17,7 +17,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
   const logger = Logger.get("main");
   logger.info(`Current game tick is ${Game.time}`);
 
-  if (Memory.creepCounter == undefined) Memory.creepCounter = 0;
+  if (Memory.creepCounter === undefined) Memory.creepCounter = 0;
 
   // Run all creeps
   for (const name in Game.creeps) {

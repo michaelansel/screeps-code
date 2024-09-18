@@ -1,7 +1,7 @@
-import { SourcePlanner } from "planners/SourcePlanner";
 import type { TaskBehavior, TaskConfig, TaskId } from "./Task";
 import { TaskBehaviorSymbol, TaskHelpers } from "./Task";
 import { Logger } from "utils/Logger";
+import { SourcePlanner } from "planners/SourcePlanner";
 
 const HarvestEnergyTaskId = "HarvestEnergyTask" as TaskId;
 
@@ -27,11 +27,11 @@ const HarvestEnergyTaskBehavior: HarvestEnergyTaskBehavior = {
     let source: Source | null = null;
 
     // Prefer configured/remembered source
-    if (config?.source != undefined) {
+    if (config?.source !== undefined) {
       source = Game.getObjectById(config.source);
     }
 
-    if (source == undefined) {
+    if (source === undefined) {
       source = creep.pos.findClosestByPath(FIND_SOURCES, { range: 1 });
       // SourcePlanner.instance.requestSourceAssignment(creep); // TODO return a source object directly
     }

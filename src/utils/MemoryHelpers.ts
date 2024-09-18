@@ -2,7 +2,7 @@ export function loadByIdFromTable<T extends _HasId>(
   id: Id<T> | undefined,
   lookupTable: { [id: Id<T>]: T }
 ): T | undefined {
-  if (id == undefined) {
+  if (id === undefined) {
     return undefined;
   } else {
     if (id in lookupTable) {
@@ -14,7 +14,7 @@ export function loadByIdFromTable<T extends _HasId>(
 }
 
 export function loadGameObjectById<T extends _HasId>(id: Id<T> | undefined): T | undefined {
-  if (id == undefined) {
+  if (id === undefined) {
     return undefined;
   } else {
     const obj = Game.getObjectById(id);

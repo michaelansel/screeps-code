@@ -1,9 +1,7 @@
-import { CreepLogicExtensionClass } from "extensions/Creep/Logic";
-
 export const TaskBehaviorSymbol: unique symbol = Symbol();
 export const TaskConfigSymbol: unique symbol = Symbol();
 
-export type Task = TaskBehavior<any>;
+export type Task = TaskBehavior<TaskId>;
 export type TaskId = Id<Task>;
 
 export interface TaskBehavior<T extends TaskId> {
@@ -24,7 +22,7 @@ export function registerTask(task: Task) {
   Tasks[task.id] = task;
 }
 
-type TaskBehaviorForConfig<C extends TaskConfig<TaskId>> = TaskBehavior<TaskId>;
+type TaskBehaviorForConfig<C> = C extends TaskConfig<TaskId> ? TaskBehavior<TaskId> : never;
 
 export const TaskHelpers = {
   start(creep: Creep, TaskType: Task) {
@@ -37,7 +35,7 @@ export const TaskHelpers = {
   // Call with loadConfig<MyConfigType>(creep, MyBehaviorObject)
   loadConfig<C extends TaskConfig<any>>(creep: Creep, TaskType: TaskBehaviorForConfig<C>): C {
     // TODO how can I get the config without leaking the Tasking memory abstraction?
-    if (creep.task != TaskType) {
+    if (creep.task !== TaskType) {
       throw new Error("Running TaskBehavior method on a Creep that isn't assigned to the Task");
     }
     if (creep.memory.task === undefined)

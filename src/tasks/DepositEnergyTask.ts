@@ -1,4 +1,3 @@
-import { assert } from "console";
 import type { TaskBehavior, TaskConfig } from "./Task";
 import { TaskBehaviorSymbol, TaskHelpers, TaskId } from "./Task";
 import { Logger } from "utils/Logger";
@@ -25,7 +24,7 @@ const DepositEnergyTaskBehavior: TaskBehavior<typeof DepositEnergyTaskId> = {
       target = Game.getObjectById(config.target);
     }
 
-    if (target == undefined) {
+    if (target === undefined) {
       target = creep.pos.findClosestByRange(FIND_MY_SPAWNS);
     }
 

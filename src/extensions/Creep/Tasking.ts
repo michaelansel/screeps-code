@@ -40,7 +40,7 @@ export interface CreepTaskingExtension {
 // TODO is there any way to reduce the code duplication between tasks and projects?
 
 export class CreepTaskingExtensionClass extends CreepBaseExtensionClass implements CreepTaskingExtension {
-  run(): void {
+  public run(): void {
     logger.info(`Executing logic for ${this.creep.name}`);
 
     // Tasks run to completion and then return to the Project for more instructions; no Project-level pre-emption
@@ -57,14 +57,14 @@ export class CreepTaskingExtensionClass extends CreepBaseExtensionClass implemen
 
   private _task: Task | undefined;
 
-  get task(): Task | null {
+  public get task(): Task | null {
     if (this._task === undefined) {
       this._task = loadByIdFromTable(this.creep.memory.task?.id, Tasks);
     }
     return this._task !== undefined ? this._task : null;
   }
 
-  startTask<T extends TaskId>(task: TaskBehavior<T>, config?: TaskConfig<T>) {
+  public startTask<T extends TaskId>(task: TaskBehavior<T>, config?: TaskConfig<T>) {
     // Stop any previously running task
     if (this._task !== undefined) {
       this.stopTask();
@@ -78,7 +78,7 @@ export class CreepTaskingExtensionClass extends CreepBaseExtensionClass implemen
     task.start(this.creep, this.creep.memory.task.config); // Task can call stopTask before returning
   }
 
-  stopTask() {
+  public stopTask() {
     if (this._task !== undefined) {
       this._task.stop(this.creep);
     }
@@ -90,14 +90,14 @@ export class CreepTaskingExtensionClass extends CreepBaseExtensionClass implemen
 
   private _project: Project | undefined;
 
-  get project(): Project | null {
+  public get project(): Project | null {
     if (this._project === undefined) {
       this._project = loadByIdFromTable(this.creep.memory.project?.id, Projects);
     }
     return this._project !== undefined ? this._project : null;
   }
 
-  startProject<T extends ProjectId>(project: ProjectBehavior<T>, config?: ProjectConfig<T>): void {
+  public startProject<T extends ProjectId>(project: ProjectBehavior<T>, config?: ProjectConfig<T>): void {
     // Stop any previously running project
     if (this._project !== undefined) {
       this.stopProject();
@@ -111,7 +111,7 @@ export class CreepTaskingExtensionClass extends CreepBaseExtensionClass implemen
     project.start(this.creep, this.creep.memory.project.config); // Project can call stopProject before returning
   }
 
-  stopProject(): void {
+  public stopProject(): void {
     this.stopTask(); // This is the one line that is materially different from all the task code
     if (this._project !== undefined) {
       this._project.stop(this.creep);

@@ -1,9 +1,9 @@
-import { HarvestEnergyTask, Tasks } from "tasks";
 import { BackingMemoryRecord, MemoryBackedClass, SerDeFunctions } from "utils/MemoryBackedClass";
-import { IdMap } from "utils/IdMap";
-import { Logger } from "utils/Logger";
+import { HarvestEnergyTask, Tasks } from "tasks";
 import { TaskBehavior, TaskId } from "tasks/Task";
 import { HarvestEnergyTaskConfig } from "tasks/HarvestEnergyTask";
+import { IdMap } from "utils/IdMap";
+import { Logger } from "utils/Logger";
 
 interface SourcePlannerCreepData {
   task: TaskBehavior<TaskId>;
@@ -20,7 +20,7 @@ export interface SourcePlannerMemory {
 export class SourcePlanner extends MemoryBackedClass {
   // Singleton
   private static _instance: SourcePlanner;
-  static get instance(): SourcePlanner {
+  public static get instance(): SourcePlanner {
     if (!SourcePlanner._instance) {
       SourcePlanner._instance = new SourcePlanner();
     }
@@ -117,7 +117,7 @@ export class SourcePlanner extends MemoryBackedClass {
 
   private requestingCreepsInRoom(room: Room): Creep[] {
     return this.requestingCreeps().filter(creep => {
-      return creep.room.name == room.name;
+      return creep.room.name === room.name;
     }); // TODO compare objects directly?
   }
 
@@ -156,14 +156,14 @@ export class SourcePlanner extends MemoryBackedClass {
   }
 
   // Request SourcePlanner to assign a Source by the end of the tick; may or may not happen
-  requestSourceAssignment(creep: Creep): void {
+  public requestSourceAssignment(creep: Creep): void {
     this.logger.info(`${creep.name} would like to harvest from an available Source`);
     this._addRequest(creep);
     // TODO if source assigned, return it
   }
 
   // Request SourcePlanner to assign Creeps to Sources in a given room
-  assignSources(room: Room): void {
+  public assignSources(room: Room): void {
     const sources: Source[] = this.sourcesInRoom(room);
     const unassignedCreeps: { [name: string]: Creep } = this.unassignedCreepsInRoom(room).reduce(
       (map: { [key: string]: Creep }, data: Creep) => {
@@ -182,7 +182,7 @@ export class SourcePlanner extends MemoryBackedClass {
     this.logger.debug("Source.length vs Map.length", sources.length, Array.from(creepsBySource.keys()).length);
 
     const noCreepsAssigned = sources.reduce((output: boolean, source: Source) => {
-      return output && (creepsBySource.get(source) || []).length == 0;
+      return output && (creepsBySource.get(source) || []).length === 0;
     }, true);
     this.logger.debug("No Creeps Assigned? ", noCreepsAssigned);
 
@@ -214,7 +214,7 @@ export class SourcePlanner extends MemoryBackedClass {
         this._assignCreepToSource(creep, source);
         // Save in creep memory
         // TODO this is an incredibly leaky abstraction
-        if (creep.task == HarvestEnergyTask) {
+        if (creep.task === HarvestEnergyTask) {
           HarvestEnergyTask.updateSource(creep, source);
         }
       }
