@@ -1,6 +1,5 @@
-const sinon = require("sinon");
-import { assert } from "sinon";
 import { DEFAULT_COMPONENT, Logger } from "utils/Logger";
+import sinon, { assert } from "sinon";
 
 describe("Logger", () => {
   afterEach(() => {

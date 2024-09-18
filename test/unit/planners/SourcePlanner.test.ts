@@ -1,12 +1,12 @@
-import { globalsCleanup, globalsSetup } from "test/unit/globals";
-import * as _ from "lodash";
-
 import { SourcePlanner, SourcePlannerMemory } from "planners/SourcePlanner";
-import { HarvestEnergyTask } from "tasks";
+import { globalsCleanup, globalsSetup } from "test/unit/globals";
 
-import { assert } from "chai";
+import { HarvestEnergyTask } from "tasks";
 import { HarvestEnergyTaskConfig } from "tasks/HarvestEnergyTask";
-const sinon = require("sinon");
+
+import _ from "lodash";
+import { assert } from "chai";
+import sinon from "sinon";
 
 const EmptyGame: object = {};
 const EmptyMemory: object = {};
@@ -30,9 +30,9 @@ describe("SourcePlanner", () => {
   beforeEach(() => {
     globalsSetup();
 
-    // @ts-ignore : allow adding Game to global
+    // @ts-expect-error : allow adding Game to global
     global.Game = _.clone(EmptyGame);
-    // @ts-ignore : allow adding Memory to global
+    // @ts-expect-error : allow adding Memory to global
     global.Memory = _.clone(EmptyMemory);
   });
 
@@ -59,8 +59,8 @@ describe("SourcePlanner", () => {
       const planner = SourcePlanner.instance;
 
       // Fake
-      sinon.replace(planner, "sourcesInRoom", sinon.fake.returns(sources));
-      sinon.replace(planner, "requestingCreeps", sinon.fake.returns([creep]));
+      sinon.replace(planner, "sourcesInRoom" as keyof SourcePlanner, sinon.fake.returns(sources));
+      sinon.replace(planner, "requestingCreeps" as keyof SourcePlanner, sinon.fake.returns([creep]));
 
       // Act
       planner.requestSourceAssignment(creep);
@@ -99,12 +99,12 @@ describe("SourcePlanner", () => {
       const planner = SourcePlanner.instance;
 
       // Fake
-      sinon.replace(planner, "fetchMemory", sinon.fake.returns(memory));
-      sinon.replace(planner, "sourcesInRoom", sinon.fake.returns(sources));
-      sinon.replace(planner, "requestingCreeps", sinon.fake.returns([creep]));
+      sinon.replace(planner, "fetchMemory" as keyof SourcePlanner, sinon.fake.returns(memory));
+      sinon.replace(planner, "sourcesInRoom" as keyof SourcePlanner, sinon.fake.returns(sources));
+      sinon.replace(planner, "requestingCreeps" as keyof SourcePlanner, sinon.fake.returns([creep]));
       sinon.replace(
         planner,
-        "loadGameObjectById",
+        "loadGameObjectById" as keyof SourcePlanner,
         fakeLoadGameObjectById({
           source1: { id: "source1" } as Source,
           source2: { id: "source2" } as Source
@@ -146,11 +146,11 @@ describe("SourcePlanner", () => {
       const planner = SourcePlanner.instance;
 
       // Fake
-      sinon.replace(planner, "sourcesInRoom", sinon.fake.returns(sources));
-      sinon.replace(planner, "requestingCreeps", sinon.fake.returns(creeps));
+      sinon.replace(planner, "sourcesInRoom" as keyof SourcePlanner, sinon.fake.returns(sources));
+      sinon.replace(planner, "requestingCreeps" as keyof SourcePlanner, sinon.fake.returns(creeps));
       sinon.replace(
         planner,
-        "loadGameObjectById",
+        "loadGameObjectById" as keyof SourcePlanner,
         fakeLoadGameObjectById({
           source1: { id: "source1" } as Source
         })

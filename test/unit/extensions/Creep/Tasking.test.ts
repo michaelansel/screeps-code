@@ -1,11 +1,11 @@
+import { TaskHelpers, TaskId } from "tasks/Task";
 import { globalsCleanup, globalsSetup } from "test/unit/globals";
 
-import { DoNothingTask } from "tasks";
 import { DoNothingProject } from "projects";
+import { DoNothingTask } from "tasks";
+import { DoNothingTaskConfig } from "tasks/DoNothingTask";
 
 import { assert } from "chai";
-import { TaskHelpers, TaskId } from "tasks/Task";
-import { DoNothingTaskConfig } from "tasks/DoNothingTask";
 
 describe("CreepTaskingExtension", () => {
   beforeEach(() => {
