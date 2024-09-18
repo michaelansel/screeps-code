@@ -1,3 +1,5 @@
+// TODO figure out linting after the class rewrite
+/* eslint-disable */
 import { assert } from "chai";
 import sinonChai from "sinon-chai";
 import { BackingMemoryRecord, MemoryBackedClass, SerDeFunctions } from "utils/MemoryBackedClass";

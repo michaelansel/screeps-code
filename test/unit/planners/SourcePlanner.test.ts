@@ -19,8 +19,8 @@ function makeTestCreep(props: { name?: string; memory?: CreepMemory; room?: stri
   return creep;
 }
 
-function fakeLoadGameObjectById(objects: { [key: string]: any }) {
-  return sinon.fake((id: string): object | undefined => {
+function fakeLoadGameObjectById<T extends _HasId>(objects: { [key: Id<T>]: T }) {
+  return sinon.fake((id: Id<T>): object | undefined => {
     if (id in objects) return objects[id];
     return undefined;
   });
