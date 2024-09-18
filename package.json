@@ -7,7 +7,6 @@
     "build": "rm -rf dist && esbuild src/main.ts --bundle --external:main.js.map --target=es2018 --format=cjs --sourcemap --outfile=dist/main.js",
     "test": "npm run test-unit",
     "test-unit": "rm -rf dist-test && esbuild --bundle \"test/unit/**/*.test.ts\" --outdir=dist-test --external:main.js.map --sourcemap && npx mocha --require source-map-support/register \"dist-test/**/*.test.js\"",
-    "test-integration": "echo 'See docs/in-depth/testing.md for instructions on enabling integration tests'",
     "upload-main": "mv dist/main.js.map dist/main.js.map.js && npx screeps-api upload --server main --branch typescript dist/*",
     "upload-ptr": "mv dist/main.js.map dist/main.js.map.js && npx screeps-api upload --server ptr --branch typescript dist/*"
   },
