@@ -1,7 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    // I guess Mocha needs this?
-    "module": "CommonJs",
-  }
-}
