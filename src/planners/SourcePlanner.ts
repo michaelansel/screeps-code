@@ -1,7 +1,6 @@
 import { BackingMemoryRecord, MemoryBackedClass, SerDeFunctions } from "utils/MemoryBackedClass";
 import { HarvestEnergyTask, Tasks } from "tasks";
 import { TaskBehavior, TaskId } from "tasks/Task";
-import { HarvestEnergyTaskConfig } from "tasks/HarvestEnergyTask";
 import { IdMap } from "utils/IdMap";
 import { Logger } from "utils/Logger";
 
@@ -19,12 +18,12 @@ export interface SourcePlannerMemory {
 
 export class SourcePlanner extends MemoryBackedClass {
   // Singleton
-  private static _instance: SourcePlanner;
+  private static singleton: SourcePlanner;
   public static get instance(): SourcePlanner {
-    if (!SourcePlanner._instance) {
-      SourcePlanner._instance = new SourcePlanner();
+    if (!SourcePlanner.singleton) {
+      SourcePlanner.singleton = new SourcePlanner();
     }
-    return SourcePlanner._instance;
+    return SourcePlanner.singleton;
   }
 
   private creeps: SourcePlannerCreeps;

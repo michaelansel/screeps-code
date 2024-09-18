@@ -1,3 +1,5 @@
+// TODO probably change the interface or disable the rule globally
+/* eslint no-underscore-dangle: ["warn", { "allow": ["__fromMemory__","__toMemory__"] }]*/
 import { Logger } from "utils/Logger";
 import _ from "lodash";
 
@@ -42,10 +44,10 @@ export type SerDeFunctions<Record extends object> =
       __fromMemory__: (memory: BackingMemoryRecord<Record>) => Record | undefined;
       __toMemory__: (memory: BackingMemoryRecord<Record>, value: Record) => boolean;
     };
-type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
-type OptionalKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? K : never }[keyof T];
-type OnlyRequiredKeys<T> = { [Property in RequiredKeys<T>]: T[Property] };
-type OnlyOptionalKeys<T> = { [Property in OptionalKeys<T>]: T[Property] };
+type RequiredKeys<T> = { [K in keyof T]-?: object extends Pick<T, K> ? never : K }[keyof T];
+// type OptionalKeys<T> = { [K in keyof T]-?: object extends Pick<T, K> ? K : never }[keyof T];
+// type OnlyRequiredKeys<T> = { [Property in RequiredKeys<T>]: T[Property] };
+// type OnlyOptionalKeys<T> = { [Property in OptionalKeys<T>]: T[Property] };
 
 export class MemoryBackedClass {
   protected constructor() {}
@@ -179,7 +181,7 @@ export class MemoryBackedClass {
         for (const key in serde) {
           if (!serde[key].required) continue;
           const value = serde[key].fromMemory(memory);
-          if (value == undefined) {
+          if (value === undefined) {
             return undefined;
           }
           initialValue[key] = value;
@@ -219,7 +221,7 @@ export class MemoryBackedClass {
         }
         return undefined;
       },
-      set: (target, prop: string | symbol, value) => {
+      set: (target, prop: string | symbol, value: SingleRecord) => {
         const myMemory = fetchMemory();
         if ("__toMemory__" in serde) {
           // Object is written all at once
@@ -227,7 +229,11 @@ export class MemoryBackedClass {
         }
         if (typeof prop !== "string") return false;
         if (prop in serde) {
+          // TODO figure out why this is unsafe and fix it
+          // @ts-expect-error doing hokey things I don't remember; ignore until the rewrite
           target[prop as keyof typeof target] = value;
+          // TODO figure out why this is unsafe and fix it
+          // @ts-expect-error doing hokey things I don't remember; ignore until the rewrite
           return serde[prop as keyof typeof serde].toMemory(myMemory, value);
         }
         return false;

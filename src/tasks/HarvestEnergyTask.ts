@@ -1,7 +1,6 @@
 import type { TaskBehavior, TaskConfig, TaskId } from "./Task";
 import { TaskBehaviorSymbol, TaskHelpers } from "./Task";
 import { Logger } from "utils/Logger";
-import { SourcePlanner } from "planners/SourcePlanner";
 
 const HarvestEnergyTaskId = "HarvestEnergyTask" as TaskId;
 

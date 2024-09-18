@@ -7,6 +7,9 @@ export class ErrorMapper {
 
   public static get consumer(): SourceMapConsumer {
     if (this._consumer == null) {
+      // We're going way off the paved road by loading the sourcemap this way; tell eslint to stand down
+      // TODO see if there is an eslint-approved way of loading the sourcemap dynamically that doesn't impact performance
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-var-requires
       this._consumer = new SourceMapConsumer(require("main.js.map"));
     }
 

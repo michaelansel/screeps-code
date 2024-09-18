@@ -1,7 +1,7 @@
 export const ProjectBehaviorSymbol: unique symbol = Symbol();
 export const ProjectConfigSymbol: unique symbol = Symbol();
 
-export type Project = ProjectBehavior<any>;
+export type Project = ProjectBehavior<ProjectId>;
 export type ProjectId = Id<Project>;
 
 export interface ProjectBehavior<T extends ProjectId> {
