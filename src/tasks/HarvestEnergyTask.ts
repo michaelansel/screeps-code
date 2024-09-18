@@ -30,20 +30,30 @@ const HarvestEnergyTaskBehavior: HarvestEnergyTaskBehavior = {
       source = Game.getObjectById(config.source);
     }
 
-    if (source === undefined) {
+    if (source === null) {
+      logger.debug(`Need a new source`);
       source = creep.pos.findClosestByPath(FIND_SOURCES, { range: 1 });
       // SourcePlanner.instance.requestSourceAssignment(creep); // TODO return a source object directly
     }
 
+    if (source === null) {
+      logger.debug(`No Source found`);
+    } else {
+      logger.debug(`Source: ${source?.id}`);
+    }
+
     // Save it if we can
-    if (config && source) {
+    if (config !== undefined && source !== null) {
+      logger.debug(`Saving source to Memory`);
       config.source = source.id;
     }
 
-    if (source) {
+    if (source !== null) {
       if (creep.pos.getRangeTo(source) > 1) {
+        logger.debug(`Moving to Source`);
         creep.moveTo(source, { range: 1 });
       } else {
+        logger.debug(`Harvesting from Source`);
         creep.harvest(source);
       }
     }

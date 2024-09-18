@@ -24,16 +24,16 @@ const DepositEnergyTaskBehavior: TaskBehavior<typeof DepositEnergyTaskId> = {
       target = Game.getObjectById(config.target);
     }
 
-    if (target === undefined) {
+    if (target === null) {
       target = creep.pos.findClosestByRange(FIND_MY_SPAWNS);
     }
 
     // Save it if we can
-    if (config && target) {
+    if (config !== undefined && target !== null) {
       config.target = target.id;
     }
 
-    if (target) {
+    if (target !== null) {
       if (creep.pos.getRangeTo(target) > 1) {
         creep.moveTo(target);
       } else {
