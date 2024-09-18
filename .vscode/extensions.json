@@ -1,5 +1,5 @@
 {
     "recommendations": [
-        "ms-vscode-remote.vscode-remote-extensionpack"
+        "dbaeumer.vscode-eslint"
     ]
 }
