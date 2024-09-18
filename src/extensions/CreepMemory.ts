@@ -1,4 +1,3 @@
-export { }
 import * as Tasking from './Creep/Tasking';
 
 declare global {
@@ -8,5 +7,9 @@ declare global {
         project?: Tasking.CreepProjectMemory; // CreepTaskingExtension
         task?: Tasking.CreepTaskMemory; // CreepTaskingExtension
     }
+}
+
+export function use(extend: { CreepMemory: CreepMemory }) {
+
 }
 

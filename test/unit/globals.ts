@@ -6,14 +6,9 @@ class TestCreepClass {
 
 
 // Apply extensions
-
-// @ts-ignore : allow adding Creep to global
-global.Creep = TestCreepClass;
-
-import 'extensions';
-
-// @ts-ignore : avoid side effects
-delete global.Creep;
+import { use } from 'extensions';
+// @ts-ignore I'm intentionally shoving in an invalid class to be extended
+use({ "Creep": TestCreepClass });
 
 
 // Helpers

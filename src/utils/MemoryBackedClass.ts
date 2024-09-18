@@ -1,4 +1,5 @@
 import { Logger } from 'utils/Logger';
+import * as _ from "lodash";
 
 const logger = Logger.get("MemoryBackedClass");
 
@@ -80,6 +81,8 @@ export class MemoryBackedClass {
                 if (!target) return undefined;
                 if (prop in target) return target[prop];
                 if (prop in memory) {
+                    // TODO ignore this until the entire class is reworked
+                    // @ts-ignore
                     const proxy = proxySingleRecord(() => {
                         const m = fetchMemory()[prop]
                         if (m === undefined) throw new Error(`Unable to retrieve memory object for ${prop}`);
@@ -96,6 +99,8 @@ export class MemoryBackedClass {
             set: (target, key: string, value: SingleRecord) => {
                 const memory = fetchMemory();
                 memory[key] = _.clone(emptyRecord);
+                // TODO ignore this until the entire class is reworked
+                // @ts-ignore
                 const proxy = proxySingleRecord(() => {
                     const m = fetchMemory()[key]
                     if (m === undefined) throw new Error(`Unable to retrieve memory object for ${key}`);

@@ -1,5 +1,5 @@
-import { globalsSetup, globalsCleanup } from '../globals';
-import 'extensions';
+import { globalsSetup, globalsCleanup } from 'test/unit/globals';
+import * as _ from "lodash";
 
 import { SourcePlanner, SourcePlannerMemory } from "planners/SourcePlanner";
 import { HarvestEnergyTask } from "tasks";

@@ -1,5 +1,3 @@
-export { }
-
 import { SourcePlannerMemory } from 'planners/SourcePlanner.js';
 
 declare global {
@@ -9,4 +7,8 @@ declare global {
         creepCounter?: number; // main.ts for generating unique creep names
         SourcePlanner?: SourcePlannerMemory;
     }
+}
+
+export function use(extend: { Memory: Memory }) {
+
 }
