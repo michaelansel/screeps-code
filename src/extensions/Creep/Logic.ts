@@ -1,12 +1,12 @@
-import { CreepBaseExtensionClass } from './Base';
+import { CreepBaseExtensionClass } from "./Base";
 
 export interface CreepLogicExtension {
-    get isFullOfEnergy(): boolean;
+  get isFullOfEnergy(): boolean;
 }
 
 export class CreepLogicExtensionClass extends CreepBaseExtensionClass implements CreepLogicExtension {
-    get isFullOfEnergy(): boolean {
-        // BUG returns true when full of minerals
-        return Boolean(this.creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0);
-    }
+  get isFullOfEnergy(): boolean {
+    // BUG returns true when full of minerals
+    return Boolean(this.creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0);
+  }
 }
