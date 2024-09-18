@@ -76,7 +76,7 @@ module.exports = {
     "no-throw-literal": "error",
     "no-trailing-spaces": "off",
     "no-undef-init": "error",
-    "no-underscore-dangle": "warn",
+    "no-underscore-dangle": ["warn", { "allowAfterThis": true }],
     "no-var": "error",
     "object-shorthand": "error",
     "one-var": ["error", "never"],
