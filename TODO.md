@@ -1,4 +1,5 @@
 - Add more tests before adding more logic
+- Move to jest since it has a maintained helper for all the game constants (screeps-jest)
 - Rewrite MemoryBackedClass to make some semblance of sense
 - Determine Tasking abstraction layer (TaskHelpers.loadConfig vs the Tasking extension controlling all memory access) - Maybe lean more on TaskHelpers with loadConfig and saveConfig called by Tasking?
 - Rework initial commit into an empty merge commit for a clearer starting point (maybe use an empty Initial Commit)
