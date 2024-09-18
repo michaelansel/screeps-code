@@ -20,7 +20,7 @@ function makeTestCreep(props: { name?: string; memory?: CreepMemory; room?: stri
 }
 
 function fakeLoadGameObjectById<T extends _HasId>(objects: { [key: Id<T>]: T }) {
-  return sinon.fake((id: Id<T>): object | undefined => {
+  return sinon.fake((id: Id<T>): T | undefined => {
     if (id in objects) return objects[id];
     return undefined;
   });
@@ -102,13 +102,16 @@ describe("SourcePlanner", () => {
       sinon.replace(planner, "fetchMemory" as keyof SourcePlanner, sinon.fake.returns(memory));
       sinon.replace(planner, "sourcesInRoom" as keyof SourcePlanner, sinon.fake.returns(sources));
       sinon.replace(planner, "requestingCreeps" as keyof SourcePlanner, sinon.fake.returns([creep]));
+      const sourceObjects = {
+        source1: { id: "source1" } as Source,
+        source2: { id: "source2" } as Source
+      };
       sinon.replace(
         planner,
         "loadGameObjectById" as keyof SourcePlanner,
-        fakeLoadGameObjectById({
-          source1: { id: "source1" } as Source,
-          source2: { id: "source2" } as Source
-        })
+        // TODO see if this is still broken after MemoryBackedClass has been fixed
+        // @ts-expect-error this is probably broken because of MemoryBackedClass shenanigans
+        fakeLoadGameObjectById<Source>(sourceObjects)
       );
 
       // Act
@@ -148,12 +151,16 @@ describe("SourcePlanner", () => {
       // Fake
       sinon.replace(planner, "sourcesInRoom" as keyof SourcePlanner, sinon.fake.returns(sources));
       sinon.replace(planner, "requestingCreeps" as keyof SourcePlanner, sinon.fake.returns(creeps));
+      const sourceObjects = {
+        source1: { id: "source1" } as Source,
+        source2: { id: "source2" } as Source
+      };
       sinon.replace(
         planner,
         "loadGameObjectById" as keyof SourcePlanner,
-        fakeLoadGameObjectById({
-          source1: { id: "source1" } as Source
-        })
+        // TODO see if this is still broken after MemoryBackedClass has been fixed
+        // @ts-expect-error this is probably broken because of MemoryBackedClass shenanigans
+        fakeLoadGameObjectById<Source>(sourceObjects)
       );
 
       // Act
