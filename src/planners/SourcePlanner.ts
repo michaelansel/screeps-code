@@ -168,7 +168,7 @@ export class SourcePlanner extends MemoryBackedClass {
     const unassignedCreeps: { [name: string]: Creep } = this.unassignedCreepsInRoom(room).reduce(
       (map: { [key: string]: Creep }, data: Creep) => {
         const key: string = data.name;
-        map[data.name] = data;
+        map[key] = data;
         return map;
       },
       {}

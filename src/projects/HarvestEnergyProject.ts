@@ -1,6 +1,6 @@
+import * as tasks from "tasks";
 import type { ProjectBehavior, ProjectConfig, ProjectId } from "./Project";
 import { ProjectBehaviorSymbol, ProjectHelpers } from "./Project";
-import * as tasks from "tasks";
 import { Logger } from "utils/Logger";
 
 const logger = Logger.get("HarvestEnergyProject");

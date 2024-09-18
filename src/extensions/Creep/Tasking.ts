@@ -1,11 +1,11 @@
-import { CreepBaseExtensionClass } from "./Base";
-import { TaskConfig, Tasks } from "tasks";
 import type { Project, ProjectConfig } from "projects";
-import { Projects } from "projects";
-import { Logger } from "utils/Logger";
-import { loadByIdFromTable } from "utils/MemoryHelpers";
-import { Task, TaskBehavior, TaskId } from "tasks/Task";
 import { ProjectBehavior, ProjectId } from "projects/Project";
+import { Task, TaskBehavior, TaskId } from "tasks/Task";
+import { TaskConfig, Tasks } from "tasks";
+import { CreepBaseExtensionClass } from "./Base";
+import { Logger } from "utils/Logger";
+import { Projects } from "projects";
+import { loadByIdFromTable } from "utils/MemoryHelpers";
 
 const logger = Logger.get("Tasking");
 
