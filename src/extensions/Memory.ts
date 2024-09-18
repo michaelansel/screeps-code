@@ -8,7 +8,3 @@ declare global {
         SourcePlanner?: SourcePlannerMemory;
     }
 }
-
-export function use(extend: { Memory: Memory }) {
-
-}

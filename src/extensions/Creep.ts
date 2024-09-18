@@ -11,8 +11,8 @@ declare global {
         CreepTaskingExtension { }
 }
 
-export function use(extend: { Creep: Creep }) {
-    applyMixins(extend.Creep, [
+export function use(CreepClass: CreepConstructor) {
+    applyMixins(CreepClass, [
         CreepBaseExtensionClass,
         CreepLogicExtensionClass,
         CreepTaskingExtensionClass

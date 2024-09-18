@@ -1,4 +1,4 @@
-import { use as useExtensions } from './extensions';
+import { use as useExtensions, discover as discoverExtendables } from './extensions';
 import { ErrorMapper } from "./utils/ErrorMapper.js";
 import { HarvestEnergyProject } from './projects/index.js';
 import { SourcePlanner } from './planners/SourcePlanner.js';
@@ -12,7 +12,7 @@ global.C = Console;
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = ErrorMapper.wrapLoop(() => {
   // Dunno if this is the right way to achieve the goal of "extend at runtime, not loadtime"
-  useExtensions(<object>global);
+  useExtensions(discoverExtendables(<object>global));
 
   const logger = Logger.get("main");
   logger.info(`Current game tick is ${Game.time}`);

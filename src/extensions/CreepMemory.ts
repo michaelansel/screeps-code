@@ -9,7 +9,4 @@ declare global {
     }
 }
 
-export function use(extend: { CreepMemory: CreepMemory }) {
-
-}
 
