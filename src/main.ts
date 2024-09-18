@@ -1,9 +1,9 @@
-import { use as useExtensions, discover as discoverExtendables } from './extensions';
+import { discover as discoverExtendables, use as useExtensions } from "./extensions";
 import { ErrorMapper } from "./utils/ErrorMapper.js";
-import { HarvestEnergyProject } from './projects/index.js';
-import { SourcePlanner } from './planners/SourcePlanner.js';
-import { Console } from './utils/Console.js';
-import { Logger } from './utils/Logger.js';
+import { HarvestEnergyProject } from "./projects/index.js";
+import { SourcePlanner } from "./planners/SourcePlanner.js";
+import { Console } from "./utils/Console.js";
+import { Logger } from "./utils/Logger.js";
 
 // @ts-ignore Expose in the game console
 global.C = Console;
@@ -12,7 +12,7 @@ global.C = Console;
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = ErrorMapper.wrapLoop(() => {
   // Dunno if this is the right way to achieve the goal of "extend at runtime, not loadtime"
-  useExtensions(discoverExtendables(<object>global));
+  useExtensions(discoverExtendables(global as object));
 
   const logger = Logger.get("main");
   logger.info(`Current game tick is ${Game.time}`);
@@ -39,10 +39,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
     if (spawn.store[RESOURCE_ENERGY] > cost) {
       const memory: CreepMemory = {
         project: {
-          id: HarvestEnergyProject.id, // TODO assign projects more dynamically
-        },
+          id: HarvestEnergyProject.id // TODO assign projects more dynamically
+        }
       };
-      spawn.spawnCreep([WORK, CARRY, MOVE], `Worker${(++Memory.creepCounter).toString()}`, { memory: memory });
+      spawn.spawnCreep([WORK, CARRY, MOVE], `Worker${(++Memory.creepCounter).toString()}`, { memory });
     }
   }
 

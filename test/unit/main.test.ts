@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import { assert } from "chai";
 import { loop } from "main";
-import { Game, Memory, Creep } from "test/unit/mock";
+import { Creep, Game, Memory } from "test/unit/mock";
 
 describe("main", () => {
   before(() => {

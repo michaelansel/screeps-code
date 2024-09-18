@@ -70,7 +70,7 @@ export class ErrorMapper {
   }
 
   public static wrapLoop(loop: () => void): () => void {
-    if (typeof Game !== 'undefined' && "sim" in Game.rooms) return loop;
+    if (typeof Game !== "undefined" && "sim" in Game.rooms) return loop;
     return () => {
       try {
         loop();

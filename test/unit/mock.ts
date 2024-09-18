@@ -17,7 +17,7 @@ export const Memory: {
 };
 
 export const Creep: {
-  run(): void
+  run(): void;
 } = {
-  run: () => { }
+  run: () => {}
 };
