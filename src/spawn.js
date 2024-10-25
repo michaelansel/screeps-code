@@ -272,7 +272,7 @@ var Spawn = {
       if (success) console.log("successfully spawned emergency creep!");
     }
 
-    if (helpers.creepsInRoomWithRole(room, 'hauler').length < 1) {
+    if (helpers.creepsInRoomWithRole(room, 'hauler').length < room.memory.desiredCreepCounts.hauler) {
       console.log('Ensuring at least one hauler at all times');
       SpawnHelpers.doSpawn(
         room,
