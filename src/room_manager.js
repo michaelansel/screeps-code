@@ -152,12 +152,16 @@ const RoomManager = {
 
     if (!room.memory.desiredCreepCounts) {
       room.memory.desiredCreepCounts = {
-        hauler: 1,
+        hauler: 0,
         upgrader: 0,
         builder: 0,
         linker: 0,
       };
     }
+    
+    // Haulers don't provide value until containers exist
+    room.memory.desiredCreepCounts.hauler = Math.min(helpers.structuresInRoom(room, STRUCTURE_CONTAINER).length, 1);
+    
     if(!room.memory.fortifyLevel) room.memory.fortifyLevel = 150000;
     if(!room.memory.repairLevel) room.memory.repairLevel = 0.75;
 
