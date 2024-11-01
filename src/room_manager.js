@@ -197,7 +197,7 @@ const RoomManager = {
     // Update desired number of linkers
     const links = helpers.structuresInRoom(room, STRUCTURE_LINK).filter(function(link){
       // Keep it if there is not a source nearby
-      return !(link.pos.findInRange(FIND_SOURCES, 3).length > 0);
+      return !(link.pos.findInRange(FIND_SOURCES, 2).length > 0);
     });
     room.memory.desiredCreepCounts.linker = links.length;
 
