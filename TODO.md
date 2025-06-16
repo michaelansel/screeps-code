@@ -1,5 +1,9 @@
+# Current Sprint Tasks
+
+## Immediate Next Steps
 - Add more tests before adding more logic
-- Move to jest since it has a maintained helper for all the game constants (screeps-jest)
-- Rewrite MemoryBackedClass to make some semblance of sense
-- Determine Tasking abstraction layer (TaskHelpers.loadConfig vs the Tasking extension controlling all memory access) - Maybe lean more on TaskHelpers with loadConfig and saveConfig called by Tasking?
-- Rework initial commit into an empty merge commit for a clearer starting point (maybe use an empty Initial Commit)
+
+## Notes
+This TODO list is for immediate, actionable tasks that are part of our current plan of action. Long-term features and major refactoring work should go in FEATURES.md.
+
+We return to FEATURES.md when we've cleared out this TODO list.

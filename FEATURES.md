@@ -1,3 +1,19 @@
+# Project Workflow
+
+## How We Work
+This project uses a two-tier planning system:
+
+- **TODO.md**: Current sprint tasks - immediate, actionable items that are part of our current plan of action. This is our execution queue.
+- **FEATURES.md**: Long-term ideas, major refactoring work, and features we might pick up at some point. These need to be broken down into specific tasks before execution.
+
+## Workflow Process
+1. **Feature Selection**: When we've cleared the TODO list, we return to FEATURES.md to select the next feature to work on
+2. **Task Breakdown**: Selected features get broken down into a series of specific, actionable tasks
+3. **Execution**: Tasks move to TODO.md and get executed in order
+4. **Completion**: When all tasks for a feature are complete, we return to feature selection
+
+Some features may be small enough to complete in a single shot, going straight from "feature selected" to "do all the implementation work".
+
 # Existing Functional Features
 
 - **Creep Spawning:** Basic worker creeps (`Worker`) are spawned with a predefined body (`[WORK, CARRY, MOVE]`) and assigned the `HarvestEnergyProject`. Spawning includes a counter (`Memory.creepCounter`) for unique naming. (See `main.ts`)
@@ -56,12 +72,12 @@
 # Planned MVP Dev/Workflow Features
 
 - **Enhanced Testing Framework:**
-    - **Migrate to Jest:** Replace or augment the current test setup with Jest, utilizing `screeps-jest` for mocking game globals and improved test utilities (addresses `TODO.md` item).
+    - **Migrate to Jest:** Replace or augment the current test setup with Jest, utilizing `screeps-jest` for mocking game globals and improved test utilities.
     - **Comprehensive Unit Tests:** Increase test coverage for all critical modules, especially AI logic (planners, projects, tasks) and utility functions.
     - **Integration Tests:** Develop basic integration tests to verify interactions between different modules (e.g., creep completes a task, project assigns a new one).
 - **Refactor Core Systems:**
-    - **`MemoryBackedClass` Refactor/Replacement:** Address the complexity of `MemoryBackedClass.ts`. This could involve simplifying its API, improving its internal logic, or exploring alternative approaches for memory management (addresses `TODO.md` item).
-    - **Tasking Abstraction Clarity:** Refine the interaction between `Task`, `Project`, and creep memory (e.g., `TaskHelpers.loadConfig`, `CreepTaskingExtension`) to create a clearer and more robust abstraction layer for how tasks are configured and managed (addresses `TODO.md` item).
+    - **`MemoryBackedClass` Refactor/Replacement:** Address the complexity of `MemoryBackedClass.ts`. This could involve simplifying its API, improving its internal logic, or exploring alternative approaches for memory management.
+    - **Tasking Abstraction Clarity:** Refine the interaction between `Task`, `Project`, and creep memory (e.g., `TaskHelpers.loadConfig`, `CreepTaskingExtension`) to create a clearer and more robust abstraction layer for how tasks are configured and managed.
 - **Improved Debugging & Observability:**
     - **Enhanced Logging:** More configurable logging levels, potentially with the ability to filter logs by creep, room, or module.
     - **Visualizations:** Integrate with Screeps visualizers or develop custom tools to display AI state, creep intentions, room plans, etc., on the game map.
@@ -81,6 +97,10 @@
 - **Version Control Practices:**
     - **Clear Commit History:** Enforce conventional commit messages or similar standards for a clean and understandable git history.
     - **Branching Strategy:** Define a simple branching strategy (e.g., feature branches, develop branch, main branch).
+
+## Later Dev/Workflow Features
+
+- **Git History Cleanup:** Rework initial commit into an empty merge commit for a clearer starting point (maybe use an empty Initial Commit).
 
 ## Later Functional Features
 - **Advanced Spawn Queue Management:** Implement a priority-based spawn queue, allowing the system to wait for resources if needed for critical creeps rather than just spawning cheaper alternatives.
