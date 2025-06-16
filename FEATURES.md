@@ -23,6 +23,7 @@
         - Spawn creeps based on defined quotas for each role (e.g., 2 harvesters per source, 1 upgrader, 2 builders if construction sites exist).
         - Prioritize spawning based on needs (e.g., harvesters and haulers if energy is critical).
         - Automatically adjust creep body parts based on available energy in spawn/extensions to create more effective creeps as the room develops.
+        - Dynamically assign projects to newly spawned creeps based on room needs (not just `HarvestEnergyProject`).
 - **Basic Construction & Repair:**
     - **Automated Construction:** Builders automatically find and build construction sites.
     - **Structure Prioritization:** Prioritize building essential structures (spawns, extensions, containers, towers) first.
@@ -39,6 +40,7 @@
 - **Improved Task Management:**
     - **Task Chaining/Queuing:** More sophisticated ways for projects to assign sequences of tasks.
     - **Task Interruption:** Allow tasks to be interrupted if a more urgent need arises (e.g., a harvester switching to deposit if attacked).
+- **Basic Source Request Optimization:** When creeps request a source, the system should attempt to assign them to a closer available source if multiple options exist.
 
 # Existing Dev/Workflow Features
 
@@ -79,3 +81,14 @@
 - **Version Control Practices:**
     - **Clear Commit History:** Enforce conventional commit messages or similar standards for a clean and understandable git history.
     - **Branching Strategy:** Define a simple branching strategy (e.g., feature branches, develop branch, main branch).
+
+## Later Functional Features
+- **Advanced Spawn Queue Management:** Implement a priority-based spawn queue, allowing the system to wait for resources if needed for critical creeps rather than just spawning cheaper alternatives.
+- **Advanced Source Assignment Optimization:** Optimize source assignment in `SourcePlanner` based on creep `WORK` parts, travel distance/path cost, and current saturation, rather than simple counts.
+- **Dynamic Source Utilization:** Adjust the number of creeps per source dynamically based on factors like source energy capacity, regeneration rate, or the efficiency of existing harvesters.
+- **Inter-Room Operations:** Logic for creeps to operate in, or move resources between, multiple rooms (e.g., remote mining, supporting new colonies).
+- **Market Operations:** Automated buying/selling of resources on the Screeps market.
+- **Combat AI:** More sophisticated combat logic, including squad formations, kiting, and targeted attacks/retreats.
+- **Automated Room Expansion:** Logic to identify and claim new rooms, and to bootstrap basic operations in them.
+- **Power Creep Management:** Integration and utilization of power creeps and their abilities.
+- **Lab Management:** Automated management of labs for boosting creeps or producing advanced resources.
