@@ -101,6 +101,7 @@ Some features may be small enough to complete in a single shot, going straight f
 ## Later Dev/Workflow Features
 
 - **Git History Cleanup:** Rework initial commit into an empty merge commit for a clearer starting point (maybe use an empty Initial Commit).
+- **Test Build Optimization:** Suppress esbuild size warnings for test files while preserving them for main build output.
 
 ## Later Functional Features
 - **Advanced Spawn Queue Management:** Implement a priority-based spawn queue, allowing the system to wait for resources if needed for critical creeps rather than just spawning cheaper alternatives.
