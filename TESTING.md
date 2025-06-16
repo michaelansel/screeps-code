@@ -70,13 +70,23 @@ test/unit/
 - ✅ `main.ts` - Main game loop
 - ✅ `extensions/Creep/Tasking.ts` - Creep task management
 - ✅ `planners/SourcePlanner.ts` - Source assignment logic
+- ✅ `projects/DoNothingProject.ts` - No-op project behavior
 - ✅ `projects/HarvestEnergyProject.ts` - Energy harvesting project logic
+- ✅ `projects/Project.ts` - Project base class, helpers, and registry
 - ✅ `tasks/DepositEnergyTask.ts` - Energy depositing task
+- ✅ `tasks/DoNothingTask.ts` - No-op task behavior
 - ✅ `tasks/HarvestEnergyTask.ts` - Energy harvesting task
+- ✅ `tasks/Task.ts` - Task base class, helpers, and config management
 - ✅ `utils/Logger.ts` - Logging utilities
 - ✅ `utils/MemoryBackedClass.ts` - Memory persistence
 
-**Test Statistics**: 32 passing tests, 9 pending tests
+**Test Statistics**: 83 passing tests, 9 pending tests
+
+### Test Coverage Summary
+- **Projects**: 3/4 modules tested (75% coverage)
+- **Tasks**: 3/4 modules tested (75%) 
+- **Core Systems**: 100% coverage of main logic, planning, and tasking framework
+- **Base Classes**: 100% coverage of Project and Task infrastructure
 
 ## Missing Test Coverage
 See TODO.md for current priority modules that need test coverage.
