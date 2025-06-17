@@ -7,6 +7,8 @@
 # Ignore basic folders
 /dist
 /dist-test
+/dist-functional
+/dist-integration
 /.rpt2_cache
 /tsc-out
 /node_modules

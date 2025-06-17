@@ -1,0 +1,43 @@
+steamKey: ${STEAM_KEY}
+runners:
+  - path: screeps-engine-loader
+    options:
+      driver: redis
+      driver_options:
+        host: redis
+        port: 6379
+  - path: screeps-engine-main
+    options:
+      driver: redis
+      driver_options:
+        host: redis
+        port: 6379
+  - path: screeps-engine-processor
+    options:
+      driver: redis
+      driver_options:
+        host: redis
+        port: 6379
+      runner: main
+      config:
+        playerDataInMemory: true
+        mainLoopCustomStage: true
+
+storage:
+  - path: screeps-storage-binary
+    options:
+      driver: redis
+      driver_options:
+        host: redis
+        port: 6379
+  - path: screeps-storage-db
+    options:
+      driver: mongodb
+      driver_options:
+        url: mongodb://mongo:27017/screeps
+
+game_port: 21025
+cli_port: 21026
+
+system:
+  pauseSimulation: false
