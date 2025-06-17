@@ -1,0 +1,15 @@
+services:
+  screeps:
+    image: screepers/screeps-launcher:latest
+    volumes:
+      - screeps-initialized-data:/screeps
+      - ./screeps-launcher-config.yml:/screeps/config.yml
+    ports:
+      - "21025:21025" # Game port
+      - "21026:21026" # CLI port
+    environment:
+      - STEAM_KEY=${STEAM_KEY:-dummy_key_for_testing}
+
+volumes:
+  screeps-initialized-data:
+    external: true

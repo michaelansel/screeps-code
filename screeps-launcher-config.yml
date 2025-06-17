@@ -1,0 +1,8 @@
+version: latest
+mods:
+  - screepsmod-auth
+bots:
+  user: "/screeps/bots/user"
+constants:
+  TEST_CONSTANT: 123
+tickRate: 1000
