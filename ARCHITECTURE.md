@@ -1,4 +1,8 @@
-# Code Structure
+# Architecture Guide
+
+This document provides comprehensive technical details about the codebase structure, patterns, and implementation details. For general project information, see [README.md](README.md). For development workflow, see [FEATURES.md](FEATURES.md).
+
+## Code Structure
 
 - `src/extensions`: Modules for extending global Screeps objects like `Creep`, `StructureSpawn`, `Room`, `Memory`, etc. This is where prototype modifications and new functionalities are added to existing game objects.
 - `src/planners`: Contains logic for high-level, strategic decision-making that often spans multiple rooms or oversees complex operations. For example, a planner might decide which rooms to expand to or how to allocate resources across the colony.
@@ -48,7 +52,7 @@ This codebase utilizes several advanced TypeScript patterns and features, some o
      - When a property of a memory-backed object is set, the proxy ensures the value is also written to the underlying `Memory` object in a serialized format.
      - When a property is accessed, the proxy can load it from `Memory` if it hasn't been accessed yet during the current tick.
      - It employs `SerDeFunctions` (Serialize/Deserialize functions) which define how specific properties or entire objects are converted to and from their memory representation. This includes handling references to game objects (by storing their IDs) and other custom classes.
-   - **Complexity:** This class is one of the most complex parts of the codebase. Its heavy use of generics, proxies, and dynamic property manipulation can be challenging to debug. The `TODO.md` file includes an item to potentially rewrite or simplify it. When working with classes that extend `MemoryBackedClass`, pay close attention to how their data is defined and managed by the `SerDeFunctions`.
+   - **Complexity:** This class is one of the most complex parts of the codebase. Its heavy use of generics, proxies, and dynamic property manipulation can be challenging to debug. The `FEATURES.md` file includes plans to potentially rewrite or simplify it. When working with classes that extend `MemoryBackedClass`, pay close attention to how their data is defined and managed by the `SerDeFunctions`.
 
 **2. Mixin Pattern for Extending Game Objects:**
    - **Purpose:** To add new functionalities (methods and properties) to global Screeps game objects like `Creep`, `Spawn`, `Room`, etc., without directly modifying their original prototypes in a way that's hard to manage.
@@ -124,7 +128,7 @@ These guidelines are a mix of enforced linting rules, TypeScript compiler settin
 
 **8. TODOs and Code Evolution:**
    - Address `TODO` comments in the code. If you encounter a `TODO`, understand its implication.
-   - Be aware of the items in `TODO.md`, as they represent planned improvements or refactorings (e.g., rewriting `MemoryBackedClass`, improving the tasking abstraction).
+   - Be aware of the items in `FEATURES.md`, as they represent planned improvements or refactorings (e.g., rewriting `MemoryBackedClass`, improving the tasking abstraction).
 
 By following these guidelines, we can ensure the codebase remains maintainable, robust, and easier for all contributors to work with.
 

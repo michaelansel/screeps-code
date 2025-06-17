@@ -1,10 +1,18 @@
 # Screeps Development Work Session Prompt
 
-This prompt is designed to maximize development effectiveness and maintain project quality.
+This prompt is designed to maximize development effectiveness and maintain project quality. **This file contains instructions for AI assistants - do not delete it.**
+
+## Important Context Notes
+
+### Integration Testing Reality Check
+- The integration tests should test against a **real Screeps server**, not mock servers
+- Mock servers defeat the entire purpose of integration testing
+- When working on integration tests, focus on getting the actual Screeps server running properly
+- If Screeps server configuration is complex, that's the real work that needs to be done
 
 ## The Optimized Prompt
 
-**"Start a focused development session on the Screeps codebase. Check TODO.md for the next priority item and create a concrete plan to address it. Research existing code patterns before implementing. Run tests frequently. Document workflow discoveries and decisions as you learn. Keep refactoring minimal - only what's needed for the current task. If you discover larger refactoring needs or new features, add them to the appropriate list (TODO.md for immediate tasks, FEATURES.md for long-term ideas). Proactively update todo status and add newly discovered tasks. Ask clarifying questions early. Now execute the plan systematically."**
+**"Start a focused development session on the Screeps codebase. Check FEATURES.md for the current development focus and create a concrete plan to address it. Research existing code patterns before implementing. Run tests frequently. Document workflow discoveries and decisions as you learn. Keep refactoring minimal - only what's needed for the current task. If you discover larger refactoring needs or new features, add them to FEATURES.md in the appropriate sections. Proactively update status and progress directly in FEATURES.md. Ask clarifying questions early. Now execute the plan systematically."**
 
 ## Core Development Principles
 
@@ -15,10 +23,10 @@ This prompt is designed to maximize development effectiveness and maintain proje
 - **Ask early**: Clarify requirements upfront to avoid rework
 
 ### 📋 Task Management
-- **TODO.md**: Check for next priority, update status in real-time
+- **FEATURES.md**: Check current focus, update status and progress in real-time
 - **Proactive discovery**: Add new tasks as you uncover them
 - **Scope boundaries**: Keep current task minimal, defer larger work to separate items
-- **Clear categorization**: TODO.md for immediate work, FEATURES.md for future ideas
+- **Single source**: FEATURES.md contains all planning, tracking, and status information
 
 ### 🧪 Quality Gates
 - **Test-driven workflow**: Run `npm run test` frequently during development
@@ -41,7 +49,7 @@ This prompt is designed to maximize development effectiveness and maintain proje
 ## Execution Workflow
 
 ### 🚀 Session Startup (30 seconds)
-1. **Check priority**: Read TODO.md top item
+1. **Check priority**: Read FEATURES.md "Current Development Focus" section
 2. **Plan approach**: Write 2-3 sentence implementation plan
 3. **Research context**: Scan related existing code
 4. **Set boundaries**: Identify what's in/out of scope
@@ -76,8 +84,7 @@ npm run build       # Production build
 ```
 
 ### Project Structure
-- **TODO.md**: Current sprint tasks (immediate work)
-- **FEATURES.md**: Long-term ideas and major refactoring
+- **FEATURES.md**: Complete development roadmap and current focus
 - **TESTING.md**: Test workflow and patterns
 - **DOCUMENTATION.md**: Project architecture and design decisions
 - **src/**: Source code organized by domain
