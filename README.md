@@ -58,6 +58,8 @@ See [`FEATURES.md`](FEATURES.md) for current development focus, completed featur
 4. Ensure tests pass: `npm run test`
 5. Validate code quality: `npm run pre-commit`
 
+**For AI developers**: See [`WORK_PROMPT.md`](WORK_PROMPT.md) for specialized development workflow guidance.
+
 ## Architecture
 
 ### Core Systems
