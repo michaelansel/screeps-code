@@ -32,7 +32,9 @@ describe("HarvestEnergyTask", () => {
     creep.harvest = sinon.stub();
     // @ts-expect-error we're just shoving in the necessary structures from the game
     creep.store = {
-      getFreeCapacity: sinon.stub().returns(0)
+      getFreeCapacity: sinon.stub().returns(0),
+      getUsedCapacity: sinon.stub().returns(100),
+      getCapacity: sinon.stub().returns(100)
     };
     creep.memory = {};
     // end nonsense

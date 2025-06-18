@@ -34,14 +34,16 @@ describe("HarvestEnergyProject", () => {
 
       // @ts-expect-error we're just shoving in the necessary structures from the game
       creep.store = {
-        getFreeCapacity: sinon.stub()
+        getFreeCapacity: sinon.stub(),
+        getUsedCapacity: sinon.stub(),
+        getCapacity: sinon.stub().returns(100)
       };
     });
 
     it("should start DepositEnergyTask when creep is full of energy", () => {
-      // Mock creep as full of energy
+      // Mock creep as full of energy (100 energy in 100 capacity)
       // @ts-expect-error we're just shoving in the necessary structures from the game
-      creep.store.getFreeCapacity.withArgs(RESOURCE_ENERGY).returns(0);
+      creep.store.getUsedCapacity.withArgs(RESOURCE_ENERGY).returns(100);
 
       HarvestEnergyProject.run(creep, config);
 
@@ -51,7 +53,7 @@ describe("HarvestEnergyProject", () => {
     it("should start HarvestEnergyTask when creep is not full of energy", () => {
       // Mock creep as not full of energy
       // @ts-expect-error we're just shoving in the necessary structures from the game
-      creep.store.getFreeCapacity.withArgs(RESOURCE_ENERGY).returns(50);
+      creep.store.getUsedCapacity.withArgs(RESOURCE_ENERGY).returns(50);
 
       HarvestEnergyProject.run(creep, config);
 
@@ -61,7 +63,7 @@ describe("HarvestEnergyProject", () => {
     it("should start HarvestEnergyTask when creep has empty energy storage", () => {
       // Mock creep as empty
       // @ts-expect-error we're just shoving in the necessary structures from the game
-      creep.store.getFreeCapacity.withArgs(RESOURCE_ENERGY).returns(100);
+      creep.store.getUsedCapacity.withArgs(RESOURCE_ENERGY).returns(0);
 
       HarvestEnergyProject.run(creep, config);
 
