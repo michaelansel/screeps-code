@@ -25,6 +25,16 @@ screeps.json
 # ScreepsServer data from integration tests
 /server
 
+# Generated test files
+test-bot-output.js
+
+# POC and temporary directories
+screeps-functest-poc-final/
+test/config/screeps-launcher/
+
+# Temporary evidence files
+DEPLOYMENT_EVIDENCE.md
+
 # Numerous always-ignore extensions
 *.diff
 *.err

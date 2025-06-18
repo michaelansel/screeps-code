@@ -1,0 +1,9 @@
+# Minimal config with dummy Steam key for testing
+
+version: latest
+steamKey: "DUMMY_KEY_FOR_TESTING_12345678901234567890123456789012"
+
+# Minimal server configuration
+serverConfig:
+  welcomeText: "Test Server with Steam Key"
+  tickRate: 1000
