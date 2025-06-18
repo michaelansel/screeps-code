@@ -503,6 +503,28 @@ export class FunctionalTestHarness {
   }
 
   /**
+   * Wait for a specific number of game ticks to pass
+   */
+  async waitForTicks(userId: string, ticksToWait: number): Promise<void> {
+    const startTick = this.getGameTick();
+    const targetTick = startTick + ticksToWait;
+    
+    console.log(`⏳ Waiting for ${ticksToWait} ticks (${startTick} -> ${targetTick})...`);
+    
+    for (let i = 0; i < 120; i++) { // Max 2 minutes
+      const currentTick = this.getGameTick();
+      if (currentTick >= targetTick) {
+        console.log(`✅ Reached tick ${currentTick} (waited ${currentTick - startTick} ticks)`);
+        return;
+      }
+      await this.sleep(1000);
+    }
+    
+    const finalTick = this.getGameTick();
+    console.log(`⏰ Timeout waiting for ticks. Final tick: ${finalTick} (advanced ${finalTick - startTick})`);
+  }
+
+  /**
    * Clean up test environment
    */
   /**

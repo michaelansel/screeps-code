@@ -33,9 +33,15 @@ Integration tests validate component interactions and system behavior:
 ### 3. Functional Tests
 - **Purpose**: End-to-end validation in actual Screeps game environment
 - **Location**: `test/functional/`
-- **Technology**: ARM64 Screeps server + Docker/Finch
-- **Speed**: Slow (~5-15 seconds per test)
-- **When to use**: Release validation, production confidence
+- **Technology**: ARM64 Screeps server + Docker/Finch + FileBot mod
+- **Speed**: Slow (~5-15 seconds per test after setup)
+- **When to use**: Release validation, production confidence, behavior verification
+
+#### Test Categories:
+- **Bot Execution**: Basic deployment and execution validation
+- **Resource Management**: Role-based spawning, quotas, and upgrading behavior  
+- **Core Systems**: Energy harvesting, Project/Task framework, AI behaviors
+- **Test Harness**: Infrastructure validation and monitoring capabilities
 
 ## Running Tests
 
@@ -53,6 +59,11 @@ npm run test:integration
 
 # Run only functional tests (with server setup/teardown)
 npm run test:functional
+
+# Run specific functional test categories
+npm run test:functional -- --grep "Resource Management"
+npm run test:functional -- --grep "Core Systems"
+npm run test:functional -- --grep "Bot Execution"
 
 # Run specific test categories
 npm run test:integration -- --grep "Framework"
@@ -154,6 +165,31 @@ This enables validation of:
 - Game state progression through memory changes
 - Multi-user memory analysis
 
+### Feature-Specific Testing
+
+**Resource Management System:**
+- Role-based spawning priorities (harvesters before upgraders)
+- Quota enforcement (min 2 harvesters, max 3 upgraders)
+- Project assignment validation (HarvestEnergyProject vs UpgradeControllerProject)
+- Controller upgrading behavior and energy management
+- Integration with existing SourcePlanner system
+
+**Core Game Systems:**
+- Energy harvesting and depositing workflows
+- Project/Task framework execution
+- Source planning and assignment logic
+- Creep lifecycle and memory cleanup
+- Runtime extensions system operation
+- Error handling and recovery mechanisms
+- Memory-backed persistence validation
+
+**Test Infrastructure:**
+- Game tick progression monitoring (`waitForTicks`)
+- Memory pattern matching for complex validations
+- Game object querying (spawns, creeps, sources)
+- Scenario setup with memory preloading
+- Resource constraint simulation
+
 ## Writing Tests
 
 ### Unit Test Example
@@ -190,22 +226,31 @@ describe("Game Integration", () => {
 });
 ```
 
-### Real Server Test Example
+### Functional Test Example
 
 ```typescript
-// test/integration/server-example.test.ts
-describe("Real Server Integration", () => {
-  it("should validate code execution", async () => {
-    // Build and deploy code
-    await server.deployCode();
-    await server.deployIntegrationTestCode();
+// test/functional/resource-management.test.ts
+describe("Resource Management System", () => {
+  const harness = new FunctionalTestHarness();
+
+  before(async () => {
+    await harness.setupEnvironment();
+  });
+
+  it("should implement role-based spawning", async () => {
+    // Deploy the bot with Resource Management System
+    const deployment = await harness.deployBot();
     
-    // Run simulation
-    await server.runTicks(5);
+    // Wait for spawning to occur
+    await harness.waitForTicks(deployment.userId, 15);
     
-    // Validate results
-    const gameState = await server.getGameState();
-    expect(gameState.codeExecuting).to.be.true;
+    // Validate role-based creep spawning
+    const objects = await harness.getGameObjects(deployment.userId);
+    const harvesterCreeps = objects.creeps.filter(c => c.name.startsWith('Harvester'));
+    const upgraderCreeps = objects.creeps.filter(c => c.name.startsWith('Upgrader'));
+    
+    expect(harvesterCreeps.length).to.be.greaterThan(0);
+    expect(upgraderCreeps.length).to.be.at.most(3); // Quota validation
   });
 });
 ```
