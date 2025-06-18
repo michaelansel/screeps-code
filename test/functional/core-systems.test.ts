@@ -83,11 +83,11 @@ describe("Core Game Systems", function () {
     await harness.preloadMemory(deployment.userId, {
       creepCounter: 2,
       creeps: {
-        TestWorker1: {
+        TestHarvester1: {
           project: { id: "HarvestEnergyProject" },
           task: { id: "HarvestEnergyTask", config: { source: "test_source_123" } }
         },
-        TestWorker2: {
+        TestUpgrader1: {
           project: { id: "UpgradeControllerProject", config: { controller: "test_controller_456" } }
         }
       },
@@ -104,20 +104,20 @@ describe("Core Game Systems", function () {
 
     // Check specific project/task assignments
     const patterns = await harness.checkMemoryPatterns(deployment.userId, {
-      "creeps.TestWorker1.project.id": "HarvestEnergyProject",
-      "creeps.TestWorker1.task.id": "HarvestEnergyTask",
-      "creeps.TestWorker2.project.id": "UpgradeControllerProject",
-      "creeps.TestWorker2.project.config.controller": "test_controller_456"
+      "creeps.TestHarvester1.project.id": "HarvestEnergyProject",
+      "creeps.TestHarvester1.task.id": "HarvestEnergyTask",
+      "creeps.TestUpgrader1.project.id": "UpgradeControllerProject",
+      "creeps.TestUpgrader1.project.config.controller": "test_controller_456"
     });
 
-    expect(patterns["creeps.TestWorker1.project.id"]).to.be.true;
-    expect(patterns["creeps.TestWorker2.project.id"]).to.be.true;
+    expect(patterns["creeps.TestHarvester1.project.id"]).to.be.true;
+    expect(patterns["creeps.TestUpgrader1.project.id"]).to.be.true;
 
     console.log(`🎯 Project/Task framework validation:`, {
-      worker1Project: patterns["creeps.TestWorker1.project.id"],
-      worker1Task: patterns["creeps.TestWorker1.task.id"],
-      worker2Project: patterns["creeps.TestWorker2.project.id"],
-      worker2Config: patterns["creeps.TestWorker2.project.config.controller"]
+      harvester1Project: patterns["creeps.TestHarvester1.project.id"],
+      harvester1Task: patterns["creeps.TestHarvester1.task.id"],
+      upgrader1Project: patterns["creeps.TestUpgrader1.project.id"],
+      upgrader1Config: patterns["creeps.TestUpgrader1.project.config.controller"]
     });
 
     // System should handle the framework without crashes

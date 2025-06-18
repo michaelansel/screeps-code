@@ -67,7 +67,18 @@ describe("Bot Execution in Screeps Server", function () {
   });
 
   it("should initialize memory and spawn creeps", async () => {
-    const deployment = await harness.getLastDeployment();
+    // Deploy the bot first (or get existing deployment)
+    let deployment;
+    try {
+      deployment = harness.getLastDeployment();
+    } catch {
+      // No previous deployment, deploy now
+      deployment = await harness.deployBot();
+      expect(deployment.success).to.be.true;
+    }
+
+    // Wait for initial execution and spawning
+    await harness.waitForTicks(deployment.userId, 15);
 
     // Get comprehensive memory statistics
     const memoryStats = await harness.getMemoryStats(deployment.userId);
@@ -91,11 +102,18 @@ describe("Bot Execution in Screeps Server", function () {
     const objects = await harness.getGameObjects(deployment.userId);
     expect(objects.spawns).to.have.length.greaterThan(0);
 
-    // If enough time has passed, we should see creeps
+    // Check for creeps with updated naming convention (Harvester/Upgrader instead of Worker)
     if (objects.creeps.length > 0) {
       expect(objects.creeps[0]).to.have.property("name");
-      expect(objects.creeps[0].name).to.match(/Worker\d+/);
+      // Updated regex to match new role-based naming: Harvester1, Upgrader1, etc.
+      expect(objects.creeps[0].name).to.match(/(Harvester|Upgrader)\d+/);
       console.log(`✅ Bot spawned ${objects.creeps.length} creeps`);
+      
+      // Log creep names for debugging
+      const creepNames = objects.creeps.map(c => c.name);
+      console.log(`🤖 Spawned creeps: ${creepNames.join(', ')}`);
+    } else {
+      console.log(`ℹ️  No creeps spawned yet, may need more time or energy`);
     }
   });
 
@@ -135,15 +153,15 @@ describe("Bot Execution in Screeps Server", function () {
     const preloadedMemory = {
       creepCounter: 5,
       creeps: {
-        PreloadedWorker1: {
+        PreloadedHarvester1: {
           role: "harvester",
           project: { id: "HarvestEnergyProject" },
           task: { id: "HarvestEnergyTask", config: { source: "test_source_123" } }
         },
-        PreloadedWorker2: {
-          role: "hauler",
-          project: { id: "HarvestEnergyProject" },
-          memory: { targetSpawn: "test_spawn_main" }
+        PreloadedUpgrader1: {
+          role: "upgrader",
+          project: { id: "UpgradeControllerProject", config: { controller: "test_controller_456" } },
+          memory: { targetController: "test_controller_456" }
         }
       },
       testScenario: "preloaded_economy",
@@ -160,15 +178,15 @@ describe("Bot Execution in Screeps Server", function () {
     const patterns = await harness.checkMemoryPatterns(deployment.userId, {
       creepCounter: 5,
       testScenario: "preloaded_economy",
-      "creeps.PreloadedWorker1.role": "harvester",
-      "creeps.PreloadedWorker2.role": "hauler",
+      "creeps.PreloadedHarvester1.role": "harvester",
+      "creeps.PreloadedUpgrader1.role": "upgrader",
       preloadedAt: null // Check exists
     });
 
     expect(patterns.creepCounter).to.be.true;
     expect(patterns.testScenario).to.be.true;
-    expect(patterns["creeps.PreloadedWorker1.role"]).to.be.true;
-    expect(patterns["creeps.PreloadedWorker2.role"]).to.be.true;
+    expect(patterns["creeps.PreloadedHarvester1.role"]).to.be.true;
+    expect(patterns["creeps.PreloadedUpgrader1.role"]).to.be.true;
     expect(patterns.preloadedAt).to.be.true;
 
     console.log(`✅ Memory preloading validation passed`);
