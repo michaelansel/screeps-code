@@ -5,7 +5,7 @@ import { join } from "path";
 
 /**
  * Bot Validation Integration Test
- * 
+ *
  * Validates that the bot build process produces valid Screeps code.
  * This is an integration test because it tests the build pipeline,
  * not individual units of code.
@@ -19,11 +19,11 @@ describe("Bot Build Integration", function () {
     // Build the bot
     console.log("🔨 Building bot code...");
     execSync("npm run build", { stdio: "pipe" });
-    
+
     // Read the built code
     botPath = join(process.cwd(), "dist/main.js");
     botCode = readFileSync(botPath, "utf8");
-    
+
     console.log(`✅ Bot built successfully: ${botCode.length} bytes`);
   });
 
@@ -63,10 +63,10 @@ describe("Bot Build Integration", function () {
   it("should save bot for external testing", () => {
     const testBotPath = join(process.cwd(), "test-bot-output.js");
     writeFileSync(testBotPath, botCode);
-    
+
     const savedCode = readFileSync(testBotPath, "utf8");
     expect(savedCode).to.equal(botCode);
-    
+
     console.log("✅ Bot code saved for external testing:");
     console.log(`   📁 File: ${testBotPath}`);
     console.log(`   📊 Size: ${botCode.length} bytes`);

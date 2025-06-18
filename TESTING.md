@@ -127,6 +127,33 @@ To prove both main and test code are executing:
 - Console log markers: `🧪 INTEGRATION_TEST:`
 - Independent execution counters
 
+### Memory State Monitoring
+
+**Enhanced Memory Access:**
+Functional tests now have comprehensive memory monitoring capabilities using the `storage.env.get('memory:USER_ID')` pattern:
+
+```typescript
+// Basic memory validation
+const memory = await harness.getMemoryState(userId);
+expect(memory).to.have.property('creepCounter');
+
+// Pattern-based memory testing
+const patterns = await harness.checkMemoryPatterns(userId, {
+  'creepCounter': null,  // Check if exists
+  'creeps.Worker1.project': 'HarvestEnergyProject'  // Check nested values
+});
+
+// Comprehensive memory statistics
+const stats = await harness.getMemoryStats(userId);
+expect(stats.hasCreepCounter).to.be.true;
+```
+
+This enables validation of:
+- Memory initialization and structure
+- Creep project/task assignments
+- Game state progression through memory changes
+- Multi-user memory analysis
+
 ## Writing Tests
 
 ### Unit Test Example

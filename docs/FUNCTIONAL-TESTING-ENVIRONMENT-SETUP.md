@@ -538,6 +538,93 @@ This guide provides proven patterns for:
 
 These patterns eliminate shell parameter expansion issues and provide reliable, reproducible testing environments suitable for any bot complexity level.
 
+## Memory State Validation
+
+### Comprehensive Memory Monitoring
+
+**Validate user memory initialization:**
+```bash
+echo "🧠 Validating memory state for user: $TEST_USER_ID"
+
+# Get memory data for the test user
+MEMORY_DATA=$(finch exec screeps curl -s -d "storage.env.get('memory:$TEST_USER_ID').then(data => JSON.stringify(data, null, 2))")
+
+if [ "$MEMORY_DATA" = "null" ] || [ "$MEMORY_DATA" = '""' ]; then
+  echo "❌ User memory not initialized"
+  exit 1
+else
+  echo "✅ User memory initialized"
+  echo "Memory size: $(echo "$MEMORY_DATA" | wc -c) bytes"
+fi
+```
+
+### Multi-User Memory Analysis
+
+**Monitor all users and their memory states:**
+```bash
+echo "👥 Analyzing all users with memory..."
+
+# Get all users with their memory data
+ALL_USERS_MEMORY=$(finch exec screeps curl -s -d "
+storage.db['users'].find().then(users => 
+  Promise.all(users.map(u => 
+    storage.env.get('memory:' + u._id).then(mem => ({
+      userId: u._id, 
+      username: u.username, 
+      memory: mem,
+      hasMemory: mem !== null && mem !== ''
+    }))
+  ))
+).then(results => JSON.stringify(results, null, 2))
+")
+
+# Parse and analyze results
+TOTAL_USERS=$(echo "$ALL_USERS_MEMORY" | jq '. | length')
+ACTIVE_USERS=$(echo "$ALL_USERS_MEMORY" | jq '[.[] | select(.hasMemory == true)] | length')
+
+echo "Total users: $TOTAL_USERS"
+echo "Users with active memory: $ACTIVE_USERS"
+
+# Show detailed memory stats for active users
+echo "$ALL_USERS_MEMORY" | jq -r '.[] | select(.hasMemory == true) | "User: \(.username) (ID: \(.userId)) - Memory: \(.memory | tostring | length) bytes"'
+```
+
+### Memory Pattern Validation
+
+**Check for specific memory structures:**
+```bash
+# Validate expected memory structure
+MEMORY_VALIDATION=$(finch exec screeps curl -s -d "
+storage.env.get('memory:$TEST_USER_ID').then(memory => {
+  if (!memory) return JSON.stringify({valid: false, reason: 'No memory found'});
+  
+  const parsed = typeof memory === 'string' ? JSON.parse(memory) : memory;
+  const validation = {
+    valid: true,
+    hasCreepCounter: 'creepCounter' in parsed,
+    hasCreeps: 'creeps' in parsed && typeof parsed.creeps === 'object',
+    creepCount: parsed.creeps ? Object.keys(parsed.creeps).length : 0,
+    structure: Object.keys(parsed)
+  };
+  
+  return JSON.stringify(validation);
+})
+")
+
+MEMORY_VALID=$(echo "$MEMORY_VALIDATION" | jq -r '.valid')
+HAS_CREEP_COUNTER=$(echo "$MEMORY_VALIDATION" | jq -r '.hasCreepCounter')
+CREEP_COUNT=$(echo "$MEMORY_VALIDATION" | jq -r '.creepCount')
+
+if [ "$MEMORY_VALID" = "true" ] && [ "$HAS_CREEP_COUNTER" = "true" ]; then
+  echo "✅ Memory validation passed"
+  echo "- Creep counter: present"
+  echo "- Creep count: $CREEP_COUNT"
+else
+  echo "❌ Memory validation failed"
+  exit 1
+fi
+```
+
 ## CLI Access Pattern
 
 All setup commands use the standard CLI access pattern:
@@ -547,7 +634,271 @@ finch compose -f docker-compose.yml exec -T screeps curl -s http://localhost:210
 
 The CLI endpoint provides access to:
 - `storage.db.*` - Database collections
-- `storage.env.*` - Environment variables  
+- `storage.env.*` - Environment variables and memory data
 - `system.*` - System controls (pause, reset, etc.)
 - `map.*` - Room generation functions
 - `filebot.*` - FileBot mod functions (when loaded)
+
+### Memory Access Specifics
+- User memory: `storage.env.get('memory:USER_ID')`
+- Memory is stored as JSON strings that may need parsing
+- Empty/inactive users often have null or empty string memory
+- Memory structure follows standard Screeps format: `{creeps: {}, spawns: {}, rooms: {}, ...}`
+
+---
+
+## Memory State Preloading
+
+> **⚠️ Caution**: Memory preloading should be used carefully in functional tests. While useful for testing specific scenarios, it may mask initialization bugs or create unrealistic test conditions. Consider whether testing natural memory initialization is more valuable for your use case.
+
+### Simple Memory Updates
+
+#### Complete Memory Replacement
+```bash
+# Replace entire memory state for a user
+USER_ID="your_test_user_id"
+NEW_MEMORY='{"creepCounter": 5, "creeps": {"TestCreep": {"role": "harvester"}}, "testFlag": true}'
+
+finch exec screeps curl -s -d "storage.env.set('memory:$USER_ID', JSON.stringify($NEW_MEMORY)).then(() => 'Memory updated successfully')"
+```
+
+#### Clear/Reset Memory
+```bash
+# Reset user memory to empty state
+finch exec screeps curl -s -d "storage.env.set('memory:$USER_ID', '{}').then(() => 'Memory cleared')"
+```
+
+#### Merge with Existing Memory
+```bash
+# Add new fields while preserving existing memory
+finch exec screeps curl -s -d "
+storage.env.get('memory:$USER_ID').then(data => {
+  const current = JSON.parse(data || '{}');
+  Object.assign(current, {
+    newField: 'newValue',
+    testMode: true,
+    preloadedAt: Date.now()
+  });
+  return storage.env.set('memory:$USER_ID', JSON.stringify(current));
+}).then(() => 'Memory merged successfully')
+"
+```
+
+### Complex Memory Manipulation
+
+#### Update Specific Memory Paths
+```bash
+# Update nested memory structures
+finch exec screeps curl -s -d "
+storage.env.get('memory:$USER_ID').then(data => {
+  const mem = JSON.parse(data || '{}');
+  
+  // Initialize creeps object if needed
+  mem.creeps = mem.creeps || {};
+  
+  // Add new creep with specific configuration
+  mem.creeps.PreloadedWorker = {
+    role: 'harvester',
+    project: {id: 'HarvestEnergyProject'},
+    task: {id: 'HarvestEnergyTask', config: {source: 'source_id_123'}}
+  };
+  
+  // Update global counters
+  mem.creepCounter = (mem.creepCounter || 0) + 1;
+  
+  return storage.env.set('memory:$USER_ID', JSON.stringify(mem));
+}).then(() => 'Memory path updated')
+"
+```
+
+#### Bulk Update Multiple Users
+```bash
+# Apply memory changes to all users (useful for test cleanup)
+finch exec screeps curl -s -d "
+storage.db['users'].find().then(users => 
+  Promise.all(users.map(u => 
+    storage.env.set('memory:' + u._id, JSON.stringify({
+      bulk: 'update',
+      userId: u._id,
+      resetAt: Date.now(),
+      testEnvironment: true
+    }))
+  ))
+).then(() => 'Bulk memory update complete')
+"
+```
+
+### FileBot-Based Complex Memory Preloading
+
+For complex memory states, use FileBot to avoid shell escaping issues:
+
+#### Create Memory Template File
+```bash
+# Create a memory template file
+cat > /tmp/complex-memory.json << 'EOF'
+{
+  "creepCounter": 10,
+  "creeps": {
+    "Worker1": {
+      "role": "harvester",
+      "project": {"id": "HarvestEnergyProject"},
+      "task": {"id": "HarvestEnergyTask", "config": {"source": "source_12345"}},
+      "memory": {"sourceId": "source_12345", "targetId": "spawn_main"}
+    },
+    "Worker2": {
+      "role": "builder", 
+      "project": {"id": "BuildProject"},
+      "task": {"id": "BuildTask", "config": {"constructionSiteId": "site_67890"}},
+      "memory": {"constructionSiteId": "site_67890"}
+    }
+  },
+  "rooms": {
+    "W12N12": {
+      "sources": ["source_12345", "source_67890"],
+      "spawns": ["spawn_main"],
+      "level": 1
+    }
+  },
+  "SourcePlanner": {
+    "creeps": {
+      "Worker1": {"task": "HarvestEnergyTask", "source": "source_12345"},
+      "Worker2": {"task": "HarvestEnergyTask", "source": "source_67890"}
+    }
+  },
+  "testScenario": "advanced_harvesting",
+  "preloadedAt": 1639123456789
+}
+EOF
+
+# Copy to container
+finch compose -f docker-compose.functional.yml cp /tmp/complex-memory.json screeps:/screeps/
+```
+
+#### FileBot Memory Injection Method
+```bash
+# Create FileBot method for memory preloading
+cat > /tmp/memory-loader.js << 'EOF'
+// FileBot extension for memory preloading
+filebot.loadMemory = function(filePath, userId) {
+  try {
+    const fs = require('fs');
+    const memoryData = fs.readFileSync(filePath, 'utf8');
+    const parsed = JSON.parse(memoryData);
+    
+    return storage.env.set('memory:' + userId, JSON.stringify(parsed))
+      .then(() => ({
+        success: true,
+        userId: userId,
+        memorySize: memoryData.length,
+        structure: Object.keys(parsed)
+      }))
+      .catch(err => ({
+        success: false,
+        error: err.message
+      }));
+  } catch (err) {
+    return Promise.resolve({
+      success: false,
+      error: err.message
+    });
+  }
+};
+EOF
+
+# Copy to container and reload FileBot
+finch compose -f docker-compose.functional.yml cp /tmp/memory-loader.js screeps:/screeps/
+finch exec screeps bash -c "cat /screeps/memory-loader.js >> /screeps/mods/filebot-mod.js"
+
+# Restart to reload the extended FileBot
+finch compose -f docker-compose.functional.yml restart screeps
+sleep 20
+
+# Use the FileBot memory loader
+RESULT=$(finch exec screeps curl -s -d "filebot.loadMemory('/screeps/complex-memory.json', '$USER_ID')")
+echo "Memory preload result: $RESULT"
+```
+
+### Memory Preloading Patterns
+
+#### Scenario-Based Preloading
+```bash
+# Preload memory for specific test scenarios
+
+# Scenario 1: Bot with established economy
+ECONOMY_MEMORY='{
+  "creepCounter": 15,
+  "creeps": {
+    "Harvester1": {"role": "harvester", "assigned": "source_1"},
+    "Harvester2": {"role": "harvester", "assigned": "source_2"}, 
+    "Hauler1": {"role": "hauler", "route": ["source_1", "spawn"]},
+    "Upgrader1": {"role": "upgrader", "assigned": "controller"}
+  },
+  "economy": {"level": 3, "energy": 800, "structures": 12}
+}'
+
+# Scenario 2: Bot in crisis (low energy, damaged structures)
+CRISIS_MEMORY='{
+  "creepCounter": 3,
+  "creeps": {
+    "LastHarvester": {"role": "harvester", "emergency": true}
+  },
+  "crisis": {"energy": 50, "damagedStructures": 5, "mode": "emergency"}
+}'
+
+# Apply scenario memory
+finch exec screeps curl -s -d "storage.env.set('memory:$USER_ID', '$ECONOMY_MEMORY').then(() => 'Economy scenario loaded')"
+```
+
+#### Memory Validation After Preloading
+```bash
+# Verify memory was loaded correctly
+VERIFICATION=$(finch exec screeps curl -s -d "
+storage.env.get('memory:$USER_ID').then(data => {
+  const mem = JSON.parse(data || '{}');
+  return JSON.stringify({
+    loaded: true,
+    creepCount: Object.keys(mem.creeps || {}).length,
+    hasCounter: 'creepCounter' in mem,
+    scenario: mem.testScenario || 'unknown',
+    size: JSON.stringify(mem).length
+  });
+})
+")
+
+echo "Memory verification: $VERIFICATION"
+```
+
+### Best Practices for Memory Preloading
+
+1. **Document the Why**: Always comment why specific memory states are being preloaded
+2. **Validate After Loading**: Verify the memory was set correctly before proceeding
+3. **Use Realistic Data**: Ensure preloaded memory represents realistic game states
+4. **Consider Natural Flow**: Test both preloaded and naturally-initialized scenarios
+5. **Clean Up**: Reset memory state between tests to avoid pollution
+6. **FileBot for Complexity**: Use FileBot pattern for large or complex memory structures
+
+### Cleanup and Reset Patterns
+
+```bash
+# Reset all test users to clean state
+finch exec screeps curl -s -d "
+storage.db['users'].find().then(users => 
+  Promise.all(users.filter(u => u.username.includes('Test')).map(u => 
+    storage.env.set('memory:' + u._id, '{}')
+  ))
+).then(() => 'Test user memories cleared')
+"
+
+# Verify cleanup
+finch exec screeps curl -s -d "
+storage.db['users'].find().then(users => 
+  Promise.all(users.map(u => 
+    storage.env.get('memory:' + u._id).then(mem => ({
+      userId: u._id,
+      username: u.username,
+      memoryEmpty: !mem || mem === '{}' || mem === ''
+    }))
+  ))
+).then(results => JSON.stringify(results.filter(r => !r.memoryEmpty)))
+"
+```

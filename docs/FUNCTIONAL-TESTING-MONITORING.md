@@ -45,6 +45,40 @@ storage.db.users.findOne({_id: '$USER_ID'}).then(u => JSON.stringify(Object.keys
 # Expected fields: ["_id","username","usernameLower","cpu","gcl","cpuAvailable","registeredDate","active","badge","rooms","meta","$loki","lastUsedCpu","lastUsedDirtyTime"]
 ```
 
+## Memory Access Patterns
+
+### Get Memory for Specific User
+```bash
+# Get memory state for a specific user
+storage.env.get('memory:USER_ID_HERE').then(data => JSON.stringify(data, null, 2))
+```
+
+### Get All Users
+```bash
+# Get list of all users (without memory)
+storage.db['users'].find().then(users => JSON.stringify(users.map(u => ({id: u._id, username: u.username}))))
+```
+
+### Get All Users with Memory
+```bash
+# Single command to get all users with their memory data
+storage.db['users'].find().then(users => 
+  Promise.all(users.map(u => 
+    storage.env.get('memory:' + u._id).then(mem => ({
+      userId: u._id, 
+      username: u.username, 
+      memory: mem
+    }))
+  ))
+).then(results => JSON.stringify(results, null, 2))
+```
+
+### Memory Storage Pattern
+- Memory is stored in `storage.env` with the pattern `memory:USER_ID`
+- The memory data can be a string (often empty for inactive bots) or JSON object
+- Memory structure follows standard Screeps format: `{creeps: {}, spawns: {}, rooms: {}, ...}`
+- User code is stored separately in `storage.db['users.code']` collection
+
 ## Evidence-Based Success Criteria
 
 From the POC's proven 6-point evidence system:
@@ -90,7 +124,105 @@ From `Object.keys(storage.db)`:
 
 ## Memory Storage Notes
 
-⚠️ **Memory Detection Limitation**: The global `Memory` object used in bot code is not easily accessible through the CLI in private servers. The POC evidence system does not rely on Memory detection, focusing instead on observable behaviors (CPU, objects, ticks, console).
+## Memory Monitoring Examples
+
+### Basic Memory Validation
+```typescript
+// Check if user has initialized memory
+const memory = await harness.getMemoryState(userId);
+expect(memory).to.not.be.null;
+expect(memory).to.have.property('creepCounter');
+```
+
+### Pattern-Based Memory Testing
+```typescript
+// Test specific memory patterns
+const patterns = await harness.checkMemoryPatterns(userId, {
+  'creepCounter': null,        // Check if exists (any value)
+  'creeps.Worker1.project': 'HarvestEnergyProject',  // Check nested value
+  'creeps': null,              // Check if creeps object exists
+  'nonExistent': 'test'        // This should fail
+});
+
+expect(patterns.creepCounter).to.be.true;
+expect(patterns['creeps.Worker1.project']).to.be.true;
+expect(patterns.nonExistent).to.be.false;
+```
+
+### Memory Statistics Analysis
+```typescript
+// Get comprehensive memory statistics
+const memoryStats = await harness.getMemoryStats(userId);
+expect(memoryStats.exists).to.be.true;
+expect(memoryStats.hasCreepCounter).to.be.true;
+
+console.log(`Memory size: ${memoryStats.size} bytes`);
+console.log(`Creep count: ${memoryStats.creepCount}`);
+console.log(`Structure: ${memoryStats.memoryStructure.join(', ')}`);
+```
+
+### Multi-User Memory Analysis
+```typescript
+// Get all users with their memory data
+const allUsers = await harness.getAllUsersWithMemory();
+const activeUsers = allUsers.filter(u => u.memory && Object.keys(u.memory).length > 0);
+
+console.log(`Found ${activeUsers.length} active users with memory`);
+```
+
+### Memory Preloading Examples
+
+```typescript
+// Simple memory preloading
+const preloadedState = {
+  creepCounter: 3,
+  creeps: {
+    "TestWorker": {
+      role: "harvester",
+      project: { id: "HarvestEnergyProject" }
+    }
+  },
+  testMode: true
+};
+
+const result = await harness.preloadMemory(userId, preloadedState);
+expect(result.success).to.be.true;
+
+// Memory merging (preserves existing data)
+await harness.mergeMemory(userId, {
+  economy: { level: 2, energy: 500 },
+  additionalFlags: { debugMode: true }
+});
+
+// Clear memory for cleanup
+await harness.clearMemory(userId);
+
+// Bulk cleanup for test users
+const clearedCount = await harness.bulkClearTestUserMemory();
+console.log(`Cleared ${clearedCount} test user memories`);
+```
+
+## Command Line Usage
+
+All monitoring commands use the standard CLI access pattern:
+```bash
+# Replace 'CONTAINER_NAME' with your actual container name
+finch exec CONTAINER_NAME curl -s http://localhost:21026/cli -d "COMMAND"
+```
+
+### Real Examples
+```bash
+# Get all users
+finch exec screeps-server-1 curl -s http://localhost:21026/cli -d "storage.db['users'].find().then(users => JSON.stringify(users.map(u => ({id: u._id, username: u.username}))))"
+
+# Get memory for specific user  
+finch exec screeps-server-1 curl -s http://localhost:21026/cli -d "storage.env.get('memory:USER_ID_HERE').then(data => JSON.stringify(data, null, 2))"
+
+# Get all users with memory
+finch exec screeps-server-1 curl -s http://localhost:21026/cli -d "storage.db['users'].find().then(users => Promise.all(users.map(u => storage.env.get('memory:' + u._id).then(mem => ({userId: u._id, username: u.username, memory: mem}))))).then(results => JSON.stringify(results, null, 2))"
+```
+
+✅ **Memory Detection Now Available**: Unlike previous limitations, the new memory access pattern using `storage.env.get('memory:USER_ID')` provides reliable access to user memory state in private servers. This enables comprehensive memory-based validation in functional tests.
 
 ## CLI Access Patterns
 
