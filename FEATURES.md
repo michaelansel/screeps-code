@@ -145,18 +145,49 @@ This project uses `FEATURES.md` as the **single source of truth** for all develo
 
 # Planned MVP Dev/Workflow Features
 
+## Test Coverage Improvements 🚧 **IN PROGRESS**
+**Priority**: High - Critical gaps in core functionality testing
+
+### ✅ Completed High Priority Items
+- **Creep Extensions** (`src/extensions/Creep/Base.ts`, `src/extensions/Creep/Logic.ts`): ✅ Added comprehensive unit tests
+- **ErrorMapper** (`src/utils/ErrorMapper.ts`): ✅ Added tests for source mapping and error wrapping
+- **applyMixins** (`src/utils/applyMixins.ts`): ✅ Added tests for mixin functionality and edge cases
+
+### 🚧 In Progress
+- **Test Count**: Increased from 83 to 109 passing tests (+26 new tests)
+- **Coverage Expansion**: Major core functionality now tested
+
+### ⏭️ Remaining Medium Priority (Utilities)
+- **Console Utilities** (`src/utils/Console.ts`): Developer tools need coverage
+- **IdMap** (`src/utils/IdMap.ts`): ID management functionality
+- **MemoryHelpers** (`src/utils/MemoryHelpers.ts`): Memory utility functions
+
+### ✅ Not Needed
+- **Memory Extensions** (`src/extensions/Memory.ts`, `src/extensions/CreepMemory.ts`): TypeScript declaration files only - no runtime logic to test
+
+### Testing Infrastructure (Next Steps)
+- **Add Coverage Reporting**: Integrate nyc or c8 for coverage metrics
+- **Set Coverage Thresholds**: Aim for 80%+ coverage
+- **CI/CD Integration**: Automated coverage checks
+
+### Progress Summary
+- **26 new unit tests** added for critical missing coverage areas
+- **Core extension mechanisms** now fully tested
+- **Error handling and debugging tools** validated
+- **Test suite stability** improved from 83 to 109 passing tests
+
 ## Enhanced Testing Framework ⏭️
 **Priority**: Medium - Build on integration testing success
 
 ### Objectives
 - **Jest Migration**: Migrate to Jest with `screeps-jest` for improved mocking
-- **Coverage Expansion**: Increase test coverage for all critical modules
 - **Performance Testing**: Validate performance characteristics systematically
+- **Advanced Scenarios**: Multi-room testing, edge cases, error conditions
 
 ### Components
-- **Advanced Scenarios**: Multi-room testing, edge cases, error conditions
 - **Behavioral Validation**: Verify AI decision-making and coordination
 - **CI/CD Integration**: Automated testing in continuous integration
+- **Test Documentation**: Guidelines and best practices for test writing
 
 ## Core System Refactoring ⏭️
 **Priority**: Low - Technical debt and clarity
