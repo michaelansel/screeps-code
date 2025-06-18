@@ -1,6 +1,6 @@
-# Architecture Guide
+# Architecture & Features Guide
 
-This document provides comprehensive technical details about the codebase structure, patterns, and implementation details. For general project information, see [README.md](README.md). For development workflow, see [FEATURES.md](FEATURES.md).
+This document provides comprehensive technical details about the codebase structure, patterns, implementation details, and all available features. For general project information, see [README.md](README.md). For development workflow, see [WORK_PROMPT.md](WORK_PROMPT.md). For current development focus, see [FEATURES.md](FEATURES.md).
 
 ## Code Structure
 

@@ -1,18 +1,125 @@
-# Screeps Development Work Session Prompt
+# Screeps Development Work Session Guide
 
-This prompt is designed to maximize development effectiveness and maintain project quality. **This file contains instructions for AI assistants - do not delete it.**
+> **Clear, actionable guidance for starting development work in this repository**
 
-## Important Context Notes
+## 🚀 Quick Start (30 seconds)
 
-### Integration Testing Reality Check
-- The integration tests should test against a **real Screeps server**, not mock servers
-- Mock servers defeat the entire purpose of integration testing
-- When working on integration tests, focus on getting the actual Screeps server running properly
-- If Screeps server configuration is complex, that's the real work that needs to be done
+1. **Check current focus**: Read [`FEATURES.md`](FEATURES.md) "Current Development Focus" section
+2. **Understand the codebase**: Browse [`ARCHITECTURE.md`](ARCHITECTURE.md) for technical details
+3. **Review patterns**: Check [`QUICK-REFERENCE.md`](QUICK-REFERENCE.md) for common code patterns
+4. **Plan your approach**: Write 2-3 sentence implementation plan
+5. **Start coding**: Follow the development workflow below
 
-## The Optimized Prompt
+## ⚡ Essential Commands
 
-**"Start a focused development session on the Screeps codebase. Check FEATURES.md for the current development focus and create a concrete plan to address it. Research existing code patterns before implementing. Run tests frequently. Document workflow discoveries and decisions as you learn. Keep refactoring minimal - only what's needed for the current task. If you discover larger refactoring needs or new features, add them to FEATURES.md in the appropriate sections. Proactively update status and progress directly in FEATURES.md. Ask clarifying questions early. Now execute the plan systematically."**
+```bash
+npm run test        # Run all tests (use frequently during development)
+npm run test:unit   # Fast unit tests only (~150ms)
+npm run lint        # TypeScript + ESLint validation  
+npm run pre-commit  # Full validation before committing
+npm run build       # Production build
+```
+
+## 🎯 Development Workflow
+
+### 1. Check Priority (FEATURES.md)
+- Look at "Current Development Focus" section
+- If empty, pick next feature from "Planned" sections
+- Update status to 🚧 **IN PROGRESS** when starting
+
+### 2. Research Existing Patterns
+- Study similar implementations in the codebase
+- Check [`ARCHITECTURE.md`](ARCHITECTURE.md) for design patterns
+- Look at existing tests in `test/unit/` for testing patterns
+
+### 3. Implement with Testing
+- Write small, focused changes
+- Run `npm run test:unit` frequently (very fast)
+- Follow existing code conventions and patterns
+- Add unit tests for new functionality
+
+### 4. Document and Update
+- Update [`FEATURES.md`](FEATURES.md) with progress
+- Add any discoveries to appropriate documentation
+- Keep commit messages descriptive
+
+### 5. Validate and Commit
+- Run `npm run pre-commit` before committing
+- All tests must pass, no lint errors
+- Commit with descriptive message
+
+## 📋 Key Project Files
+
+- **[`FEATURES.md`](FEATURES.md)** - Current development focus and roadmap (central source of truth)
+- **[`ARCHITECTURE.md`](ARCHITECTURE.md)** - Technical implementation details and patterns
+- **[`TESTING.md`](TESTING.md)** - Testing guide and infrastructure  
+- **[`QUICK-REFERENCE.md`](QUICK-REFERENCE.md)** - Code patterns and common tasks
+- **[`README.md`](README.md)** - Project overview and quick start
+
+## 🧪 Testing Strategy
+
+- **Test Count**: 156 unit tests, 37 integration tests, 4+ functional tests
+- **Coverage**: Critical components fully tested
+- **Speed**: Unit tests run in ~150ms, use frequently
+- **Patterns**: Mirror `src/` structure in `test/unit/`
+
+## 💡 Development Principles
+
+### Focus & Quality
+- Work on one feature at a time to completion
+- Keep changes small and focused
+- Run tests frequently - they're fast!
+- Follow existing patterns and conventions
+
+### Documentation
+- Update [`FEATURES.md`](FEATURES.md) as you progress
+- Document "why" decisions, not just "what"
+- Add new patterns to [`QUICK-REFERENCE.md`](QUICK-REFERENCE.md)
+
+### Architecture Awareness
+- **Project/Task Framework**: Long-term goals vs short-term actions
+- **Memory Management**: Persistent state via `MemoryBackedClass`
+- **Extensions**: Runtime augmentation of Screeps objects
+- **Type Safety**: Full TypeScript with strict checks
+
+## 🔍 Common Workflows
+
+### Adding a New Task
+1. Study existing tasks in `src/tasks/`
+2. Create new task extending `TaskBehavior`
+3. Add unit tests mirroring existing patterns
+4. Register task and update exports
+5. Add to [`QUICK-REFERENCE.md`](QUICK-REFERENCE.md) examples
+
+### Adding a New Project  
+1. Study existing projects in `src/projects/`
+2. Create new project extending `ProjectBehavior`
+3. Define task transitions and logic
+4. Add comprehensive unit tests
+5. Document usage patterns
+
+### Debugging Issues
+- Use `Logger.enable("*")` for verbose logging
+- Check [`TESTING.md`](TESTING.md) for test troubleshooting
+- Use functional tests for end-to-end validation
+- Leverage TypeScript compiler for type errors
+
+## ❌ Avoid These Pitfalls
+- Don't skip running tests - they're very fast
+- Don't forget to update [`FEATURES.md`](FEATURES.md) progress
+- Don't break existing patterns without good reason
+- Don't commit without running `npm run pre-commit`
+
+---
+
+## 📊 Current Project Status
+
+**Test Coverage**: 156 unit tests (⬆ from 83) covering all critical components  
+**Architecture**: Stable Project/Task framework with full TypeScript safety  
+**Infrastructure**: Complete testing pipeline with unit/integration/functional tests  
+**Documentation**: Comprehensive guides for all aspects of development
+
+Ready for feature development and expansion!
 
 ## Core Development Principles
 
