@@ -9,3 +9,7 @@ export { HarvestEnergyProject };
 import { DoNothingProject } from "./DoNothingProject";
 registerProject(DoNothingProject);
 export { DoNothingProject };
+
+import { UpgradeControllerProject } from "./UpgradeControllerProject";
+registerProject(UpgradeControllerProject);
+export { UpgradeControllerProject };

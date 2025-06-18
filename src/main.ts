@@ -1,8 +1,9 @@
 import { discover as discoverExtendables, use as useExtensions } from "./extensions";
 import { Console } from "./utils/Console.js";
 import { ErrorMapper } from "./utils/ErrorMapper.js";
-import { HarvestEnergyProject } from "./projects/index.js";
+import { HarvestEnergyProject, UpgradeControllerProject } from "./projects/index.js";
 import { Logger } from "./utils/Logger.js";
+import { RoleManager } from "./utils/RoleManager.js";
 import { SourcePlanner } from "./planners/SourcePlanner.js";
 
 // @ts-expect-error Expose in the game console
@@ -30,19 +31,28 @@ export const loop = ErrorMapper.wrapLoop(() => {
     SourcePlanner.instance.assignSources(room);
   }
 
-  // TODO filler for testing
+  // Role-based spawning system
   for (const spawnName in Game.spawns) {
     const spawn = Game.spawns[spawnName];
+    
+    if (spawn.spawning) continue;
 
-    // Keep draining the spawn so we have a place to put energy
-    const cost = BODYPART_COST.work + BODYPART_COST.carry + BODYPART_COST.move;
-    if (spawn.store[RESOURCE_ENERGY] > cost) {
-      const memory: CreepMemory = {
-        project: {
-          id: HarvestEnergyProject.id // TODO assign projects more dynamically
-        }
-      };
-      spawn.spawnCreep([WORK, CARRY, MOVE], `Worker${(++Memory.creepCounter).toString()}`, { memory });
+    const room = spawn.room;
+    const nextRole = RoleManager.getNextRoleToSpawn(room);
+    
+    if (nextRole) {
+      const bodyParts = RoleManager.getBodyPartsForRole(nextRole.projectId, spawn.store[RESOURCE_ENERGY]);
+      
+      if (bodyParts.length > 0) {
+        const memory: CreepMemory = {
+          project: {
+            id: nextRole.projectId,
+            config: nextRole.config
+          }
+        };
+        
+        spawn.spawnCreep(bodyParts, `${nextRole.roleName}${(++Memory.creepCounter).toString()}`, { memory });
+      }
     }
   }
 

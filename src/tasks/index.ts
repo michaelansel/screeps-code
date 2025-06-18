@@ -13,3 +13,7 @@ export { HarvestEnergyTask };
 import { DoNothingTask } from "./DoNothingTask";
 registerTask(DoNothingTask);
 export { DoNothingTask };
+
+import { UpgradeControllerTask } from "./UpgradeControllerTask";
+registerTask(UpgradeControllerTask);
+export { UpgradeControllerTask };
