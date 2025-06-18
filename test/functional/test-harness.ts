@@ -99,6 +99,9 @@ export class FunctionalTestHarness {
     console.log("🧹 Resetting game state...");
     this.curlCli("system.resetAllData()");
 
+    // Clear last deployment since game state was reset
+    this.lastDeployment = null;
+
     // Wait a moment for reset to complete
     await this.sleep(2000);
 
@@ -221,9 +224,17 @@ export class FunctionalTestHarness {
   async getMemoryState(userId: string): Promise<any> {
     try {
       const result = this.curlCli(`storage.env.get('memory:${userId}').then(data => JSON.stringify(data, null, 2))`);
-      if (!result || result === "null" || result === '""') {
+      
+      // Handle various forms of empty/undefined results
+      if (!result || 
+          result === "null" || 
+          result === '""' || 
+          result === "undefined" || 
+          result.trim() === "undefined" ||
+          result.trim() === "") {
         return null;
       }
+      
       // Parse the memory data if it's a JSON string
       const parsed = JSON.parse(result);
       if (typeof parsed === "string") {
@@ -232,6 +243,7 @@ export class FunctionalTestHarness {
       return parsed;
     } catch (error) {
       console.warn(`Failed to get memory for user ${userId}:`, error);
+      console.warn(`Raw result was:`, JSON.stringify(result));
       return null;
     }
   }
@@ -500,6 +512,13 @@ export class FunctionalTestHarness {
       throw new Error("No deployment has been made yet");
     }
     return this.lastDeployment;
+  }
+
+  /**
+   * Check if there's a valid deployment without throwing
+   */
+  hasValidDeployment(): boolean {
+    return this.lastDeployment !== null && this.lastDeployment.success;
   }
 
   /**

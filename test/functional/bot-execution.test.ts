@@ -11,6 +11,7 @@ import { FunctionalTestHarness } from "./test-harness";
 describe("Bot Execution in Screeps Server", function () {
   const harness = new FunctionalTestHarness();
   let testFailed = false;
+  let testCount = 0;
 
   this.timeout(300000); // 5 minutes
 
@@ -21,7 +22,11 @@ describe("Bot Execution in Screeps Server", function () {
 
   beforeEach(async function () {
     this.timeout(30000); // 30 seconds for test case prep
-    await harness.prepareTestCase(); // Fast reset between tests
+    testCount++;
+    // Only reset for the first test, subsequent tests share the same deployment
+    if (testCount === 1) {
+      await harness.prepareTestCase(); // Fast reset between tests
+    }
   });
 
   afterEach(function () {
@@ -69,10 +74,10 @@ describe("Bot Execution in Screeps Server", function () {
   it("should initialize memory and spawn creeps", async () => {
     // Deploy the bot first (or get existing deployment)
     let deployment;
-    try {
+    if (harness.hasValidDeployment()) {
       deployment = harness.getLastDeployment();
-    } catch {
-      // No previous deployment, deploy now
+    } else {
+      // No valid deployment, deploy now
       deployment = await harness.deployBot();
       expect(deployment.success).to.be.true;
     }
@@ -118,7 +123,7 @@ describe("Bot Execution in Screeps Server", function () {
   });
 
   it("should demonstrate advanced memory monitoring capabilities", async () => {
-    const deployment = await harness.getLastDeployment();
+    const deployment = harness.getLastDeployment();
 
     // Test pattern-based memory checking
     const patterns = await harness.checkMemoryPatterns(deployment.userId, {
@@ -147,7 +152,7 @@ describe("Bot Execution in Screeps Server", function () {
   });
 
   it("should support memory preloading for scenario testing", async () => {
-    const deployment = await harness.getLastDeployment();
+    const deployment = harness.getLastDeployment();
 
     // Test scenario: Bot with pre-existing creeps and established economy
     const preloadedMemory = {

@@ -12,6 +12,7 @@ import { FunctionalTestHarness } from "./test-harness";
 describe("Core Game Systems", function () {
   const harness = new FunctionalTestHarness();
   let testFailed = false;
+  let testCount = 0;
 
   this.timeout(300000); // 5 minutes
 
@@ -22,7 +23,11 @@ describe("Core Game Systems", function () {
 
   beforeEach(async function () {
     this.timeout(30000);
-    await harness.prepareTestCase();
+    testCount++;
+    // Only reset for the first test, subsequent tests share the same deployment
+    if (testCount === 1) {
+      await harness.prepareTestCase();
+    }
   });
 
   afterEach(function () {
@@ -36,9 +41,14 @@ describe("Core Game Systems", function () {
   });
 
   it("should implement basic energy harvesting workflow", async () => {
-    // Deploy bot and wait for basic operations
-    const deployment = await harness.deployBot();
-    expect(deployment.success).to.be.true;
+    // Deploy bot and wait for basic operations (or use existing)
+    let deployment;
+    if (harness.hasValidDeployment()) {
+      deployment = harness.getLastDeployment();
+    } else {
+      deployment = await harness.deployBot();
+      expect(deployment.success).to.be.true;
+    }
 
     await harness.waitForTicks(deployment.userId, 20);
 
