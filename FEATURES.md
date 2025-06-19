@@ -121,39 +121,176 @@ This project uses `FEATURES.md` as the **single source of truth** for all develo
 
 # Planned MVP Functional Features
 
-## Creep Role System ⏭️
+## Advanced Creep Role System ⏭️
 **Priority**: High - Next after resource management
+**Inspired by master branch role-based implementation**
 
-### Roles
-- **Harvester**: Optimized mining (`WORK` heavy), potentially stationary
-- **Hauler**: Optimized transport (`CARRY` + `MOVE` heavy)
-- **Upgrader**: Controller upgrading specialist  
-- **Builder**: Construction and repair specialist
-- **Dynamic Bodies**: Adjust body parts based on available energy
+### Core Roles
+- **Harvester**: Advanced source selection with workpart optimization, position optimization near sources/links/containers, bootstrap container building
+- **Hauler**: Complex priority delivery system (attack mode tower priorities, spawn/extension feeding, rebalancing mode, sleep mechanics)
+- **Builder**: Blacklisting system, repair thresholds, flag-based construction/destruction, tower coordination avoidance
+- **Upgrader**: Dynamic work/carry part balancing, energy-based activation/deactivation, controller downgrade prevention
+- **Miner**: Mineral extraction with position optimization, multi-resource handling, specialized for late-game mineral economy
+- **Claimer**: Multi-room expansion with conflict avoidance, room assignment queuing, automatic cleanup after success
 
-### Spawning Logic
-- **Quota System**: Target counts per role (2 harvesters/source, 1 upgrader, etc.)
-- **Priority Spawning**: Critical roles first (harvesters, haulers)
-- **Need-Based**: Spawn builders only when construction sites exist
-- **Project Assignment**: Dynamic project assignment based on room needs
+### Specialized Roles
+- **Linker**: Link energy distribution management, optimized for energy network efficiency
+- **LongHauler**: Inter-room resource transport with optimized carry/move ratios for off-road travel
+- **MinHauler**: Mineral-specific transport, container-to-storage logistics
+- **Recycle**: Emergency role for disposing of unneeded creeps during resource constraints
 
-## Construction & Repair System ⏭️
+### Advanced Body Design
+- **Dynamic Scaling**: Body parts scale with available energy up to MAX_CREEP_COST limits
+- **Role-Optimized Bodies**: Harvester (max 6 WORK), Hauler (max 10 CARRY), LongHauler (max 20 CARRY), etc.
+- **Movement Optimization**: Different move/work/carry ratios for road vs off-road efficiency
+- **Body Part Ordering**: Optimized ordering with guaranteed final MOVE part for survival
+
+### Intelligent Spawning Logic
+- **Dynamic Quotas**: Room-specific role counts based on containers, energy levels, controller status
+- **Energy-Based Scaling**: High-energy rooms spawn more upgraders, low-energy rooms focus on efficiency
+- **Emergency Spawning**: Cross-room emergency spawning when local spawns are unavailable
+- **Role Recycling**: Automatic conversion of roles (upgraders→builders, builders→upgraders) based on room needs
+- **Source-Based Scaling**: Harvester counts based on source spaces and workpart efficiency calculations
+
+## Advanced Construction & Repair System ⏭️
 **Priority**: Medium - Infrastructure development
+**Inspired by master branch advanced building logic**
 
-### Features
-- **Automated Construction**: Builders find and complete construction sites
-- **Structure Prioritization**: Essential structures first (spawn, extensions, containers)
-- **Automated Repair**: Damage detection and repair prioritization
-- **Room Planning**: Basic logic for container and extension placement
+### Construction Management
+- **Flag-Based Construction**: GREEN+BROWN flags for priority construction sites with automatic flag cleanup
+- **Flag-Based Destruction**: RED+BROWN flags for targeted structure dismantling with energy recovery
+- **Target Blacklisting**: TTL-based blacklisting to prevent creeps getting stuck on impossible tasks
+- **Construction Prioritization**: Critical repairs → Flag construction → General construction sites
+- **RCL Validation**: Automatic blacklisting of structures requiring higher room control level
+
+### Repair & Fortification
+- **Dynamic Repair Thresholds**: Room memory-based repair levels (e.g., 75% for regular, custom fortify levels)
+- **Tower Coordination**: Builders avoid repairs when towers are available and active
+- **Fortification Management**: Separate wall/rampart thresholds with progressive fortification goals
+- **Critical Repair Priority**: Emergency repairs for structures below 10% health
+- **Damage Detection**: Automatic identification and queuing of damaged structures
+
+### Room Planning & Infrastructure
+- **Container Bootstrap**: Harvesters automatically build containers at source positions
+- **Fortification Strategy**: Configurable fortification levels with energy budget considerations
+- **Infrastructure Progression**: Planned structure placement based on room development stage
 
 ## Enhanced Task Management ⏭️
 **Priority**: Medium - Improved AI coordination
+**Inspired by master branch sophisticated coordination**
 
-### Features
+### Advanced Task Features
 - **Task Chaining**: Sophisticated task sequences and dependencies
 - **Task Interruption**: Priority-based task switching for urgent needs
-- **Source Optimization**: Distance and efficiency-based source assignment
-- **Coordination**: Multi-creep task coordination and conflict resolution
+- **Source Optimization**: Workpart-based efficiency calculations, source space management, distance optimization
+- **Multi-Creep Coordination**: Conflict resolution, resource contention handling, load balancing
+
+### Energy Management
+- **Energy Reservation System**: Prevents multiple creeps targeting same energy sources
+- **Priority Energy Distribution**: Attack mode (towers first), normal mode (spawns→towers→power→nukers→labs)
+- **Energy Threshold Logic**: Different behaviors based on storage energy levels (>100k enables power/nuker filling)
+- **Rebalancing Mode**: Haulers redistribute energy between containers when no priority targets exist
+
+### Position Optimization
+- **Multi-Target Optimization**: Creeps position optimally relative to multiple relevant structures
+- **Source Position Caching**: Scanned source accessibility with space counting for harvester assignment
+- **Pathfinding Enhancement**: ERR_NO_PATH handling with target reassignment fallbacks
+
+## Advanced Defense & Tower Management ⏭️
+**Priority**: High - Essential for room security
+**Inspired by master branch sophisticated tower AI**
+
+### Tower Defense Logic
+- **Attack Priority System**: Healers first, then other hostiles, with closest-range targeting
+- **Ally System**: Configurable ally list to avoid attacking friendly players
+- **Repair Prioritization**: Critical structures (< 10% health) → Creep healing → General repairs
+- **Energy Conservation**: Reserve 25% energy for critical operations (attack/emergency repair)
+- **Fortification Support**: Towers repair walls/ramparts up to room fortification levels
+
+### Attack Response
+- **Under Attack Detection**: Automatic detection of hostile creeps with room state tracking
+- **Priority Rebalancing**: Haulers prioritize tower energy during attacks (10% → 90% → 100% thresholds)
+- **Coordinate Repair**: Avoid builder repair conflicts during tower operations
+- **Flag Integration**: Respect destruction flags (RED+BROWN) and avoid repairing flagged structures
+
+## Market & Economic Management ⏭️
+**Priority**: Medium - Advanced economic optimization
+**Inspired by master branch market automation**
+
+### Automated Trading
+- **Price Monitoring**: Track best buy order prices across all resources
+- **Intelligent Selling**: Auto-sell excess minerals when storage/terminal >90% full
+- **Energy Cost Optimization**: Calculate transaction costs and select most efficient orders
+- **Emergency Selling**: No-limit sales when storage reaches 99% capacity
+- **Market Integration**: Console commands for manual market operations
+
+### Resource Management
+- **Storage Overflow Prevention**: Automatic market sales when approaching capacity limits
+- **Terminal Management**: Coordinated terminal/storage logistics
+- **Mineral Valuation**: Minimum price thresholds to prevent poor trades (>0.05 credits default)
+- **Resource Prioritization**: Sell highest quantity resources first for storage optimization
+
+## Performance & CPU Management ⏭️
+**Priority**: Medium - Scalability and efficiency
+**Inspired by master branch sophisticated profiling**
+
+### CPU Optimization
+- **Sleep Logic**: Automatic sleep when CPU timeouts occur with exponential backoff
+- **CPU Bucket Monitoring**: Adjust tick limits based on bucket levels (>100 = 90% limit, else 15 CPU)
+- **Room Processing Order**: Rotate room processing order to ensure fairness
+- **CPU Profiling**: Detailed per-room and per-subsystem CPU tracking
+- **Performance Limits**: Emergency CPU cutoffs with timing diagnostics
+
+### Memory & Caching
+- **Structured Caching**: Per-tick caching for creeps and structures to avoid repeated lookups
+- **Memory Cleanup**: Automatic cleanup of expired room memory, dead creep memory
+- **Memory Protection**: Protected memory keys system to prevent accidental deletion
+- **Statistics Tracking**: Comprehensive game statistics with JSON serialization
+
+### Room Processing
+- **Incremental Processing**: Room processing with CPU cutoffs and continuation
+- **Priority Rooms**: Own rooms processed first with CPU budget allocation
+- **Processing Fairness**: Round-robin room processing to prevent starvation
+- **Creep Processing**: Separate CPU budgets for room logic vs creep logic
+
+## Advanced Statistics & Monitoring ⏭️
+**Priority**: Low - Operational intelligence
+**Inspired by master branch comprehensive analytics**
+
+### Room Statistics
+- **Energy Budgeting**: 15k-tick energy budget analysis with income/expense breakdown
+- **Maintenance Costs**: Calculated costs for roads, ramparts, containers, creeps
+- **Controller Monitoring**: RCL progress tracking, downgrade risk assessment
+- **Source Efficiency**: Track harvesting efficiency and detect inefficient sources
+
+### Console Utilities
+- **Build Mode**: Convert upgraders to builders on demand
+- **Claim Command**: Queue rooms for claiming with automatic route optimization
+- **Market Command**: Manual market operations via console
+- **Statistics Display**: Comprehensive room status with formatted output
+- **Large Number Formatting**: Human-readable number display (K, M, G suffixes)
+
+### Performance Analytics
+- **Processing Time Tracking**: Per-room CPU usage measurement
+- **Timing Diagnostics**: Detailed timing when approaching CPU limits
+- **Efficiency Metrics**: Track creep utilization and task effectiveness
+- **Budget Analysis**: Income vs maintenance cost analysis with percentage allocation
+
+## Multi-Room & Expansion ⏭️
+**Priority**: Low - Late game scaling
+**Inspired by master branch room expansion system**
+
+### Room Claiming
+- **Claim Queue System**: Rooms-to-claim list with automatic assignment
+- **Route Optimization**: Closest spawn to target room selection for claimer spawning
+- **Conflict Avoidance**: Multiple claimers avoid targeting same room
+- **Automatic Cleanup**: Claimers suicide after successful claiming
+
+### Remote Operations
+- **Cross-Room Spawning**: Emergency spawning in nearby rooms when local spawns unavailable
+- **Long-Distance Transport**: Specialized LongHauler creeps for inter-room resource transport
+- **Remote Mining**: Mineral extraction coordination across multiple rooms
+- **Room Memory Management**: Distributed room memory with expiration systems
 
 # Planned MVP Dev/Workflow Features
 
@@ -224,13 +361,22 @@ This project uses `FEATURES.md` as the **single source of truth** for all develo
 # Later Development Ideas
 
 ## Advanced Functional Features
-- **Advanced Spawn Queue**: Priority-based spawning with resource waiting
-- **Source Optimization**: Dynamic assignment based on efficiency metrics
-- **Inter-Room Operations**: Remote mining and multi-room coordination
-- **Market Operations**: Automated resource trading
-- **Combat AI**: Squad formations and tactical combat
-- **Power Creep Management**: Power creep integration and abilities
-- **Lab Management**: Automated boosting and resource production
+- **Advanced Spawn Queue**: Priority-based spawning with resource waiting and cross-room coordination
+- **Link Networks**: Automated link energy distribution with path optimization
+- **Lab Management**: Automated mineral processing, boosting, and resource production chains
+- **Power Creep Management**: Power creep integration, abilities, and room assignments
+- **Combat AI**: Squad formations, tactical combat, and coordinated defense
+- **Automated Room Planning**: AI-driven structure placement and room layout optimization
+- **Advanced AI Behaviors**: Machine learning for task prioritization and efficiency optimization
+
+## Power & Late Game Features  
+- **Power Processing**: Automated power harvesting, processing, and power creep management
+- **Factory Management**: Commodity production chains and automated factory operations
+- **Seasonal Features**: Integration with seasonal mechanics and specialized strategies
+- **Advanced Market Operations**: Market manipulation, resource speculation, buy order management
+- **Inter-Shard Operations**: Cross-shard resource coordination and expansion planning
+- **Mineral Economy**: Complex mineral processing chains and optimization
+- **Advanced Logistics**: Multi-room supply chains and resource distribution networks
 
 ## Advanced Dev/Workflow Features
 - **Build Optimization**: Advanced bundling and deployment options
