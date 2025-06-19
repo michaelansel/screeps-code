@@ -23,14 +23,14 @@ export function registerProject(project: Project) {
 }
 
 export const ProjectHelpers = {
-  start(creep: Creep, ProjectType: Project) {
+  start<T extends ProjectId>(creep: Creep, ProjectType: ProjectBehavior<T>, config?: ProjectConfig<T>) {
     if (creep.project !== ProjectType) {
       throw new Error(
         "Starting project for creep that doesn't know it is doing that project. This usually happens if you call Project.start directly instead of using Creep.startProject."
       );
     }
   },
-  stop(creep: Creep, ProjectType: Project) {
+  stop(creep: Creep) {
     if (creep.task !== null) {
       throw new Error(
         "Stopping a project for a creep with a running task. This usually happens if you call Project.stop directly instead of using Creep.stopProject."

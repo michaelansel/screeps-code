@@ -44,7 +44,7 @@ export const UpgradeControllerProject: ProjectBehavior<typeof UpgradeControllerP
     }
   },
 
-  stop(creep: Creep, config: UpgradeControllerProjectConfig): void {
+  stop(creep: Creep): void {
     ProjectHelpers.stop(creep);
   }
 };

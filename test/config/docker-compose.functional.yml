@@ -8,6 +8,7 @@ services:
     volumes:
       - ./functional-test-config.yml:/screeps/config.yml
       - ../functional/filebot-mod.js:/tmp/filebot-mod.js:ro
+      - ./bots:/screeps/bots:rw
       - screeps-functional-data:/screeps
     ports:
       - "21025:21025/tcp"

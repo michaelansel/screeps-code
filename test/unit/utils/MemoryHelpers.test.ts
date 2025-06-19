@@ -2,7 +2,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { loadByIdFromTable, loadGameObjectById } from "utils/MemoryHelpers";
 
-interface TestObject extends _HasId {
+interface TestObject {
   id: Id<TestObject>;
   name: string;
 }
@@ -57,7 +57,7 @@ describe("MemoryHelpers", () => {
     });
 
     it("should work with different object types", () => {
-      interface AnotherTestObject extends _HasId {
+      interface AnotherTestObject {
         id: Id<AnotherTestObject>;
         value: number;
       }
@@ -94,7 +94,7 @@ describe("MemoryHelpers", () => {
       mockGame = {
         getObjectById: sandbox.stub()
       };
-      global.Game = mockGame;
+      global.Game = mockGame as any;
     });
 
     it("should return object when Game.getObjectById finds it", () => {
@@ -173,7 +173,7 @@ describe("MemoryHelpers", () => {
       // Simulate a cache lookup that fails, then falls back to Game lookup
       const cache: { [id: string]: TestObject } = {};
       const mockGame = { getObjectById: sandbox.stub() };
-      global.Game = mockGame;
+      global.Game = mockGame as any;
 
       const testId = "cached-object" as Id<TestObject>;
       

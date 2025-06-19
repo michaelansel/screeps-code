@@ -187,6 +187,12 @@ class ServerManager {
         }
     }
     /**
+     * Copy file to container
+     */
+    copyFileToContainer(hostPath, containerPath) {
+        this.containerManager.copyToContainer('screeps', hostPath, containerPath);
+    }
+    /**
      * Pause simulation
      */
     pauseSimulation() {

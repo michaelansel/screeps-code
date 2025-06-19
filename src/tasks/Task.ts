@@ -25,7 +25,7 @@ export function registerTask(task: Task) {
 type TaskBehaviorForConfig<C> = C extends TaskConfig<TaskId> ? TaskBehavior<TaskId> : never;
 
 export const TaskHelpers = {
-  start(creep: Creep, TaskType: Task) {
+  start<T extends TaskId>(creep: Creep, TaskType: TaskBehavior<T>, config?: TaskConfig<T>) {
     if (creep.task !== TaskType) {
       throw new Error(
         "Starting task for creep that doesn't know it is doing that task. This usually happens if you call Task.start directly instead of using Creep.startTask."

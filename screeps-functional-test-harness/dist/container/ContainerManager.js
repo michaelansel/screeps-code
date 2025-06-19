@@ -127,6 +127,16 @@ class ContainerManager {
             return `Failed to get logs: ${error}`;
         }
     }
+    /**
+     * Copy file to container
+     */
+    copyToContainer(containerName, hostPath, containerPath) {
+        // Create directory first
+        const dir = containerPath.substring(0, containerPath.lastIndexOf('/'));
+        this.execContainer(containerName, `mkdir -p ${dir}`);
+        // Then copy the file
+        this.compose(`cp "${hostPath}" ${containerName}:${containerPath}`);
+    }
 }
 exports.ContainerManager = ContainerManager;
 //# sourceMappingURL=ContainerManager.js.map

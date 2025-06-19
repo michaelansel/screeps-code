@@ -21,7 +21,7 @@ describe("Console", () => {
       }
     };
     global.Game = mockGame;
-    global.Memory = mockMemory;
+    (global as any).Memory = mockMemory;
   });
 
   afterEach(() => {

@@ -46,7 +46,7 @@ export const UpgradeControllerTask: TaskBehavior<typeof UpgradeControllerTaskId>
     }
   },
 
-  stop(creep: Creep, config: UpgradeControllerTaskConfig): void {
+  stop(creep: Creep): void {
     // No cleanup needed
   }
 };

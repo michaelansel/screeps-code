@@ -46,5 +46,9 @@ export declare class ContainerManager {
      * Get container logs
      */
     getLogs(containerName: string, lines?: number): string;
+    /**
+     * Copy file to container
+     */
+    copyToContainer(containerName: string, hostPath: string, containerPath: string): void;
 }
 //# sourceMappingURL=ContainerManager.d.ts.map

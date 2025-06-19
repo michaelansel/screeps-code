@@ -3,7 +3,7 @@ import sinon from "sinon";
 import { use } from "chai";
 import sinonChai from "sinon-chai";
 import { UpgradeControllerProject, UpgradeControllerProjectConfig, UpgradeControllerProjectId } from "../../../src/projects/UpgradeControllerProject";
-import { ProjectBehaviorSymbol } from "../../../src/projects/Project";
+import { ProjectBehaviorSymbol, ProjectConfigSymbol } from "../../../src/projects/Project";
 import { HarvestEnergyTask } from "../../../src/tasks/HarvestEnergyTask";
 import { UpgradeControllerTask } from "../../../src/tasks/UpgradeControllerTask";
 
@@ -39,6 +39,7 @@ describe("UpgradeControllerProject", () => {
     };
 
     config = {
+      type: ProjectConfigSymbol,
       id: UpgradeControllerProjectId,
       controller: mockController.id
     };
@@ -49,6 +50,7 @@ describe("UpgradeControllerProject", () => {
     };
     global.Game = mockGame as any;
     global.FIND_SOURCES = 105;
+    global.RESOURCE_ENERGY = "energy" as ResourceConstant;
   });
 
   afterEach(() => {
@@ -129,31 +131,35 @@ describe("UpgradeControllerProject", () => {
 
   describe("start", () => {
     it("should call ProjectHelpers.start with correct parameters", () => {
-      // Mock ProjectHelpers to avoid validation
-      const mockProjectHelpers = { start: sinon.stub() };
-      const originalProjectHelpers = (global as any).ProjectHelpers;
-      (global as any).ProjectHelpers = mockProjectHelpers;
+      // Set up the creep to pass validation
+      mockCreep.project = UpgradeControllerProject;
+      
+      // Spy on the actual ProjectHelpers
+      const ProjectHelpers = require("../../../src/projects/Project").ProjectHelpers;
+      const startSpy = sinon.spy(ProjectHelpers, "start");
 
       UpgradeControllerProject.start(mockCreep, config);
 
-      expect(mockProjectHelpers.start).to.have.been.calledWith(mockCreep, UpgradeControllerProject, config);
+      expect(startSpy).to.have.been.calledWith(mockCreep, UpgradeControllerProject, config);
 
-      (global as any).ProjectHelpers = originalProjectHelpers;
+      startSpy.restore();
     });
   });
 
   describe("stop", () => {
     it("should call ProjectHelpers.stop with creep", () => {
-      // Mock ProjectHelpers to avoid validation
-      const mockProjectHelpers = { stop: sinon.stub() };
-      const originalProjectHelpers = (global as any).ProjectHelpers;
-      (global as any).ProjectHelpers = mockProjectHelpers;
+      // Set up the creep to pass validation
+      mockCreep.task = null;
+      
+      // Spy on the actual ProjectHelpers
+      const ProjectHelpers = require("../../../src/projects/Project").ProjectHelpers;
+      const stopSpy = sinon.spy(ProjectHelpers, "stop");
 
-      UpgradeControllerProject.stop(mockCreep, config);
+      UpgradeControllerProject.stop(mockCreep);
 
-      expect(mockProjectHelpers.stop).to.have.been.calledWith(mockCreep);
+      expect(stopSpy).to.have.been.calledWith(mockCreep);
 
-      (global as any).ProjectHelpers = originalProjectHelpers;
+      stopSpy.restore();
     });
   });
 });

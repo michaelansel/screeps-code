@@ -38,8 +38,12 @@ class BotManager {
             // Deploy via FileBot
             const userId = `test_bot_${Date.now()}`;
             // For container environments, we need to use container paths
-            // TODO: This should be configurable or auto-detected
-            const containerPath = codePath.includes('test-bot.js') ? '/app/test-bot.js' : codePath;
+            // Check if codePath is already a container path
+            const containerPath = codePath.startsWith('/') ? codePath : '/tmp/test-bot.js';
+            if (!codePath.startsWith('/')) {
+                // Only copy if it's a host path
+                this.serverManager.copyFileToContainer(codePath, containerPath);
+            }
             const injectionResult = this.serverManager.curlCli(`filebot.inject('${containerPath}', '${userId}', {
         username: '${config.username}',
         room: '${config.room}',
@@ -68,10 +72,10 @@ class BotManager {
             }
             catch (e) {
                 // Fallback for non-JSON responses
-                if (injectionResult.includes('"success":true')) {
-                    // Try to extract userId from JSON string
-                    const userIdMatch = injectionResult.match(/"userId":"([^"]+)"/);
-                    const actualUserId = userIdMatch ? userIdMatch[1] : userId;
+                if (injectionResult.includes('"success":true') || injectionResult.includes('success: true')) {
+                    // Try to extract userId from response string
+                    const userIdMatch = injectionResult.match(/(?:userId:\s*'([^']+)'|"userId":"([^"]+)")/);
+                    const actualUserId = userIdMatch ? (userIdMatch[1] || userIdMatch[2]) : userId;
                     this.lastDeployment = {
                         success: true,
                         userId: actualUserId,

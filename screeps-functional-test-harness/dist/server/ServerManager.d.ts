@@ -52,6 +52,10 @@ export declare class ServerManager {
      */
     private getSystemCpu;
     /**
+     * Copy file to container
+     */
+    copyFileToContainer(hostPath: string, containerPath: string): void;
+    /**
      * Pause simulation
      */
     pauseSimulation(): void;

@@ -2,6 +2,7 @@ import { discover as discoverExtendables, use as useExtensions } from "./extensi
 import { Console } from "./utils/Console.js";
 import { ErrorMapper } from "./utils/ErrorMapper.js";
 import { HarvestEnergyProject, UpgradeControllerProject } from "./projects/index.js";
+import { ProjectId } from "./projects/Project.js";
 import { Logger } from "./utils/Logger.js";
 import { RoleManager } from "./utils/RoleManager.js";
 import { SourcePlanner } from "./planners/SourcePlanner.js";
@@ -46,7 +47,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
       if (bodyParts.length > 0) {
         const memory: CreepMemory = {
           project: {
-            id: nextRole.projectId,
+            id: nextRole.projectId as ProjectId,
             config: nextRole.config
           }
         };

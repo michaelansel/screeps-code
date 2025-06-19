@@ -3,7 +3,7 @@ import sinon from "sinon";
 import { use } from "chai";
 import sinonChai from "sinon-chai";
 import { UpgradeControllerTask, UpgradeControllerTaskConfig, UpgradeControllerTaskId } from "../../../src/tasks/UpgradeControllerTask";
-import { TaskBehaviorSymbol } from "../../../src/tasks/Task";
+import { TaskBehaviorSymbol, TaskConfigSymbol } from "../../../src/tasks/Task";
 
 use(sinonChai);
 
@@ -32,6 +32,7 @@ describe("UpgradeControllerTask", () => {
     };
 
     config = {
+      type: TaskConfigSymbol,
       id: UpgradeControllerTaskId,
       controller: mockController.id
     };
@@ -43,7 +44,7 @@ describe("UpgradeControllerTask", () => {
     global.OK = 0;
     global.ERR_NOT_ENOUGH_ENERGY = -6;
     global.ERR_INVALID_TARGET = -7;
-    global.RESOURCE_ENERGY = "energy";
+    global.RESOURCE_ENERGY = "energy" as ResourceConstant;
   });
 
   afterEach(() => {
@@ -128,22 +129,24 @@ describe("UpgradeControllerTask", () => {
 
   describe("start", () => {
     it("should call TaskHelpers.start with correct parameters", () => {
-      // Mock TaskHelpers to avoid validation
-      const mockTaskHelpers = { start: sinon.stub() };
-      const originalTaskHelpers = (global as any).TaskHelpers;
-      (global as any).TaskHelpers = mockTaskHelpers;
+      // Set up the creep to pass validation
+      mockCreep.task = UpgradeControllerTask;
+      
+      // Spy on the actual TaskHelpers
+      const TaskHelpers = require("../../../src/tasks/Task").TaskHelpers;
+      const startSpy = sinon.spy(TaskHelpers, "start");
 
       UpgradeControllerTask.start(mockCreep, config);
 
-      expect(mockTaskHelpers.start).to.have.been.calledWith(mockCreep, UpgradeControllerTask, config);
+      expect(startSpy).to.have.been.calledWith(mockCreep, UpgradeControllerTask, config);
 
-      (global as any).TaskHelpers = originalTaskHelpers;
+      startSpy.restore();
     });
   });
 
   describe("stop", () => {
     it("should complete without error", () => {
-      expect(() => UpgradeControllerTask.stop(mockCreep, config)).to.not.throw();
+      expect(() => UpgradeControllerTask.stop(mockCreep)).to.not.throw();
     });
   });
 });

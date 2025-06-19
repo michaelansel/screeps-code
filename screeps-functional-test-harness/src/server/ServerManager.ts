@@ -207,6 +207,13 @@ export class ServerManager {
   }
 
   /**
+   * Copy file to container
+   */
+  copyFileToContainer(hostPath: string, containerPath: string): void {
+    this.containerManager.copyToContainer('screeps', hostPath, containerPath);
+  }
+
+  /**
    * Pause simulation
    */
   pauseSimulation(): void {

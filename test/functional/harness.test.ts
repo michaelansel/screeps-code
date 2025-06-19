@@ -36,6 +36,10 @@ describe("Functional Test Harness", function () {
     // Deploy a minimal bot that just logs
     const deployment = await harness.deployBot();
 
+    if (!deployment.success) {
+      console.error("Deployment failed:", deployment.error);
+    }
+
     expect(deployment.success).to.be.true;
     expect(deployment.userId).to.be.a("string");
     expect(deployment.userId).to.have.length.greaterThan(0);
