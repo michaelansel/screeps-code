@@ -1,0 +1,49 @@
+{
+  "name": "screeps-functional-test-harness",
+  "version": "0.1.0",
+  "description": "A reliable functional testing harness for Screeps bots using containerized servers",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "mocha --require ts-node/register --timeout 300000 test/**/*.test.ts",
+    "test:watch": "mocha --require ts-node/register --timeout 300000 --watch test/**/*.test.ts",
+    "test:unit": "mocha --require ts-node/register --timeout 30000 test/BotManager.test.ts test/ContainerManager.test.ts test/GameStateManager.test.ts test/ScreepsFunctionalTestHarness.test.ts test/library-core.test.ts",
+    "test:integration": "mocha --require ts-node/register --timeout 300000 test/integration.test.ts test/end-to-end.test.ts test/direct-cli.test.ts",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "screeps",
+    "testing",
+    "functional-testing",
+    "game-development",
+    "automation"
+  ],
+  "author": "Screeps Community",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^20.0.0",
+    "@types/chai": "^4.3.0",
+    "@types/sinon": "^10.0.0",
+    "chai": "^4.3.0",
+    "mocha": "^10.0.0",
+    "sinon": "^15.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/screeps-community/screeps-functional-test-harness.git"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "examples"
+  ]
+}
