@@ -53,7 +53,14 @@ describe("SourcePlanner", () => {
           }
         }
       });
-      const sources: Source[] = [{ id: "source1" } as Source];
+      const mockRoom = {
+        name: roomName,
+        getTerrain: sinon.stub().returns({
+          get: sinon.stub().returns(0) // Not a wall
+        }),
+        lookForAt: sinon.stub().returns([]) // No structures
+      } as any;
+      const sources: Source[] = [{ id: "source1", room: mockRoom, pos: { x: 25, y: 25 } } as Source];
 
       // Object Under Test
       const planner = SourcePlanner.instance;
@@ -64,7 +71,7 @@ describe("SourcePlanner", () => {
 
       // Act
       planner.requestSourceAssignment(creep);
-      planner.assignSources({ name: roomName } as Room);
+      planner.assignSources(mockRoom);
 
       // Assert
       assert.isDefined((creep.memory.task?.config as HarvestEnergyTaskConfig).source);
@@ -84,7 +91,14 @@ describe("SourcePlanner", () => {
           }
         }
       });
-      const sources: Source[] = [{ id: "source2" } as Source]; // Trigger reassigment
+      const mockRoom = {
+        name: roomName,
+        getTerrain: sinon.stub().returns({
+          get: sinon.stub().returns(0) // Not a wall
+        }),
+        lookForAt: sinon.stub().returns([]) // No structures
+      } as any;
+      const sources: Source[] = [{ id: "source2", room: mockRoom, pos: { x: 25, y: 25 } } as Source]; // Trigger reassigment
       // Existing planner state
       const memory: SourcePlannerMemory = {
         creeps: {
@@ -103,8 +117,8 @@ describe("SourcePlanner", () => {
       sinon.replace(planner, "sourcesInRoom" as keyof SourcePlanner, sinon.fake.returns(sources));
       sinon.replace(planner, "requestingCreeps" as keyof SourcePlanner, sinon.fake.returns([creep]));
       const sourceObjects = {
-        source1: { id: "source1" } as Source,
-        source2: { id: "source2" } as Source
+        source1: { id: "source1", room: mockRoom, pos: { x: 25, y: 25 } } as Source,
+        source2: { id: "source2", room: mockRoom, pos: { x: 30, y: 30 } } as Source
       };
       sinon.replace(
         planner,
@@ -115,7 +129,7 @@ describe("SourcePlanner", () => {
       );
 
       // Act
-      planner.assignSources({ name: roomName } as Room);
+      planner.assignSources(mockRoom);
 
       // Assert
       // TODO reconsider test since the memory structure changed
@@ -143,7 +157,14 @@ describe("SourcePlanner", () => {
         });
         creeps.push(creep);
       }
-      const sources: Source[] = [{ id: "source1" } as Source];
+      const mockRoom = {
+        name: roomName,
+        getTerrain: sinon.stub().returns({
+          get: sinon.stub().returns(0) // Not a wall
+        }),
+        lookForAt: sinon.stub().returns([]) // No structures
+      } as any;
+      const sources: Source[] = [{ id: "source1", room: mockRoom, pos: { x: 25, y: 25 } } as Source];
 
       // Object Under Test
       const planner = SourcePlanner.instance;
@@ -152,8 +173,8 @@ describe("SourcePlanner", () => {
       sinon.replace(planner, "sourcesInRoom" as keyof SourcePlanner, sinon.fake.returns(sources));
       sinon.replace(planner, "requestingCreeps" as keyof SourcePlanner, sinon.fake.returns(creeps));
       const sourceObjects = {
-        source1: { id: "source1" } as Source,
-        source2: { id: "source2" } as Source
+        source1: { id: "source1", room: mockRoom, pos: { x: 25, y: 25 } } as Source,
+        source2: { id: "source2", room: mockRoom, pos: { x: 30, y: 30 } } as Source
       };
       sinon.replace(
         planner,
@@ -167,7 +188,7 @@ describe("SourcePlanner", () => {
       for (const creep of creeps) {
         planner.requestSourceAssignment(creep);
       }
-      planner.assignSources({ name: roomName } as Room);
+      planner.assignSources(mockRoom);
 
       // Assert
       // TODO reconsider test since the memory structure changed

@@ -21,6 +21,40 @@ export const Console = {
     delete Memory.SourcePlanner?.creeps;
   },
   
+  /**
+   * Display source capacity information for all rooms
+   */
+  sourceInfo: () => {
+    console.log("📊 Source Capacity Analysis:");
+    
+    for (const roomName in Game.rooms) {
+      const room = Game.rooms[roomName];
+      const sourcesInfo = SourcePlanner.instance.getSourcesInfo(room);
+      
+      console.log(`\n🏠 Room ${roomName}:`);
+      sourcesInfo.forEach((info, index) => {
+        const utilization = info.assigned > 0 ? 
+          `(${Math.round(info.assigned / info.capacity * 100)}% utilized)` : '';
+        console.log(`  Source ${index + 1}: ${info.assigned}/${info.capacity} harvesters ${utilization}`);
+      });
+      
+      const totalCapacity = sourcesInfo.reduce((sum, info) => sum + info.capacity, 0);
+      const totalAssigned = sourcesInfo.reduce((sum, info) => sum + info.assigned, 0);
+      console.log(`  Total: ${totalAssigned}/${totalCapacity} positions filled`);
+    }
+  },
+  
+  /**
+   * Clear source capacity cache
+   * @param sourceId Optional source ID to clear, or undefined to clear all
+   */
+  clearSourceCache: (sourceId?: string) => {
+    SourcePlanner.instance.clearSourceCapacityCache(sourceId);
+    console.log(sourceId ? 
+      `✅ Cleared capacity cache for source ${sourceId}` : 
+      `✅ Cleared all source capacity cache`);
+  },
+  
   // ========== PROJECT ASSIGNMENT HELPERS ==========
   
   /**
