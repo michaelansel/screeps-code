@@ -17,7 +17,7 @@ export const BuilderProject: ProjectBehavior<typeof BuilderProjectId> = {
     ProjectHelpers.start(creep, BuilderProject, config);
   },
 
-  run(creep: Creep, config: BuilderProjectConfig): void {
+  run(creep: Creep, config?: BuilderProjectConfig): void {
     // Determine what task the creep should be doing
     if (creep.store[RESOURCE_ENERGY] === 0) {
       // Creep needs energy - find a source to harvest from
@@ -50,14 +50,14 @@ export const BuilderProject: ProjectBehavior<typeof BuilderProjectId> = {
               return false;
             }
             
-            const threshold = config.repairThreshold ?? 0.75;
+            const threshold = config?.repairThreshold ?? 0.75;
             return structure.hits < structure.hitsMax * threshold;
           }
         });
         
         if (damagedStructures.length > 0) {
           // Repair structures
-          creep.startTask(RepairTask, { repairThreshold: config.repairThreshold });
+          creep.startTask(RepairTask, { repairThreshold: config?.repairThreshold });
         } else {
           // Nothing to build or repair, harvest energy to be ready
           const source = creep.pos.findClosestByPath(FIND_SOURCES);

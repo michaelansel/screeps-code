@@ -5,12 +5,17 @@ export class ErrorMapper {
   // Cache consumer
   private static _consumer?: SourceMapConsumer;
 
-  public static get consumer(): SourceMapConsumer {
+  public static get consumer(): SourceMapConsumer | null {
     if (this._consumer == null) {
-      // We're going way off the paved road by loading the sourcemap this way; tell eslint to stand down
-      // TODO see if there is an eslint-approved way of loading the sourcemap dynamically that doesn't impact performance
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-var-requires
-      this._consumer = new SourceMapConsumer(require("main.js.map"));
+      try {
+        // We're going way off the paved road by loading the sourcemap this way; tell eslint to stand down
+        // TODO see if there is an eslint-approved way of loading the sourcemap dynamically that doesn't impact performance
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-var-requires
+        this._consumer = new SourceMapConsumer(require("main.js.map"));
+      } catch (error) {
+        console.log(`⚠️ Failed to load source map: ${error}. Error mapping will be disabled.`);
+        return null;
+      }
     }
 
     return this._consumer;
@@ -34,6 +39,13 @@ export class ErrorMapper {
       return this.cache[stack];
     }
 
+    const consumer = this.consumer;
+    if (!consumer) {
+      // Source map not available, return original stack trace
+      this.cache[stack] = stack;
+      return stack;
+    }
+
     // eslint-disable-next-line no-useless-escape
     const re = /^\s+at\s+(.+?\s+)?\(?([0-z._\-\\\/]+):(\d+):(\d+)\)?$/gm;
     let match: RegExpExecArray | null;
@@ -41,7 +53,7 @@ export class ErrorMapper {
 
     while ((match = re.exec(stack))) {
       if (match[2] === "main") {
-        const pos = this.consumer.originalPositionFor({
+        const pos = consumer.originalPositionFor({
           column: parseInt(match[4], 10),
           line: parseInt(match[3], 10)
         });

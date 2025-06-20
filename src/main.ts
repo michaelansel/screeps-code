@@ -17,7 +17,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
   useExtensions(discoverExtendables(global as object));
 
   const logger = Logger.get("main");
-  
+
   if (Memory.creepCounter === undefined) Memory.creepCounter = 0;
 
   // ========== TICK START LOGGING ==========
@@ -28,10 +28,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
   // ========== CREEP MANAGEMENT ==========
   const creepStats = { withProject: 0, withoutProject: 0, byProject: {} as Record<string, number> };
-  
+
   for (const name in Game.creeps) {
     const creep = Game.creeps[name];
-    
+
     // Ensure every creep has a project - CRITICAL REQUIREMENT
     if (!creep.memory.project || !creep.memory.project.id) {
       console.log(`⚠️  FIXING: Creep ${name} has no project, assigning DoNothingProject`);
@@ -45,11 +45,11 @@ export const loop = ErrorMapper.wrapLoop(() => {
       const projectId = creep.memory.project.id;
       creepStats.byProject[projectId] = (creepStats.byProject[projectId] || 0) + 1;
     }
-    
+
     console.log(`🤖 ${name}: ${creep.memory.project.id} | Energy: ${creep.store[RESOURCE_ENERGY]}/${creep.store.getCapacity()}`);
     creep.run();
   }
-  
+
   // Log project assignment statistics
   if (creepStats.withoutProject > 0) {
     console.log(`🚨 CRITICAL: ${creepStats.withoutProject} creeps were missing projects!`);
@@ -66,10 +66,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
   // ========== SPAWNING SYSTEM ==========
   console.log(`\n🏭 === SPAWNING OPERATIONS ===`);
   let spawnActivity = false;
-  
+
   for (const spawnName in Game.spawns) {
     const spawn = Game.spawns[spawnName];
-    
+
     if (spawn.spawning) {
       console.log(`🏭 ${spawnName}: Spawning ${spawn.spawning.name} (${spawn.spawning.remainingTime} ticks left)`);
       spawnActivity = true;
@@ -78,10 +78,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
     const room = spawn.room;
     const nextRole = RoleManager.getNextRoleToSpawn(room);
-    
+
     if (nextRole) {
       const bodyParts = RoleManager.getBodyPartsForRole(nextRole.projectId, spawn.store[RESOURCE_ENERGY]);
-      
+
       if (bodyParts.length > 0) {
         const memory: CreepMemory = {
           project: {
@@ -89,10 +89,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
             config: nextRole.config
           }
         };
-        
+
         const newName = `${nextRole.roleName}${(++Memory.creepCounter).toString()}`;
         const result = spawn.spawnCreep(bodyParts, newName, { memory });
-        
+
         if (result === OK) {
           console.log(`🏭 ${spawnName}: Spawning ${newName} (${nextRole.projectId}) - Cost: ${bodyParts.reduce((cost, part) => cost + BODYPART_COST[part], 0)}`);
           spawnActivity = true;
@@ -106,7 +106,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
       console.log(`🏭 ${spawnName}: No roles needed to spawn`);
     }
   }
-  
+
   if (!spawnActivity) {
     console.log(`🏭 No spawning activity this tick`);
   }
@@ -119,10 +119,10 @@ export const loop = ErrorMapper.wrapLoop(() => {
       cleanedCreeps++;
     }
   }
-  
+
   if (cleanedCreeps > 0) {
     console.log(`🧹 Cleaned memory for ${cleanedCreeps} dead creeps`);
   }
-  
+
   console.log(`🎮 === TICK ${Game.time} END ===\n`);
 });
