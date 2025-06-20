@@ -152,7 +152,14 @@ describe("Bot Execution in Screeps Server", function () {
   });
 
   it("should support memory preloading for scenario testing", async () => {
-    const deployment = harness.getLastDeployment();
+    // Get deployment, or create one if none exists
+    let deployment;
+    if (harness.hasValidDeployment()) {
+      deployment = harness.getLastDeployment();
+    } else {
+      deployment = await harness.deployBot();
+      expect(deployment.success).to.be.true;
+    }
 
     // Test scenario: Bot with pre-existing creeps and established economy
     const preloadedMemory = {

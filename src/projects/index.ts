@@ -13,3 +13,7 @@ export { DoNothingProject };
 import { UpgradeControllerProject } from "./UpgradeControllerProject";
 registerProject(UpgradeControllerProject);
 export { UpgradeControllerProject };
+
+import { BuilderProject } from "./BuilderProject";
+registerProject(BuilderProject);
+export { BuilderProject };

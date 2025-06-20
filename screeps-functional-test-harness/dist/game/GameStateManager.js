@@ -10,14 +10,146 @@ class GameStateManager {
         this.serverManager = serverManager;
     }
     /**
+     * Generate a room with proper game world setup
+     */
+    async generateRoom(roomName, options = {}) {
+        try {
+            const sources = options.sources || 2;
+            const result = this.serverManager.curlCli(`map.generateRoom('${roomName}', { sources: ${sources} })`);
+            if (result && result.startsWith('Error:')) {
+                return { success: false, error: result };
+            }
+            console.log(`✅ Generated room ${roomName} with ${sources} sources`);
+            return { success: true };
+        }
+        catch (error) {
+            return { success: false, error: String(error) };
+        }
+    }
+    /**
+     * Open a room to make it available for players
+     */
+    async openRoom(roomName) {
+        try {
+            const result = this.serverManager.curlCli(`map.openRoom('${roomName}')`);
+            if (result && result.startsWith('Error:')) {
+                return { success: false, error: result };
+            }
+            console.log(`✅ Opened room ${roomName}`);
+            return { success: true };
+        }
+        catch (error) {
+            return { success: false, error: String(error) };
+        }
+    }
+    /**
+     * Create construction sites for testing
+     */
+    async createConstructionSite(roomName, x, y, structureType, userId) {
+        try {
+            const result = this.serverManager.curlCli(`storage.db['rooms.objects'].insert({
+          room: '${roomName}',
+          x: ${x},
+          y: ${y},
+          type: 'constructionSite',
+          structureType: '${structureType}',
+          user: '${userId}',
+          progress: 0,
+          progressTotal: CONSTRUCTION_COST['${structureType}'] || 200
+        })`);
+            if (result && result.startsWith('Error:')) {
+                return { success: false, error: result };
+            }
+            console.log(`✅ Created construction site: ${structureType} at ${roomName} (${x}, ${y})`);
+            return { success: true };
+        }
+        catch (error) {
+            return { success: false, error: String(error) };
+        }
+    }
+    /**
+     * Create damaged structures for repair testing
+     */
+    async createDamagedStructure(roomName, x, y, structureType, userId, damagePct = 0.5) {
+        try {
+            const maxHits = structureType === 'road' ? 300 :
+                structureType === 'container' ? 250000 :
+                    structureType === 'extension' ? 1000 : 3000;
+            const hits = Math.floor(maxHits * damagePct);
+            const result = this.serverManager.curlCli(`storage.db['rooms.objects'].insert({
+          room: '${roomName}',
+          x: ${x},
+          y: ${y},
+          type: '${structureType}',
+          user: '${userId}',
+          hits: ${hits},
+          hitsMax: ${maxHits}
+        })`);
+            if (result && result.startsWith('Error:')) {
+                return { success: false, error: result };
+            }
+            console.log(`✅ Created damaged structure: ${structureType} at ${roomName} (${x}, ${y}) - ${Math.round(damagePct * 100)}% health`);
+            return { success: true };
+        }
+        catch (error) {
+            return { success: false, error: String(error) };
+        }
+    }
+    /**
+     * Set up a complete test room with spawn, sources, and controller
+     */
+    async setupTestRoom(roomName, userId, options = {}) {
+        try {
+            // Generate the room (only if it doesn't exist)
+            const roomResult = await this.generateRoom(roomName, { sources: options.sources });
+            if (!roomResult.success && !roomResult.error?.includes("already exists")) {
+                return roomResult;
+            }
+            // Open the room (this is idempotent)
+            const openResult = await this.openRoom(roomName);
+            if (!openResult.success && !openResult.error?.includes("already")) {
+                return openResult;
+            }
+            // Wait a bit for room to be ready
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Create construction sites if requested
+            if (options.constructionSites) {
+                for (const site of options.constructionSites) {
+                    const siteResult = await this.createConstructionSite(roomName, site.x, site.y, site.structureType, userId);
+                    if (!siteResult.success) {
+                        console.warn(`Failed to create construction site: ${siteResult.error}`);
+                    }
+                }
+            }
+            // Create damaged structures if requested
+            if (options.damagedStructures) {
+                for (const structure of options.damagedStructures) {
+                    const structResult = await this.createDamagedStructure(roomName, structure.x, structure.y, structure.structureType, userId, structure.damagePct);
+                    if (!structResult.success) {
+                        console.warn(`Failed to create damaged structure: ${structResult.error}`);
+                    }
+                }
+            }
+            console.log(`✅ Test room ${roomName} setup complete`);
+            return { success: true };
+        }
+        catch (error) {
+            return { success: false, error: String(error) };
+        }
+    }
+    /**
      * Get memory state for a specific user
      */
     async getMemoryState(userId) {
         try {
             const result = this.serverManager.curlCli(`storage.env.get('memory:${userId}').then(data => JSON.stringify(data, null, 2))`);
+            // Check if the result is an error message instead of JSON
+            if (!result || result.startsWith('Error:') || result.startsWith('error:')) {
+                console.warn('CLI returned error for getMemoryState:', result);
+                return null;
+            }
             // Handle various forms of empty/undefined results
-            if (!result ||
-                result === "null" ||
+            if (result === "null" ||
                 result === '""' ||
                 result === "undefined" ||
                 result.trim() === "undefined" ||
@@ -146,12 +278,48 @@ class GameStateManager {
      */
     async getAllUsersWithMemory() {
         try {
-            const result = this.serverManager.curlCli("storage.db['users.memory'].find({}).then(users => JSON.stringify(users))");
-            const users = JSON.parse(result);
-            return users.map((user) => ({
-                userId: user._id,
-                memory: user.data
-            }));
+            // First, get all users from the users collection
+            const usersResult = this.serverManager.curlCli("storage.db.users.find({}).then(users => JSON.stringify(users))");
+            // Check if the result is an error message instead of JSON
+            if (!usersResult || usersResult.startsWith('Error:') || usersResult.startsWith('error:')) {
+                console.warn('CLI returned error when fetching users:', usersResult);
+                return [];
+            }
+            // Handle various forms of empty/undefined results
+            if (usersResult === "null" ||
+                usersResult === '""' ||
+                usersResult === "undefined" ||
+                usersResult.trim() === "undefined" ||
+                usersResult.trim() === "" ||
+                usersResult.trim() === "[]") {
+                return [];
+            }
+            const users = JSON.parse(usersResult);
+            // Ensure users is an array
+            if (!Array.isArray(users)) {
+                console.warn('getAllUsersWithMemory: Expected array but got:', typeof users);
+                return [];
+            }
+            // Get memory for each user
+            const usersWithMemory = [];
+            for (const user of users) {
+                try {
+                    const memory = await this.getMemoryState(user._id);
+                    usersWithMemory.push({
+                        userId: user._id,
+                        memory: memory
+                    });
+                }
+                catch (error) {
+                    console.warn(`Failed to get memory for user ${user._id}:`, error);
+                    // Still include user but with null memory
+                    usersWithMemory.push({
+                        userId: user._id,
+                        memory: null
+                    });
+                }
+            }
+            return usersWithMemory;
         }
         catch (error) {
             console.warn('Failed to get all users with memory:', error);
@@ -163,17 +331,51 @@ class GameStateManager {
      */
     async getGameObjects(userId) {
         try {
-            const objects = this.serverManager.curlCli(`storage.db['rooms.objects'].find({user: '${userId}'}).then(objs => JSON.stringify(objs))`);
+            // First get user's room by finding their spawn
+            const roomResult = this.serverManager.curlCli(`storage.db['rooms.objects'].findOne({user: '${userId}', type: 'spawn'}).then(spawn => spawn ? spawn.room : null).then(r => JSON.stringify(r))`);
+            let userRoom = null;
+            try {
+                userRoom = JSON.parse(roomResult);
+            }
+            catch {
+                console.warn('Could not determine user room');
+                return { spawns: [], creeps: [], sources: [], total: 0 };
+            }
+            if (!userRoom) {
+                console.warn('User has no spawn, cannot determine room');
+                return { spawns: [], creeps: [], sources: [], total: 0 };
+            }
+            // Now get all objects in the user's room
+            const objects = this.serverManager.curlCli(`storage.db['rooms.objects'].find({room: '${userRoom}'}).then(objs => JSON.stringify(objs))`);
+            // Check if the result is an error message instead of JSON
+            if (!objects || objects.startsWith('Error:') || objects.startsWith('error:')) {
+                console.warn('CLI returned error for getGameObjects:', objects);
+                return { spawns: [], creeps: [], sources: [], total: 0 };
+            }
+            // Handle various forms of empty/undefined results
+            if (objects === "null" ||
+                objects === '""' ||
+                objects === "undefined" ||
+                objects.trim() === "undefined" ||
+                objects.trim() === "" ||
+                objects.trim() === "[]") {
+                return { spawns: [], creeps: [], sources: [], total: 0 };
+            }
             const parsed = JSON.parse(objects);
+            // Ensure parsed is an array
+            if (!Array.isArray(parsed)) {
+                console.warn('getGameObjects: Expected array but got:', typeof parsed);
+                return { spawns: [], creeps: [], sources: [], total: 0 };
+            }
             return {
                 spawns: parsed
-                    .filter((o) => o.type === "spawn")
+                    .filter((o) => o.type === "spawn" && o.user === userId)
                     .map((s) => ({
                     name: s.name,
                     energy: s.store?.energy || 0
                 })),
                 creeps: parsed
-                    .filter((o) => o.type === "creep")
+                    .filter((o) => o.type === "creep" && o.user === userId)
                     .map((c) => ({
                     name: c.name,
                     memory: c.memory || {}
@@ -191,13 +393,6 @@ class GameStateManager {
             console.warn('Failed to get game objects:', error);
             return { spawns: [], creeps: [], sources: [], total: 0 };
         }
-    }
-    /**
-     * Generate a room for testing
-     */
-    async generateRoom(roomName) {
-        this.serverManager.curlCli(`map.generateRoom('${roomName}')`);
-        this.serverManager.curlCli(`map.openRoom('${roomName}')`);
     }
     /**
      * Get CPU usage for a user

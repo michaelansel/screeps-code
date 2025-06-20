@@ -112,7 +112,53 @@ export declare class ScreepsFunctionalTestHarness {
     /**
      * Generate a room for testing
      */
-    generateRoom(roomName: string): Promise<void>;
+    generateRoom(roomName: string, options?: {
+        sources?: number;
+    }): Promise<{
+        success: boolean;
+        error?: string;
+    }>;
+    /**
+     * Open a room to make it available for players
+     */
+    openRoom(roomName: string): Promise<{
+        success: boolean;
+        error?: string;
+    }>;
+    /**
+     * Create construction sites for testing
+     */
+    createConstructionSite(roomName: string, x: number, y: number, structureType: string, userId: string): Promise<{
+        success: boolean;
+        error?: string;
+    }>;
+    /**
+     * Create damaged structures for repair testing
+     */
+    createDamagedStructure(roomName: string, x: number, y: number, structureType: string, userId: string, damagePct?: number): Promise<{
+        success: boolean;
+        error?: string;
+    }>;
+    /**
+     * Set up a complete test room with spawn, sources, and controller
+     */
+    setupTestRoom(roomName: string, userId: string, options?: {
+        sources?: number;
+        constructionSites?: Array<{
+            x: number;
+            y: number;
+            structureType: string;
+        }>;
+        damagedStructures?: Array<{
+            x: number;
+            y: number;
+            structureType: string;
+            damagePct?: number;
+        }>;
+    }): Promise<{
+        success: boolean;
+        error?: string;
+    }>;
     /**
      * Get CPU usage for a user
      */

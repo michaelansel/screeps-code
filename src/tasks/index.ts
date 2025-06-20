@@ -17,3 +17,11 @@ export { DoNothingTask };
 import { UpgradeControllerTask } from "./UpgradeControllerTask";
 registerTask(UpgradeControllerTask);
 export { UpgradeControllerTask };
+
+import { BuildTask } from "./BuildTask";
+registerTask(BuildTask);
+export { BuildTask };
+
+import { RepairTask } from "./RepairTask";
+registerTask(RepairTask);
+export { RepairTask };

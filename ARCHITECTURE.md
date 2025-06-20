@@ -416,3 +416,39 @@ As the codebase evolves, new features will be added, and existing ones may be mo
         *   Ensure data is being saved and reloaded correctly across ticks.
 
 By diligently following these practices, you can minimize issues related to memory desynchronization and keep the codebase robust and maintainable.
+
+# Development Principles
+
+## RCL-Aware Feature Design
+
+**Core Principle**: Build the right features for the current room situation and Room Control Level (RCL).
+
+### Implementation Guidelines
+
+1. **Tiered Feature Development**: Every new feature should consider RCL progression and room needs:
+   - **Early RCL (1-3)**: Focus on basic survival - energy harvesting, spawning, basic construction
+   - **Mid RCL (4-6)**: Infrastructure development - roads, containers, extensions, defenses
+   - **High RCL (7-8)**: Advanced optimization - labs, terminals, complex logistics
+
+2. **Dynamic Scaling**: Features should scale appropriately with RCL:
+   - **Builder Role Example**: 1 builder at low RCL, 2 builders at RCL 4+
+   - **Work Assignment**: Prioritize critical infrastructure before luxury features
+   - **Resource Allocation**: Energy budgets should match room capabilities
+
+3. **Situational Awareness**: Features should respond to current room conditions:
+   - **Construction Priority**: Build construction sites before repair work
+   - **Defensive Scaling**: Increase builders when under attack or infrastructure damaged
+   - **Economic Efficiency**: Don't waste resources on premature optimization
+
+4. **Progressive Complexity**: Implement features incrementally:
+   - Start with minimum viable functionality for early RCL
+   - Add sophistication as RCL increases and room stabilizes
+   - Avoid over-engineering for scenarios the room hasn't reached yet
+
+### Examples in Codebase
+
+- **RoleManager**: Builder quotas based on RCL and construction needs
+- **BuilderProject**: Skips walls/ramparts (fortification logic for later)
+- **Spawning Priority**: Harvesters → Builders → Upgraders (survival first)
+
+This principle ensures efficient development that matches Screeps progression dynamics and avoids premature optimization.

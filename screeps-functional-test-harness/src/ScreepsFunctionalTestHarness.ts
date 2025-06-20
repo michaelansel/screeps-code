@@ -214,8 +214,40 @@ export class ScreepsFunctionalTestHarness {
   /**
    * Generate a room for testing
    */
-  async generateRoom(roomName: string): Promise<void> {
-    await this.gameStateManager.generateRoom(roomName);
+  async generateRoom(roomName: string, options: { sources?: number } = {}): Promise<{ success: boolean; error?: string }> {
+    return this.gameStateManager.generateRoom(roomName, options);
+  }
+
+  /**
+   * Open a room to make it available for players
+   */
+  async openRoom(roomName: string): Promise<{ success: boolean; error?: string }> {
+    return this.gameStateManager.openRoom(roomName);
+  }
+
+  /**
+   * Create construction sites for testing
+   */
+  async createConstructionSite(roomName: string, x: number, y: number, structureType: string, userId: string): Promise<{ success: boolean; error?: string }> {
+    return this.gameStateManager.createConstructionSite(roomName, x, y, structureType, userId);
+  }
+
+  /**
+   * Create damaged structures for repair testing
+   */
+  async createDamagedStructure(roomName: string, x: number, y: number, structureType: string, userId: string, damagePct: number = 0.5): Promise<{ success: boolean; error?: string }> {
+    return this.gameStateManager.createDamagedStructure(roomName, x, y, structureType, userId, damagePct);
+  }
+
+  /**
+   * Set up a complete test room with spawn, sources, and controller
+   */
+  async setupTestRoom(roomName: string, userId: string, options: {
+    sources?: number;
+    constructionSites?: Array<{ x: number; y: number; structureType: string }>;
+    damagedStructures?: Array<{ x: number; y: number; structureType: string; damagePct?: number }>;
+  } = {}): Promise<{ success: boolean; error?: string }> {
+    return this.gameStateManager.setupTestRoom(roomName, userId, options);
   }
 
   /**

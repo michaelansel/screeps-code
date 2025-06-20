@@ -1,14 +1,17 @@
 import { HarvestEnergyProject } from "../projects/HarvestEnergyProject";
 import { UpgradeControllerProject } from "../projects/UpgradeControllerProject";
+import { BuilderProject } from "../projects/BuilderProject";
 
 export interface RoleQuotas {
   harvesters: number;
   upgraders: number;
+  builders: number;
 }
 
 export interface RoleCounts {
   harvesters: number;
   upgraders: number;
+  builders: number;
 }
 
 export class RoleManager {
@@ -22,12 +25,38 @@ export class RoleManager {
     // Base quotas - always need harvesters
     const quotas: RoleQuotas = {
       harvesters: Math.max(2, sources.length), // At least 2, or 1 per source
-      upgraders: 0
+      upgraders: 0,
+      builders: 0
     };
 
     // Add upgraders if we have a controller
     if (controller && controller.my) {
       quotas.upgraders = 3; // Standard upgrader count
+    }
+
+    // Add builders based on RCL and construction/repair needs
+    if (controller && controller.my) {
+      const constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES);
+      const damagedStructures = room.find(FIND_STRUCTURES, {
+        filter: (structure) => {
+          // Skip walls and ramparts for now
+          if (structure.structureType === STRUCTURE_WALL || 
+              structure.structureType === STRUCTURE_RAMPART) {
+            return false;
+          }
+          return structure.hits < structure.hitsMax * 0.75;
+        }
+      });
+
+      // Scale builders based on work available and RCL
+      if (constructionSites.length > 0 || damagedStructures.length > 0) {
+        // RCL-aware scaling: more builders at higher RCL
+        if (controller.level >= 4) {
+          quotas.builders = 2; // Can support more builders at higher RCL
+        } else {
+          quotas.builders = 1; // Just one builder at low RCL
+        }
+      }
     }
 
     return quotas;
@@ -39,7 +68,8 @@ export class RoleManager {
   static countCreepsByRole(room: Room): RoleCounts {
     const counts: RoleCounts = {
       harvesters: 0,
-      upgraders: 0
+      upgraders: 0,
+      builders: 0
     };
 
     for (const creepName in Game.creeps) {
@@ -49,6 +79,8 @@ export class RoleManager {
           counts.harvesters++;
         } else if (creep.memory.project?.id === UpgradeControllerProject.id) {
           counts.upgraders++;
+        } else if (creep.memory.project?.id === BuilderProject.id) {
+          counts.builders++;
         }
       }
     }
@@ -63,11 +95,19 @@ export class RoleManager {
     const quotas = this.getDesiredQuotas(room);
     const counts = this.countCreepsByRole(room);
 
-    // Priority order: harvesters first, then upgraders
+    // Priority order: harvesters first, then builders, then upgraders
     if (counts.harvesters < quotas.harvesters) {
       return {
         projectId: HarvestEnergyProject.id,
         roleName: "Harvester"
+      };
+    }
+
+    // Builders second priority - construction is important for room development
+    if (counts.builders < quotas.builders) {
+      return {
+        projectId: BuilderProject.id,
+        roleName: "Builder"
       };
     }
 

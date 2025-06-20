@@ -170,8 +170,32 @@ class ScreepsFunctionalTestHarness {
     /**
      * Generate a room for testing
      */
-    async generateRoom(roomName) {
-        await this.gameStateManager.generateRoom(roomName);
+    async generateRoom(roomName, options = {}) {
+        return this.gameStateManager.generateRoom(roomName, options);
+    }
+    /**
+     * Open a room to make it available for players
+     */
+    async openRoom(roomName) {
+        return this.gameStateManager.openRoom(roomName);
+    }
+    /**
+     * Create construction sites for testing
+     */
+    async createConstructionSite(roomName, x, y, structureType, userId) {
+        return this.gameStateManager.createConstructionSite(roomName, x, y, structureType, userId);
+    }
+    /**
+     * Create damaged structures for repair testing
+     */
+    async createDamagedStructure(roomName, x, y, structureType, userId, damagePct = 0.5) {
+        return this.gameStateManager.createDamagedStructure(roomName, x, y, structureType, userId, damagePct);
+    }
+    /**
+     * Set up a complete test room with spawn, sources, and controller
+     */
+    async setupTestRoom(roomName, userId, options = {}) {
+        return this.gameStateManager.setupTestRoom(roomName, userId, options);
     }
     /**
      * Get CPU usage for a user
