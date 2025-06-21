@@ -1,7 +1,9 @@
 import { ProjectBehavior, ProjectBehaviorSymbol, ProjectConfig, ProjectHelpers, ProjectId } from "./Project";
 import { HarvestEnergyTask, HarvestEnergyTaskConfig } from "../tasks/HarvestEnergyTask";
+import { WithdrawEnergyTask, WithdrawEnergyTaskConfig } from "../tasks/WithdrawEnergyTask";
 import { BuildTask } from "../tasks/BuildTask";
 import { RepairTask, RepairTaskConfig } from "../tasks/RepairTask";
+import { analyzeEnergyInfrastructure } from "../utils/EnergySourceManager";
 
 export const BuilderProjectId = "BuilderProject" as ProjectId;
 
@@ -168,9 +170,26 @@ export const BuilderProject: ProjectBehavior<typeof BuilderProjectId> = {
   run(creep: Creep, config?: BuilderProjectConfig): void {
     // Determine what task the creep should be doing
     if (creep.store[RESOURCE_ENERGY] === 0) {
-      // Creep needs energy - find a source to harvest from
-      const sources = creep.room.find(FIND_SOURCES);
+      // Creep needs energy - choose between harvesting and withdrawing from storage
+      const energyInfo = analyzeEnergyInfrastructure(creep.room);
       
+      if (energyInfo.preferWithdraw) {
+        // Try to withdraw from storage/containers first
+        const storage = creep.room.storage;
+        const containers = creep.room.find(FIND_STRUCTURES, {
+          filter: (structure): structure is StructureContainer =>
+            structure.structureType === STRUCTURE_CONTAINER &&
+            structure.store[RESOURCE_ENERGY] > 0
+        });
+        
+        if ((storage && storage.store[RESOURCE_ENERGY] > 0) || containers.length > 0) {
+          creep.startTask(WithdrawEnergyTask, {} as WithdrawEnergyTaskConfig);
+          return;
+        }
+      }
+      
+      // Fall back to harvesting from sources
+      const sources = creep.room.find(FIND_SOURCES);
       if (sources.length > 0) {
         // Pick the closest source
         const source = creep.pos.findClosestByPath(FIND_SOURCES);
@@ -215,7 +234,25 @@ export const BuilderProject: ProjectBehavior<typeof BuilderProjectId> = {
             // Repair structures
             creep.startTask(RepairTask, { repairThreshold: config?.repairThreshold } as RepairTaskConfig);
           } else {
-            // Nothing to build or repair, harvest energy to be ready
+            // Nothing to build or repair, get energy to be ready
+            const energyInfo = analyzeEnergyInfrastructure(creep.room);
+            
+            if (energyInfo.preferWithdraw) {
+              // Try to withdraw from storage/containers first
+              const storage = creep.room.storage;
+              const containers = creep.room.find(FIND_STRUCTURES, {
+                filter: (structure): structure is StructureContainer =>
+                  structure.structureType === STRUCTURE_CONTAINER &&
+                  structure.store[RESOURCE_ENERGY] > 0
+              });
+              
+              if ((storage && storage.store[RESOURCE_ENERGY] > 0) || containers.length > 0) {
+                creep.startTask(WithdrawEnergyTask, {} as WithdrawEnergyTaskConfig);
+                return;
+              }
+            }
+            
+            // Fall back to harvesting
             const source = creep.pos.findClosestByPath(FIND_SOURCES);
             if (source) {
               creep.startTask(HarvestEnergyTask, { source: source.id } as HarvestEnergyTaskConfig);

@@ -31,3 +31,8 @@ import { RepairTask } from "./RepairTask";
 registerTask(RepairTask);
 export { RepairTask };
 export type { RepairTaskConfig } from "./RepairTask";
+
+import { WithdrawEnergyTask } from "./WithdrawEnergyTask";
+registerTask(WithdrawEnergyTask);
+export { WithdrawEnergyTask };
+export type { WithdrawEnergyTaskConfig } from "./WithdrawEnergyTask";

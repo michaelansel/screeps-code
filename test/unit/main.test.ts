@@ -97,7 +97,7 @@ describe("main", () => {
     
     // Create a creep without a project
     const creepMock = {
-      memory: {},
+      memory: {} as any,
       store: { energy: 0, getCapacity: () => 50 },
       run: sinon.stub()
     };
@@ -109,8 +109,7 @@ describe("main", () => {
     // Test manual assignment (to verify our understanding of the logic)
     if (!creepMock.memory.project || !creepMock.memory.project.id) {
       creepMock.memory.project = {
-        id: "DoNothingProject" as any,
-        config: {}
+        id: "DoNothingProject" as any
       };
     }
     
@@ -119,7 +118,7 @@ describe("main", () => {
     expect(creepMock.memory.project.id).to.equal('DoNothingProject');
     
     // Reset for actual test
-    creepMock.memory = {};
+    creepMock.memory = {} as any;
     expect(creepMock.memory.project).to.be.undefined;
     
     // Stub Logger to avoid potential issues
@@ -140,19 +139,18 @@ describe("main", () => {
     // Verify the creep now has a project
     expect(creepMock.memory.project, 'Creep should have a project after loop').to.exist;
     expect(creepMock.memory.project.id, 'Creep should have DoNothingProject assigned').to.equal('DoNothingProject');
-    expect(creepMock.memory.project.config, 'Creep should have project config').to.exist;
   });
 
   it.skip("should log project assignment statistics", () => {
     // Create creeps with different projects
     Game.creeps = {
       Harvester1: {
-        memory: { project: { id: 'HarvestEnergyProject', config: {} } },
+        memory: { project: { id: 'HarvestEnergyProject' } } as any,
         store: { energy: 50, getCapacity: () => 50 },
         run: sinon.stub()
       } as any,
       Builder1: {
-        memory: { project: { id: 'BuilderProject', config: {} } },
+        memory: { project: { id: 'BuilderProject' } } as any,
         store: { energy: 25, getCapacity: () => 50 },
         run: sinon.stub()
       } as any

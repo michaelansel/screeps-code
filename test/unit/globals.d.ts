@@ -32,9 +32,13 @@ declare global {
   const BODYPART_COST: { [bodyPart: string]: number };
   const TERRAIN_MASK_WALL: number;
   const LOOK_STRUCTURES: string;
+  const LOOK_TERRAIN: string;
+  const LOOK_CONSTRUCTION_SITES: string;
   const OK: number;
   const ERR_NOT_ENOUGH_ENERGY: number;
   const ERR_BUSY: number;
+  const ERR_FULL: number;
+  const ERR_NOT_ENOUGH_RESOURCES: number;
 }
 
 export {};

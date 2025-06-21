@@ -124,7 +124,6 @@ describe("SourcePlanner", () => {
         planner,
         "loadGameObjectById" as keyof SourcePlanner,
         // TODO see if this is still broken after MemoryBackedClass has been fixed
-        // @ts-expect-error this is probably broken because of MemoryBackedClass shenanigans
         fakeLoadGameObjectById<Source>(sourceObjects)
       );
 
@@ -180,7 +179,6 @@ describe("SourcePlanner", () => {
         planner,
         "loadGameObjectById" as keyof SourcePlanner,
         // TODO see if this is still broken after MemoryBackedClass has been fixed
-        // @ts-expect-error this is probably broken because of MemoryBackedClass shenanigans
         fakeLoadGameObjectById<Source>(sourceObjects)
       );
 
