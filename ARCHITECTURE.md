@@ -14,6 +14,8 @@ Key files:
 - `src/main.ts`: The main entry point of the Screeps AI. It contains the primary game loop (`module.exports.loop`) and orchestrates the execution of creep logic, room logic, and global tasks each tick.
 - `src/utils/MemoryBackedClass.ts`: A crucial utility for serializing and deserializing complex class instances into the Screeps `Memory` object. This allows for persistent state of custom objects across game ticks.
 - `src/utils/applyMixins.ts`: A helper function used to apply mixin classes to extend the functionality of existing JavaScript/TypeScript classes, notably used for Screeps game object extensions.
+- `src/utils/RoleManager.ts`: Centralized role management system for spawning decisions, body part generation, and energy calculations
+- `src/utils/EnergySourceManager.ts`: Infrastructure analysis and energy strategy optimization for efficient resource flow
 
 # AI Logic
 
@@ -452,3 +454,85 @@ By diligently following these practices, you can minimize issues related to memo
 - **Spawning Priority**: Harvesters → Builders → Upgraders (survival first)
 
 This principle ensures efficient development that matches Screeps progression dynamics and avoids premature optimization.
+
+# Current System Features
+
+## Advanced Energy Management System
+
+### EnergySourceManager (`src/utils/EnergySourceManager.ts`)
+Provides intelligent analysis of room energy infrastructure to optimize energy flow strategies:
+
+**Core Functions:**
+- `analyzeEnergyInfrastructure(room: Room): EnergySourceInfo` - Comprehensive room analysis
+- `shouldHarvesterUseStorage(room: Room): boolean` - Determines when harvesters should prioritize storage
+- **Infrastructure Assessment**: Evaluates storage levels, container capacity, hauler reliability, and RCL maturity
+- **Reliable Hauler Detection**: Identifies rooms with stable energy distribution systems
+- **Energy Flow Optimization**: Recommends optimal energy acquisition strategies based on room conditions
+
+**Decision Logic:**
+- Storage usage when spawn/extensions >80% full and reliable haulers exist
+- Energy withdrawal preferred when storage >10k energy or containers >5k energy
+- RCL-based thresholds (RCL 5+ with 5k storage enables storage priority)
+
+### Enhanced Task System
+
+**WithdrawEnergyTask (`src/tasks/WithdrawEnergyTask.ts`):**
+- Efficient energy withdrawal from storage and containers
+- Priority: Storage → Containers with energy → Closest available
+- Handles empty sources and capacity management
+
+**Enhanced DepositEnergyTask:**
+- Smart target selection: Spawn/Extensions → Containers → Storage → Towers
+- `prioritizeStorage` configuration for harvester storage deposits
+- Capacity-aware target selection with automatic fallback
+
+### Road Network Management
+
+**BuilderProject Road Rebuilding:**
+- **Automatic Detection**: Scans paths between key structures (spawn↔sources, spawn↔controller, spawn↔extensions)
+- **Intelligent Placement**: Creates construction sites with terrain awareness and structure avoidance
+- **Priority Integration**: Road building prioritized over other construction when critical paths missing
+- **Smart Limits**: Maximum 5 roads per tick to avoid overwhelming construction queue
+
+**Road Analysis Functions:**
+- `findMissingRoads(room: Room): RoomPosition[]` - Identifies missing road positions
+- `shouldHaveRoad(pos: RoomPosition): boolean` - Validates road placement feasibility
+- `hasRoadOrConstructionSite(pos: RoomPosition): boolean` - Checks existing road infrastructure
+- `createRoadConstructionSites(room: Room, positions: RoomPosition[]): number` - Creates road construction sites
+
+### Enhanced Spawning System
+
+**RoleManager Spawning (`src/utils/RoleManager.ts`):**
+- **Extension-Aware Energy**: `getRoomAvailableEnergy()` includes spawn + extension energy
+- **Dynamic Body Scaling**: Role-specific body generation based on total room energy
+- **Optimized Body Parts**: Harvesters (up to 5 WORK), Builders/Upgraders (balanced scaling)
+- **Energy Efficiency**: Body parts scale with available energy up to role-specific limits
+
+**Body Generation:**
+- `getBodyPartsForRole(roleId: ProjectId, energy: number): BodyPartConstant[]`
+- Maximum 50 body parts with guaranteed movement capability
+- Role-specific optimization (WORK limits, CARRY/MOVE ratios)
+
+## RCL Progression Testing Framework
+
+**Comprehensive RCL Testing (`test/functional/rcl-progression.test.ts`):**
+
+### Test Coverage by RCL:
+- **RCL 1**: Basic survival, energy harvesting, minimal spawning
+- **RCL 2-3**: Extension development, larger creeps, infrastructure growth  
+- **RCL 4-5**: Complex layouts, construction management, advanced body scaling
+- **RCL 6-8**: High-energy operations, performance validation, mature room efficiency
+
+### Edge Case Testing:
+- **Unusual Configurations**: Single sources, limited access positions, challenging terrain
+- **Recovery Scenarios**: Creep loss handling, memory corruption recovery
+- **Resource Constraints**: Low energy situations, emergency spawning
+- **Infrastructure Validation**: Extension usage, storage integration, road networks
+
+### Test Methodology:
+- Room state initialization with configurable RCL, energy, extensions, sources
+- Multi-tick simulation with state validation checkpoints
+- Performance measurement and scalability validation
+- Memory pattern analysis and behavioral verification
+
+This framework ensures reliable operation across all Screeps progression stages and validates that new features work correctly at every RCL level.

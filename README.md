@@ -31,12 +31,16 @@ This Screeps AI uses a **Projects/Tasks framework** where:
 
 ### Key Features
 
-- **TypeScript** with type safety
-- **Modular Architecture** with separation of concerns  
-- **Testing** with unit tests, integration tests, and functional tests
-- **Memory Management** with persistence and cleanup
-- **Runtime Extensions** for Screeps object capabilities
-- **Server Testing** with containerized environment
+- **Advanced Energy Management** with storage-aware builders, smart harvester logic, and infrastructure analysis
+- **Dynamic Spawning System** with extension-aware energy calculation and role-specific body scaling
+- **Comprehensive Role System** with builders, harvesters, and upgraders working in coordination
+- **Road Network Management** with automatic rebuilding of missing/decayed infrastructure
+- **RCL Progression Testing** ensuring reliable operation from basic survival through advanced optimization
+- **TypeScript** with comprehensive type safety and modern language features
+- **Modular Architecture** with clean separation of concerns and extensible design
+- **Multi-Layer Testing** with unit tests, integration tests, functional tests, and RCL progression tests
+- **Memory Management** with sophisticated persistence and automatic cleanup
+- **Runtime Extensions** for enhanced Screeps object capabilities
 
 ## Development
 
@@ -63,17 +67,20 @@ See [`FEATURES.md`](FEATURES.md) for current development focus, completed featur
 ## Architecture
 
 ### Core Systems
-- **Project/Task Framework** (`src/projects/`, `src/tasks/`)
-- **Source Planning** (`src/planners/SourcePlanner.ts`)  
-- **Memory Management** (`src/utils/MemoryBackedClass.ts`)
-- **Runtime Extensions** (`src/extensions/`)
+- **Advanced Energy Management** (`src/utils/EnergySourceManager.ts`, enhanced task system)
+- **Role Management** (`src/utils/RoleManager.ts`, comprehensive spawning and body generation)
+- **Project/Task Framework** (`src/projects/`, `src/tasks/` - includes BuilderProject, road rebuilding)
+- **Source Planning** (`src/planners/SourcePlanner.ts`, capacity-based assignment)
+- **Memory Management** (`src/utils/MemoryBackedClass.ts`, sophisticated persistence)
+- **Runtime Extensions** (`src/extensions/`, enhanced Creep capabilities)
 
 ### Testing Infrastructure
-- **Unit Tests** for individual components
-- **Integration Tests** for component interactions and build pipeline  
-- **Functional Tests** using containerized Screeps server
-- **Code Execution Validation** via test markers
-- **Performance Testing** and memory validation
+- **Unit Tests** for individual components (279 passing tests)
+- **Integration Tests** for component interactions and build pipeline
+- **Functional Tests** using containerized ARM64 Screeps server
+- **RCL Progression Tests** covering all Room Control Levels (1-8)
+- **Code Execution Validation** via test markers and memory monitoring
+- **Performance Testing** and scalability validation
 
 See [`TESTING.md`](TESTING.md) for complete testing guide.
 

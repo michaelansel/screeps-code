@@ -1,6 +1,6 @@
 # Console Project Assignment Helpers
 
-The Console utility (exposed as `C` in the game console) now includes powerful helpers for manually managing creep project assignments during gameplay.
+The Console utility (exposed as `C` in the game console) includes powerful helpers for manually managing creep project assignments during gameplay. These tools are essential for debugging, testing, and emergency management in your Screeps rooms.
 
 ## Available Commands
 
@@ -9,9 +9,9 @@ The Console utility (exposed as `C` in the game console) now includes powerful h
 // List all available projects
 C.listProjects()
 // Output: 📋 Available Projects:
-//   • HarvestEnergyProject
-//   • BuilderProject
-//   • UpgradeControllerProject
+//   • HarvestEnergyProject (with smart storage deposits)
+//   • BuilderProject (with road rebuilding)
+//   • UpgradeControllerProject (with storage energy withdrawal)
 //   • DoNothingProject
 
 // List all creeps and their current projects

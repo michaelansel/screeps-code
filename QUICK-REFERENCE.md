@@ -14,17 +14,22 @@ npm run pre-commit     # Full validation before commit
 
 ### Testing
 ```bash
-npm test               # Run all tests
-npm run test:unit      # Unit tests only (~50ms)
+npm test               # Run all tests (279 unit tests + integration + functional)
+npm run test:unit      # Unit tests only (~200ms, 279 passing)
 npm run test:integration # Integration tests (~500ms)
 npm run test:functional # Functional tests (~60s+)
+
+# Specific functional test categories
+npm run test:functional -- --grep "RCL Progression"
+npm run test:functional -- --grep "Builder Role" 
+npm run test:functional -- --grep "Resource Management"
 ```
 
 ### Deployment
 ```bash
 npm run upload-main    # Deploy to main branch
-npm run upload-sim     # Deploy to simulation
-npm run upload-dev     # Deploy to dev branch
+npm run upload-sim     # Deploy to simulation  
+npm run upload-ptr     # Deploy to PTR (latest with energy management)
 ```
 
 ## Common Code Patterns
@@ -161,6 +166,58 @@ declare global {
 applyMixins(Creep, [CreepCustomExtension]);
 ```
 
+### Energy Management Patterns
+```typescript
+// Check if room should use storage for energy
+import { analyzeEnergyInfrastructure, shouldHarvesterUseStorage } from "utils/EnergySourceManager";
+
+const energyInfo = analyzeEnergyInfrastructure(room);
+if (energyInfo.preferWithdraw) {
+  // Use WithdrawEnergyTask for builders/upgraders
+  creep.startTask(WithdrawEnergyTask);
+} else {
+  // Fall back to harvesting
+  creep.startTask(HarvestEnergyTask, { source: sourceId });
+}
+
+// Smart harvester storage logic
+if (shouldHarvesterUseStorage(room)) {
+  // Prioritize storage when infrastructure supports it
+  creep.startTask(DepositEnergyTask, { prioritizeStorage: true });
+} else {
+  // Default priority: spawn/extensions first
+  creep.startTask(DepositEnergyTask);
+}
+```
+
+### Role Management Patterns
+```typescript
+// Extension-aware spawning
+const roomEnergy = RoleManager.getRoomAvailableEnergy(room);
+const bodyParts = RoleManager.getBodyPartsForRole(roleId, roomEnergy);
+
+// Get optimal role counts
+const quotas = RoleManager.getDesiredQuotas(room);
+const nextRole = RoleManager.getNextRoleToSpawn(room);
+
+if (nextRole) {
+  const name = `${nextRole.projectId.replace('Project', '')}${counter++}`;
+  spawn.spawnCreep(bodyParts, name, {
+    memory: { project: { id: nextRole.projectId } }
+  });
+}
+```
+
+### Road Rebuilding Pattern
+```typescript
+// In BuilderProject - automatic road maintenance
+const missingRoads = findMissingRoads(room);
+if (missingRoads.length > 0) {
+  createRoadConstructionSites(room, missingRoads);
+  creep.startTask(BuildTask); // Build roads first
+}
+```
+
 ## Memory Patterns
 
 ### Accessing Memory
@@ -253,13 +310,24 @@ Logger.info("module.name", "Message", { data });
 
 ### Console Commands
 ```typescript
+// Project assignment helpers (see CONSOLE_HELPERS.md)
+C.listProjects()          // List all available projects
+C.listCreeps()            // List creeps and their projects
+C.projectStatus()         // Detailed project status overview
+C.assignProject('Harvester1', 'BuilderProject') // Assign project
+C.assignProjectToRole('Builder', 'BuilderProject') // Assign to role
+
+// Energy management analysis
+import { analyzeEnergyInfrastructure } from "utils/EnergySourceManager";
+analyzeEnergyInfrastructure(Game.rooms.W1N1)
+
+// Role management information
+import { RoleManager } from "utils/RoleManager";
+RoleManager.getDesiredQuotas(Game.rooms.W1N1)
+RoleManager.getRoomAvailableEnergy(Game.rooms.W1N1)
+
 // Check memory
 JSON.stringify(Memory, null, 2)
-
-// List creeps and projects
-Object.entries(Game.creeps).map(([name, creep]) => 
-  `${name}: ${creep.memory.project?.id || 'none'}`
-)
 
 // Reset specific creep
 delete Game.creeps.Worker1.memory.task

@@ -41,6 +41,9 @@ Integration tests validate component interactions and system behavior:
 - **Bot Execution**: Basic deployment and execution validation
 - **Resource Management**: Role-based spawning, quotas, and upgrading behavior  
 - **Core Systems**: Energy harvesting, Project/Task framework, AI behaviors
+- **RCL Progression**: Comprehensive testing across all Room Control Levels (1-8)
+- **Builder Role**: Construction management, repair systems, and road rebuilding
+- **Console Logging**: Advanced logging systems and debugging capabilities
 - **Test Harness**: Infrastructure validation and monitoring capabilities
 
 ## Running Tests
@@ -62,8 +65,10 @@ npm run test:functional
 
 # Run specific functional test categories
 npm run test:functional -- --grep "Resource Management"
-npm run test:functional -- --grep "Core Systems"
+npm run test:functional -- --grep "Core Systems" 
 npm run test:functional -- --grep "Bot Execution"
+npm run test:functional -- --grep "RCL Progression"
+npm run test:functional -- --grep "Builder Role"
 
 # Run specific test categories
 npm run test:integration -- --grep "Framework"
@@ -173,6 +178,27 @@ This enables validation of:
 - Project assignment validation (HarvestEnergyProject vs UpgradeControllerProject)
 - Controller upgrading behavior and energy management
 - Integration with existing SourcePlanner system
+
+**RCL Progression Testing:**
+- **RCL 1**: Basic survival with minimal energy and no extensions
+- **RCL 2-3**: Extension development and larger creep generation
+- **RCL 4-5**: Complex room layouts and advanced body scaling
+- **RCL 6-8**: High-energy operations and mature room efficiency
+- **Edge Cases**: Unusual source configurations, creep loss recovery, memory corruption
+- **Infrastructure Validation**: Extension usage, storage integration, road networks
+
+**Builder Role System:**
+- Construction site management with priority-based completion
+- Repair system with configurable thresholds (default 75%)
+- Road rebuilding system for missing/decayed infrastructure
+- RCL-aware builder scaling (1 at low RCL, 2 at high RCL)
+- Integration with enhanced spawning system
+
+**Advanced Energy Management:**
+- Storage-aware energy acquisition for builders and upgraders
+- Smart harvester storage logic with infrastructure analysis
+- Extension-aware spawning with dynamic body part scaling
+- Priority-based energy deposits (spawn/extensions → containers → storage → towers)
 
 **Core Game Systems:**
 - Energy harvesting and depositing workflows
