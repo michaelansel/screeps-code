@@ -80,9 +80,14 @@ export const loop = ErrorMapper.wrapLoop(() => {
     const nextRole = RoleManager.getNextRoleToSpawn(room);
 
     if (nextRole) {
-      const bodyParts = RoleManager.getBodyPartsForRole(nextRole.projectId, spawn.store[RESOURCE_ENERGY]);
+      // Use total room energy (spawn + extensions) for body part calculation
+      const roomEnergy = RoleManager.getRoomAvailableEnergy(room);
+      const roomCapacity = RoleManager.getRoomEnergyCapacity(room);
+      const bodyParts = RoleManager.getBodyPartsForRole(nextRole.projectId, roomEnergy);
 
       if (bodyParts.length > 0) {
+        const bodyCost = bodyParts.reduce((cost, part) => cost + BODYPART_COST[part], 0);
+        
         const memory: CreepMemory = {
           project: {
             id: nextRole.projectId as ProjectId,
@@ -94,16 +99,16 @@ export const loop = ErrorMapper.wrapLoop(() => {
         const result = spawn.spawnCreep(bodyParts, newName, { memory });
 
         if (result === OK) {
-          console.log(`🏭 ${spawnName}: Spawning ${newName} (${nextRole.projectId}) - Cost: ${bodyParts.reduce((cost, part) => cost + BODYPART_COST[part], 0)}`);
+          console.log(`🏭 ${spawnName}: Spawning ${newName} (${nextRole.projectId}) - Cost: ${bodyCost}/${roomEnergy} energy, Body: [${bodyParts.join(',')}]`);
           spawnActivity = true;
         } else {
-          console.log(`🏭 ${spawnName}: Failed to spawn ${nextRole.projectId} - Error: ${result}`);
+          console.log(`🏭 ${spawnName}: Failed to spawn ${nextRole.projectId} - Error: ${result} (Room energy: ${roomEnergy}/${roomCapacity})`);
         }
       } else {
-        console.log(`🏭 ${spawnName}: Not enough energy for ${nextRole.projectId} (need more than ${spawn.store[RESOURCE_ENERGY]})`);
+        console.log(`🏭 ${spawnName}: Not enough energy for ${nextRole.projectId} (room has ${roomEnergy}/${roomCapacity} energy)`);
       }
     } else {
-      console.log(`🏭 ${spawnName}: No roles needed to spawn`);
+      console.log(`🏭 ${spawnName}: No roles needed to spawn (room energy: ${RoleManager.getRoomAvailableEnergy(room)}/${RoleManager.getRoomEnergyCapacity(room)})`);
     }
   }
 

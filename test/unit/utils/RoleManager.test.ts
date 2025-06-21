@@ -13,9 +13,13 @@ use(sinonChai);
 global.FIND_SOURCES = 105 as any;
 global.FIND_MY_CONSTRUCTION_SITES = 107 as any;
 global.FIND_STRUCTURES = 106 as any;
+global.FIND_MY_SPAWNS = 108 as any;
+global.FIND_MY_STRUCTURES = 109 as any;
 global.STRUCTURE_CONTAINER = "container" as any;
 global.STRUCTURE_WALL = "constructedWall" as any;
 global.STRUCTURE_RAMPART = "rampart" as any;
+global.STRUCTURE_EXTENSION = "extension" as any;
+global.RESOURCE_ENERGY = "energy" as any;
 
 describe("RoleManager", () => {
   let sandbox: sinon.SinonSandbox;
@@ -407,36 +411,207 @@ describe("RoleManager", () => {
     });
   });
 
-  describe("getBodyPartsForRole", () => {
-    // Constants
-    global.WORK = "work" as any;
-    global.CARRY = "carry" as any;
-    global.MOVE = "move" as any;
-    global.BODYPART_COST = {
-      work: 100,
-      carry: 50,
-      move: 50
-    } as any;
+  describe("getRoomAvailableEnergy", () => {
+    beforeEach(() => {
+      // Constants
+      global.WORK = "work" as any;
+      global.CARRY = "carry" as any;
+      global.MOVE = "move" as any;
+      global.BODYPART_COST = {
+        work: 100,
+        carry: 50,
+        move: 50
+      } as any;
+    });
 
-    it("should return basic body for any role with sufficient energy", () => {
-      const body = RoleManager.getBodyPartsForRole(HarvestEnergyProject.id, 300);
+    it("should calculate energy from spawn only", () => {
+      const spawn = {
+        store: {
+          [RESOURCE_ENERGY]: 300,
+          getCapacity: sinon.stub().returns(300)
+        }
+      };
       
-      expect(body).to.deep.equal([WORK, CARRY, MOVE]);
+      room.find.withArgs(FIND_MY_SPAWNS).returns([spawn]);
+      room.find.withArgs(FIND_MY_STRUCTURES).returns([]);
+      
+      const energy = RoleManager.getRoomAvailableEnergy(room);
+      
+      expect(energy).to.equal(300);
+    });
+
+    it("should calculate energy from spawn and extensions", () => {
+      const spawn = {
+        store: {
+          [RESOURCE_ENERGY]: 300,
+          getCapacity: sinon.stub().returns(300)
+        }
+      };
+      const extension1 = {
+        store: {
+          [RESOURCE_ENERGY]: 50,
+          getCapacity: sinon.stub().returns(50)
+        },
+        structureType: STRUCTURE_EXTENSION
+      };
+      const extension2 = {
+        store: {
+          [RESOURCE_ENERGY]: 50,
+          getCapacity: sinon.stub().returns(50)
+        },
+        structureType: STRUCTURE_EXTENSION
+      };
+      
+      room.find.withArgs(FIND_MY_SPAWNS).returns([spawn]);
+      room.find.callsFake((findConstant: any, opts?: any) => {
+        if (findConstant === FIND_MY_SPAWNS) return [spawn];
+        if (findConstant === FIND_MY_STRUCTURES && opts?.filter) {
+          // Handle object filter for structure type
+          if (opts.filter.structureType === STRUCTURE_EXTENSION) {
+            return [extension1, extension2];
+          }
+        }
+        return [];
+      });
+      
+      const energy = RoleManager.getRoomAvailableEnergy(room);
+      
+      expect(energy).to.equal(400); // 300 + 50 + 50
+    });
+
+    it("should handle room with no energy structures", () => {
+      room.find.withArgs(FIND_MY_SPAWNS).returns([]);
+      room.find.withArgs(FIND_MY_STRUCTURES).returns([]);
+      
+      const energy = RoleManager.getRoomAvailableEnergy(room);
+      
+      expect(energy).to.equal(0);
+    });
+  });
+
+  describe("getRoomEnergyCapacity", () => {
+    it("should calculate total capacity from spawn and extensions", () => {
+      const spawn = {
+        store: {
+          [RESOURCE_ENERGY]: 100,
+          getCapacity: sinon.stub().returns(300)
+        }
+      };
+      const extension1 = {
+        store: {
+          [RESOURCE_ENERGY]: 30,
+          getCapacity: sinon.stub().returns(50)
+        },
+        structureType: STRUCTURE_EXTENSION
+      };
+      const extension2 = {
+        store: {
+          [RESOURCE_ENERGY]: 40,
+          getCapacity: sinon.stub().returns(50)
+        },
+        structureType: STRUCTURE_EXTENSION
+      };
+      
+      room.find.withArgs(FIND_MY_SPAWNS).returns([spawn]);
+      room.find.callsFake((findConstant: any, opts?: any) => {
+        if (findConstant === FIND_MY_SPAWNS) return [spawn];
+        if (findConstant === FIND_MY_STRUCTURES && opts?.filter) {
+          // Handle object filter for structure type
+          if (opts.filter.structureType === STRUCTURE_EXTENSION) {
+            return [extension1, extension2];
+          }
+        }
+        return [];
+      });
+      
+      const capacity = RoleManager.getRoomEnergyCapacity(room);
+      
+      expect(capacity).to.equal(400); // 300 + 50 + 50
+    });
+  });
+
+  describe("getBodyPartsForRole", () => {
+    beforeEach(() => {
+      // Constants
+      global.WORK = "work" as any;
+      global.CARRY = "carry" as any;
+      global.MOVE = "move" as any;
+      global.BODYPART_COST = {
+        work: 100,
+        carry: 50,
+        move: 50
+      } as any;
     });
 
     it("should return empty array when energy is insufficient", () => {
-      const body = RoleManager.getBodyPartsForRole(HarvestEnergyProject.id, 100);
+      const body = RoleManager.getBodyPartsForRole(HarvestEnergyProject.id, 150);
       
       expect(body).to.deep.equal([]);
     });
 
-    it("should handle different role IDs the same way for now", () => {
-      const harvesterBody = RoleManager.getBodyPartsForRole(HarvestEnergyProject.id, 300);
-      const builderBody = RoleManager.getBodyPartsForRole(BuilderProject.id, 300);
-      const upgraderBody = RoleManager.getBodyPartsForRole(UpgradeControllerProject.id, 300);
+    describe("Harvester bodies", () => {
+      it("should create basic harvester with minimum energy", () => {
+        const body = RoleManager.getBodyPartsForRole(HarvestEnergyProject.id, 200);
+        
+        expect(body).to.deep.equal([WORK, CARRY, MOVE]);
+      });
+
+      it("should scale harvester with more WORK parts", () => {
+        const body = RoleManager.getBodyPartsForRole(HarvestEnergyProject.id, 500);
+        
+        expect(body).to.include.members([WORK, CARRY, MOVE]);
+        expect(body.filter(part => part === WORK).length).to.be.greaterThan(1);
+        expect(body.filter(part => part === WORK).length).to.be.at.most(5); // Source limit
+      });
+
+      it("should limit WORK parts to 5 for harvesters", () => {
+        const body = RoleManager.getBodyPartsForRole(HarvestEnergyProject.id, 2000);
+        
+        expect(body.filter(part => part === WORK).length).to.equal(5);
+      });
+    });
+
+    describe("Builder bodies", () => {
+      it("should create basic builder with minimum energy", () => {
+        const body = RoleManager.getBodyPartsForRole(BuilderProject.id, 200);
+        
+        expect(body).to.deep.equal([WORK, CARRY, MOVE]);
+      });
+
+      it("should create balanced builder body with more energy", () => {
+        const body = RoleManager.getBodyPartsForRole(BuilderProject.id, 550);
+        
+        expect(body).to.include.members([WORK, CARRY, MOVE]);
+        // Should have more CARRY than WORK for building
+        expect(body.filter(part => part === CARRY).length).to.be.greaterThan(body.filter(part => part === WORK).length);
+      });
+    });
+
+    describe("Upgrader bodies", () => {
+      it("should create basic upgrader with minimum energy", () => {
+        const body = RoleManager.getBodyPartsForRole(UpgradeControllerProject.id, 200);
+        
+        expect(body).to.deep.equal([WORK, CARRY, MOVE]);
+      });
+
+      it("should prioritize WORK parts for upgraders", () => {
+        const body = RoleManager.getBodyPartsForRole(UpgradeControllerProject.id, 500);
+        
+        expect(body).to.include.members([WORK, CARRY, MOVE]);
+        expect(body.filter(part => part === WORK).length).to.be.greaterThan(1);
+      });
+    });
+
+    it("should respect maximum body part limit of 50", () => {
+      const body = RoleManager.getBodyPartsForRole(HarvestEnergyProject.id, 10000);
       
-      expect(harvesterBody).to.deep.equal(builderBody);
-      expect(builderBody).to.deep.equal(upgraderBody);
+      expect(body.length).to.be.at.most(50);
+    });
+
+    it("should handle unknown role IDs with fallback", () => {
+      const body = RoleManager.getBodyPartsForRole("UnknownProject", 300);
+      
+      expect(body).to.deep.equal([WORK, CARRY, MOVE]);
     });
   });
 });

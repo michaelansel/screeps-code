@@ -16,6 +16,54 @@ export interface RoleCounts {
 
 export class RoleManager {
   /**
+   * Calculate total available energy for spawning in a room (spawn + extensions)
+   */
+  static getRoomAvailableEnergy(room: Room): number {
+    let totalEnergy = 0;
+    
+    // Add energy from spawns
+    const spawns = room.find(FIND_MY_SPAWNS);
+    for (const spawn of spawns) {
+      totalEnergy += spawn.store[RESOURCE_ENERGY];
+    }
+    
+    // Add energy from extensions
+    const extensions = room.find(FIND_MY_STRUCTURES, {
+      filter: { structureType: STRUCTURE_EXTENSION }
+    }) as StructureExtension[];
+    
+    for (const extension of extensions) {
+      totalEnergy += extension.store[RESOURCE_ENERGY];
+    }
+    
+    return totalEnergy;
+  }
+
+  /**
+   * Calculate total energy capacity for spawning in a room (spawn + extensions)
+   */
+  static getRoomEnergyCapacity(room: Room): number {
+    let totalCapacity = 0;
+    
+    // Add capacity from spawns
+    const spawns = room.find(FIND_MY_SPAWNS);
+    for (const spawn of spawns) {
+      totalCapacity += spawn.store.getCapacity(RESOURCE_ENERGY);
+    }
+    
+    // Add capacity from extensions
+    const extensions = room.find(FIND_MY_STRUCTURES, {
+      filter: { structureType: STRUCTURE_EXTENSION }
+    }) as StructureExtension[];
+    
+    for (const extension of extensions) {
+      totalCapacity += extension.store.getCapacity(RESOURCE_ENERGY);
+    }
+    
+    return totalCapacity;
+  }
+
+  /**
    * Get the desired quotas for different roles based on room state
    */
   static getDesiredQuotas(room: Room): RoleQuotas {
@@ -126,15 +174,102 @@ export class RoleManager {
    * Get appropriate body parts for a role based on available energy
    */
   static getBodyPartsForRole(projectId: string, availableEnergy: number): BodyPartConstant[] {
-    const baseBody: BodyPartConstant[] = [WORK, CARRY, MOVE];
     const baseCost = BODYPART_COST.work + BODYPART_COST.carry + BODYPART_COST.move;
 
     if (availableEnergy < baseCost) {
       return []; // Cannot afford minimum body
     }
 
-    // For now, use basic body regardless of role or energy
-    // TODO: Implement dynamic body scaling based on energy and role
-    return baseBody;
+    // Role-specific body part generation with dynamic scaling
+    if (projectId === HarvestEnergyProject.id) {
+      return this.getHarvesterBody(availableEnergy);
+    } else if (projectId === BuilderProject.id) {
+      return this.getBuilderBody(availableEnergy);
+    } else if (projectId === UpgradeControllerProject.id) {
+      return this.getUpgraderBody(availableEnergy);
+    }
+
+    // Fallback to basic body
+    return [WORK, CARRY, MOVE];
+  }
+
+  /**
+   * Generate optimized harvester body - prioritizes WORK parts for mining
+   */
+  private static getHarvesterBody(availableEnergy: number): BodyPartConstant[] {
+    const body: BodyPartConstant[] = [];
+    let remainingEnergy = availableEnergy;
+
+    // Start with minimum viable body
+    body.push(WORK, CARRY, MOVE);
+    remainingEnergy -= BODYPART_COST.work + BODYPART_COST.carry + BODYPART_COST.move;
+
+    // Add more WORK parts for faster harvesting (up to 5 WORK parts max - source limit)
+    let workParts = 1;
+    while (remainingEnergy >= BODYPART_COST.work + BODYPART_COST.move && workParts < 5) {
+      body.push(WORK, MOVE);
+      remainingEnergy -= BODYPART_COST.work + BODYPART_COST.move;
+      workParts++;
+    }
+
+    // Add extra CARRY parts if we have remaining energy
+    while (remainingEnergy >= BODYPART_COST.carry + BODYPART_COST.move && body.length < 49) {
+      body.push(CARRY, MOVE);
+      remainingEnergy -= BODYPART_COST.carry + BODYPART_COST.move;
+    }
+
+    return body;
+  }
+
+  /**
+   * Generate optimized builder body - balanced WORK, CARRY, MOVE
+   */
+  private static getBuilderBody(availableEnergy: number): BodyPartConstant[] {
+    const body: BodyPartConstant[] = [];
+    let remainingEnergy = availableEnergy;
+
+    // Start with minimum viable body
+    body.push(WORK, CARRY, MOVE);
+    remainingEnergy -= BODYPART_COST.work + BODYPART_COST.carry + BODYPART_COST.move;
+
+    // Add parts in balanced ratios: 1 WORK, 2 CARRY, 2 MOVE (for carrying and building)
+    while (remainingEnergy >= BODYPART_COST.work + 2 * BODYPART_COST.carry + 2 * BODYPART_COST.move && body.length < 47) {
+      body.push(WORK, CARRY, CARRY, MOVE, MOVE);
+      remainingEnergy -= BODYPART_COST.work + 2 * BODYPART_COST.carry + 2 * BODYPART_COST.move;
+    }
+
+    // Add remaining energy as CARRY + MOVE pairs
+    while (remainingEnergy >= BODYPART_COST.carry + BODYPART_COST.move && body.length < 49) {
+      body.push(CARRY, MOVE);
+      remainingEnergy -= BODYPART_COST.carry + BODYPART_COST.move;
+    }
+
+    return body;
+  }
+
+  /**
+   * Generate optimized upgrader body - prioritizes WORK parts for upgrading
+   */
+  private static getUpgraderBody(availableEnergy: number): BodyPartConstant[] {
+    const body: BodyPartConstant[] = [];
+    let remainingEnergy = availableEnergy;
+
+    // Start with minimum viable body
+    body.push(WORK, CARRY, MOVE);
+    remainingEnergy -= BODYPART_COST.work + BODYPART_COST.carry + BODYPART_COST.move;
+
+    // Add more WORK parts for faster upgrading
+    while (remainingEnergy >= BODYPART_COST.work + BODYPART_COST.move && body.length < 48) {
+      body.push(WORK, MOVE);
+      remainingEnergy -= BODYPART_COST.work + BODYPART_COST.move;
+    }
+
+    // Add extra CARRY parts if we have remaining energy
+    while (remainingEnergy >= BODYPART_COST.carry + BODYPART_COST.move && body.length < 49) {
+      body.push(CARRY, MOVE);
+      remainingEnergy -= BODYPART_COST.carry + BODYPART_COST.move;
+    }
+
+    return body;
   }
 }
