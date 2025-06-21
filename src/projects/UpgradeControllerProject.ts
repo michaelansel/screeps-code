@@ -17,11 +17,11 @@ export const UpgradeControllerProject: ProjectBehavior<typeof UpgradeControllerP
   id: UpgradeControllerProjectId,
   type: ProjectBehaviorSymbol,
 
-  start(creep: Creep, config?: UpgradeControllerProjectConfig): void {
+  start(creep: Creep, config: UpgradeControllerProjectConfig): void {
     ProjectHelpers.start(creep, UpgradeControllerProject, config);
   },
 
-  run(creep: Creep, config?: UpgradeControllerProjectConfig): void {
+  run(creep: Creep, config: UpgradeControllerProjectConfig): void {
     // Determine what task the creep should be doing
     if (creep.store[RESOURCE_ENERGY] === 0) {
       // Creep needs energy - choose between harvesting and withdrawing from storage
@@ -57,22 +57,11 @@ export const UpgradeControllerProject: ProjectBehavior<typeof UpgradeControllerP
       }
     } else {
       // Creep has energy - upgrade the controller
-      if (config?.controller) {
-        const controller = Game.getObjectById(config.controller);
-        if (controller) {
-          creep.startTask(UpgradeControllerTask, { controller: config.controller } as UpgradeControllerTaskConfig);
-        } else {
-          console.log(`${creep.name}: Controller ${config.controller} not found`);
-          // Could fall back to harvesting or idle behavior
-        }
+      const controller = Game.getObjectById(config.controller);
+      if (controller) {
+        creep.startTask(UpgradeControllerTask, { controller: config.controller } as UpgradeControllerTaskConfig);
       } else {
-        // No controller specified in config, try to find room controller
-        const controller = creep.room.controller;
-        if (controller && controller.my) {
-          creep.startTask(UpgradeControllerTask, { controller: controller.id } as UpgradeControllerTaskConfig);
-        } else {
-          console.log(`${creep.name}: No controller available to upgrade`);
-        }
+        console.log(`${creep.name}: Controller ${config.controller} not found`);
       }
     }
   },

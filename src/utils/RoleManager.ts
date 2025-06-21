@@ -176,6 +176,7 @@ export class RoleManager {
     if (counts.haulers < quotas.haulers) {
       return {
         projectId: HaulerProject.id,
+        config: { targetRoom: room.name },
         roleName: "Hauler"
       };
     }

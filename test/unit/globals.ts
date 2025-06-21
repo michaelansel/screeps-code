@@ -22,6 +22,7 @@ export const globalsSetup = () => {
   (global as any).LOOK_STRUCTURES = 'structure';
   (global as any).LOOK_TERRAIN = 'terrain';
   (global as any).LOOK_CONSTRUCTION_SITES = 'constructionSite';
+  (global as any).FIND_MY_CREEPS = 110;
 };
 
 export const globalsCleanup = () => {
@@ -37,4 +38,5 @@ export const globalsCleanup = () => {
   delete (global as any).LOOK_STRUCTURES;
   delete (global as any).LOOK_TERRAIN;
   delete (global as any).LOOK_CONSTRUCTION_SITES;
+  delete (global as any).FIND_MY_CREEPS;
 };

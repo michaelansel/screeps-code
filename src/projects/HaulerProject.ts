@@ -1,6 +1,8 @@
 import { ProjectBehaviorSymbol, ProjectHelpers, ProjectBehavior, ProjectConfig, ProjectId } from "./Project";
-import { WithdrawEnergyTask, WithdrawEnergyTaskId } from "../tasks/WithdrawEnergyTask";
-import { DepositEnergyTask, DepositEnergyTaskId } from "../tasks/DepositEnergyTask";
+import { WithdrawEnergyTask } from "../tasks/WithdrawEnergyTask";
+import { DepositEnergyTask } from "../tasks/DepositEnergyTask";
+import type { WithdrawEnergyTaskConfig } from "../tasks/WithdrawEnergyTask";
+import type { DepositEnergyTaskConfig } from "../tasks/DepositEnergyTask";
 
 export const HaulerProjectId = "HaulerProject" as ProjectId;
 
@@ -12,7 +14,7 @@ export const HaulerProject: ProjectBehavior<typeof HaulerProjectId> = {
   id: HaulerProjectId,
   type: ProjectBehaviorSymbol,
 
-  start(creep: Creep, config?: HaulerProjectConfig): void {
+  start(creep: Creep, config: HaulerProjectConfig): void {
     ProjectHelpers.start(creep, HaulerProject, config);
   },
 
@@ -20,7 +22,7 @@ export const HaulerProject: ProjectBehavior<typeof HaulerProjectId> = {
     const room = config.targetRoom ? Game.rooms[config.targetRoom] : creep.room;
 
     if (!room) {
-      console.log(`Hauler ${creep.name} cannot find room ${config.targetRoom}`);
+      console.log(`Hauler ${creep.name} cannot find room ${config.targetRoom || 'undefined'}`);
       return;
     }
 
@@ -29,14 +31,22 @@ export const HaulerProject: ProjectBehavior<typeof HaulerProjectId> = {
       // Haulers prioritize spawn/extensions, then towers, then storage
       creep.startTask(DepositEnergyTask, {
         haulerPriority: true // New flag to indicate hauler-specific priority
-      });
+      } as DepositEnergyTaskConfig);
     } else {
       // If we don't have energy, find a container or storage to withdraw from
       const containers = room.find(FIND_STRUCTURES, {
-        filter: s => (s.structureType === STRUCTURE_CONTAINER || 
-                     s.structureType === STRUCTURE_STORAGE) &&
-                     s.store.getUsedCapacity(RESOURCE_ENERGY) > 0
-      });
+        filter: s => {
+          if (s.structureType === STRUCTURE_CONTAINER) {
+            const container = s as StructureContainer;
+            return container.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+          }
+          if (s.structureType === STRUCTURE_STORAGE) {
+            const storage = s as StructureStorage;
+            return storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0;
+          }
+          return false;
+        }
+      }) as (StructureContainer | StructureStorage)[];
 
       if (containers.length > 0) {
         // Find containers near sources first (prioritize miner containers)
@@ -73,13 +83,13 @@ export const HaulerProject: ProjectBehavior<typeof HaulerProjectId> = {
         if (targetContainer) {
           creep.startTask(WithdrawEnergyTask, {
             target: targetContainer.id
-          });
+          } as WithdrawEnergyTaskConfig);
         }
       }
     }
   },
 
-  stop(creep: Creep, config: HaulerProjectConfig): void {
+  stop(creep: Creep): void {
     ProjectHelpers.stop(creep);
   }
 };
