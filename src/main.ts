@@ -7,6 +7,7 @@ import { Logger } from "./utils/Logger.js";
 import { RoleManager } from "./utils/RoleManager.js";
 import { SourcePlanner } from "./planners/SourcePlanner.js";
 import { EmergencyManager } from "./utils/EmergencyManager.js";
+import { SpawnManager } from "./utils/SpawnManager.js";
 
 // @ts-expect-error Expose in the game console
 global.C = Console;
@@ -83,33 +84,47 @@ export const loop = ErrorMapper.wrapLoop(() => {
     const nextRole = RoleManager.getNextRoleToSpawn(room);
 
     if (nextRole) {
-      // Use total room energy (spawn + extensions) for body part calculation
       const roomEnergy = RoleManager.getRoomAvailableEnergy(room);
       const roomCapacity = RoleManager.getRoomEnergyCapacity(room);
-      const bodyParts = RoleManager.getBodyPartsForRole(nextRole.projectId, roomEnergy);
+      
+      // Get minimum viable body for this role
+      const minBodyParts = RoleManager.getBodyPartsForRole(nextRole.projectId, 200); // Minimum energy
+      const minBodyCost = minBodyParts.reduce((cost, part) => cost + BODYPART_COST[part], 0);
 
-      if (bodyParts.length > 0) {
-        const bodyCost = bodyParts.reduce((cost, part) => cost + BODYPART_COST[part], 0);
-        
-        const memory: CreepMemory = {
-          project: {
-            id: nextRole.projectId as ProjectId,
-            config: nextRole.config
-          },
-          role: nextRole.roleName.toLowerCase()
-        };
+      // Check if we should spawn now or wait for more energy
+      const spawnDecision = SpawnManager.getSpawnDecision(room, nextRole.projectId, minBodyCost);
 
-        const newName = `${nextRole.roleName}${(++Memory.creepCounter).toString()}`;
-        const result = spawn.spawnCreep(bodyParts, newName, { memory });
+      if (spawnDecision.shouldSpawn) {
+        // Use current energy to determine body parts
+        const bodyParts = RoleManager.getBodyPartsForRole(nextRole.projectId, roomEnergy);
 
-        if (result === OK) {
-          console.log(`🏭 ${spawnName}: Spawning ${newName} (${nextRole.projectId}) - Cost: ${bodyCost}/${roomEnergy} energy, Body: [${bodyParts.join(',')}]`);
-          spawnActivity = true;
+        if (bodyParts.length > 0) {
+          const bodyCost = bodyParts.reduce((cost, part) => cost + BODYPART_COST[part], 0);
+          
+          const memory: CreepMemory = {
+            project: {
+              id: nextRole.projectId as ProjectId,
+              config: nextRole.config
+            },
+            role: nextRole.roleName.toLowerCase()
+          };
+
+          const newName = `${nextRole.roleName}${(++Memory.creepCounter).toString()}`;
+          const result = spawn.spawnCreep(bodyParts, newName, { memory });
+
+          if (result === OK) {
+            console.log(`🏭 ${spawnName}: Spawning ${newName} (${nextRole.projectId}) - Cost: ${bodyCost}/${roomEnergy} energy, Body: [${bodyParts.join(',')}] - ${spawnDecision.reason}`);
+            SpawnManager.recordSpawn(room, bodyCost);
+            spawnActivity = true;
+          } else {
+            console.log(`🏭 ${spawnName}: Failed to spawn ${nextRole.projectId} - Error: ${result} (Room energy: ${roomEnergy}/${roomCapacity})`);
+          }
         } else {
-          console.log(`🏭 ${spawnName}: Failed to spawn ${nextRole.projectId} - Error: ${result} (Room energy: ${roomEnergy}/${roomCapacity})`);
+          console.log(`🏭 ${spawnName}: Not enough energy for ${nextRole.projectId} (room has ${roomEnergy}/${roomCapacity} energy)`);
         }
       } else {
-        console.log(`🏭 ${spawnName}: Not enough energy for ${nextRole.projectId} (room has ${roomEnergy}/${roomCapacity} energy)`);
+        // We're waiting for more energy
+        console.log(`🏭 ${spawnName}: ${spawnDecision.reason} (current: ${roomEnergy}/${roomCapacity}${spawnDecision.waitForEnergy ? `, target: ${spawnDecision.waitForEnergy}` : ''})`);
       }
     } else {
       console.log(`🏭 ${spawnName}: No roles needed to spawn (room energy: ${RoleManager.getRoomAvailableEnergy(room)}/${RoleManager.getRoomEnergyCapacity(room)})`);
