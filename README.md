@@ -1,6 +1,6 @@
 # Screeps AI - TypeScript Implementation
 
-A TypeScript-based AI for [Screeps](https://screeps.com/) using a modular project/task architecture.
+A TypeScript-based AI for [Screeps](https://screeps.com/) using a modular project/task architecture with comprehensive testing and development tools.
 
 ## Quick Start
 
@@ -21,68 +21,105 @@ npm run lint
 npm run upload-main
 ```
 
-## Project Overview
+## Documentation Structure
 
-This Screeps AI uses a **Projects/Tasks framework** where:
+This project organizes documentation by concern level, from high-level strategy to low-level implementation details:
 
-- **Projects** define long-term objectives (e.g., "Harvest Energy")
-- **Tasks** handle specific actions (e.g., "Move to Source", "Transfer Energy")
-- **Creeps** are assigned projects and execute tasks dynamically
+### 📋 [Strategy](docs/strategy/STRATEGY.md)
+Game objectives and desired behaviors using Screeps terminology:
+- Energy economy goals (harvest at generation rate)
+- RCL progression strategy (upgrade controllers efficiently)
+- Resource management priorities
+- Operational behaviors and victory conditions
 
-### Key Features
+### 🏗️ [Architecture](docs/architecture/ARCHITECTURE.md)
+Bot logic design using framework terminology (language-agnostic):
+- Planner/Project/Task hierarchy
+- Component interactions and decision flows
+- Energy management and role systems
+- Scaling and adaptation strategies
 
-- **Advanced Energy Management** with storage-aware builders, smart harvester logic, and infrastructure analysis
-- **Dynamic Spawning System** with extension-aware energy calculation and role-specific body scaling
-- **Comprehensive Role System** with builders, harvesters, and upgraders working in coordination
-- **Road Network Management** with automatic rebuilding of missing/decayed infrastructure
-- **RCL Progression Testing** ensuring reliable operation from basic survival through advanced optimization
-- **TypeScript** with comprehensive type safety and modern language features
-- **Modular Architecture** with clean separation of concerns and extensible design
-- **Multi-Layer Testing** with unit tests, integration tests, functional tests, and RCL progression tests
-- **Memory Management** with sophisticated persistence and automatic cleanup
-- **Runtime Extensions** for enhanced Screeps object capabilities
+### 💻 [Implementation](docs/implementation/IMPLEMENTATION.md)
+TypeScript-specific code details and patterns:
+- Interfaces and class structures
+- Coding conventions and file organization
+- Memory management and type safety
+- Testing patterns and performance optimization
 
-## Development
+### 🔧 [Framework](docs/framework/FRAMEWORK.md)
+Portable development tools for any Screeps player:
+- MemoryBackedClass system for state persistence
+- Runtime extension patterns for game objects
+- Project/Task behavior framework
+- Functional testing infrastructure
 
-This project uses a **single-file development workflow** centered on [`FEATURES.md`](FEATURES.md):
+### 🚀 [Development](docs/development/)
+Development process and workflow tools:
+- **[FEATURES.md](docs/development/FEATURES.md)** - Current development focus and roadmap
+- **[WORK_PROMPT.md](docs/development/WORK_PROMPT.md)** - Development workflow and session guide
+- **[CONSOLE_HELPERS.md](docs/development/CONSOLE_HELPERS.md)** - In-game debugging and management tools
 
-- **📋 [`FEATURES.md`](FEATURES.md)** - Complete development roadmap, current focus, and status tracking
-- **🏗️ [`ARCHITECTURE.md`](ARCHITECTURE.md)** - Code structure, patterns, and technical implementation details  
-- **🧪 [`TESTING.md`](TESTING.md)** - Comprehensive testing guide
+## Getting Started
 
-### Current Status
+1. **Understand the Strategy**: Read [Strategy](docs/strategy/STRATEGY.md) to understand game objectives
+2. **Learn the Architecture**: Review [Architecture](docs/architecture/ARCHITECTURE.md) for bot logic design
+3. **Explore Implementation**: Check [Implementation](docs/implementation/IMPLEMENTATION.md) for TypeScript details
+4. **Use the Framework**: Browse [Framework](docs/framework/FRAMEWORK.md) for reusable tools
+5. **Follow Development Process**: See [WORK_PROMPT.md](docs/development/WORK_PROMPT.md) for workflow
 
-See [`FEATURES.md`](FEATURES.md) for current development focus, completed features, and planned roadmap.
+## Key Features
 
-### Contributing
+### Advanced Energy Management
+- **Storage-Aware Builders & Upgraders**: Intelligent choice between harvesting vs withdrawing from storage
+- **Smart Harvester Storage Logic**: Harvesters deposit into storage when infrastructure supports it
+- **Infrastructure Analysis**: Room condition assessment for optimal energy flow strategies
+- **Extension-Aware Spawning**: Dynamic body scaling based on total room energy capacity
 
-1. Check [`FEATURES.md`](FEATURES.md) for current development focus
-2. Read [`ARCHITECTURE.md`](ARCHITECTURE.md) for code patterns and structure
-3. Follow the single-file tracking system for all development work
-4. Ensure tests pass: `npm run test`
-5. Validate code quality: `npm run pre-commit`
-
-**For AI developers**: See [`WORK_PROMPT.md`](WORK_PROMPT.md) for specialized development workflow guidance.
-
-## Architecture
-
-### Core Systems
-- **Advanced Energy Management** (`src/utils/EnergySourceManager.ts`, enhanced task system)
-- **Role Management** (`src/utils/RoleManager.ts`, comprehensive spawning and body generation)
-- **Project/Task Framework** (`src/projects/`, `src/tasks/` - includes BuilderProject, road rebuilding)
-- **Source Planning** (`src/planners/SourcePlanner.ts`, capacity-based assignment)
-- **Memory Management** (`src/utils/MemoryBackedClass.ts`, sophisticated persistence)
-- **Runtime Extensions** (`src/extensions/`, enhanced Creep capabilities)
+### Comprehensive Role System
+- **Builder Role**: Construction and repair with RCL-aware scaling and road rebuilding
+- **Harvester Role**: Energy gathering with source assignment and storage integration
+- **Upgrader Role**: Controller upgrading with storage energy withdrawal
+- **Dynamic Quotas**: Role counts adjust based on room conditions and infrastructure
 
 ### Testing Infrastructure
-- **Unit Tests** for individual components (279 passing tests)
-- **Integration Tests** for component interactions and build pipeline
-- **Functional Tests** using containerized ARM64 Screeps server
-- **RCL Progression Tests** covering all Room Control Levels (1-8)
-- **Code Execution Validation** via test markers and memory monitoring
-- **Performance Testing** and scalability validation
+- **279 Unit Tests**: Fast component testing with comprehensive coverage
+- **Integration Tests**: Component interaction validation
+- **Functional Tests**: End-to-end validation in real Screeps server environment
+- **RCL Progression Tests**: Validation across all Room Control Levels (1-8)
 
-See [`TESTING.md`](TESTING.md) for complete testing guide.
+### Development Framework
+- **Project/Task Architecture**: Hierarchical behavior system for creep management
+- **Memory Management**: MemoryBackedClass for persistent state across ticks
+- **Runtime Extensions**: Clean API additions to Screeps objects
+- **Type Safety**: Full TypeScript with strict checking and modern features
+
+## Current Status
+
+- **Production Ready**: Complete energy management and role systems
+- **Comprehensive Testing**: 279+ tests covering unit, integration, and functional validation
+- **Clean Architecture**: Well-separated concerns with clear documentation hierarchy
+- **Active Development**: See [FEATURES.md](docs/development/FEATURES.md) for current focus
+
+## Architecture Overview
+
+The bot uses a three-layer hierarchy:
+
+1. **Planners** (Strategic): Make high-level decisions across rooms (SourcePlanner, RoleManager)
+2. **Projects** (Tactical): Manage long-term creep roles (HarvestEnergyProject, BuilderProject)
+3. **Tasks** (Operational): Handle specific actions (HarvestEnergyTask, BuildTask)
+
+This separation enables clear testing at each level and flexible adaptation to changing game conditions.
+
+## Development Workflow
+
+This project uses a **documentation-driven development** approach:
+
+1. **Strategy First**: Define what you want to achieve in game terms
+2. **Architecture Design**: Plan the bot logic to achieve those goals
+3. **Implementation**: Write TypeScript code following established patterns
+4. **Framework Evolution**: Extract reusable patterns for future use
+
+See [WORK_PROMPT.md](docs/development/WORK_PROMPT.md) for detailed development guidance.
 
 ## Links
 
