@@ -9,7 +9,23 @@ import sinon from "sinon";
 // @ts-expect-error we're just shoving in the necessary structures from the game
 global.FIND_MY_SPAWNS = 104;
 // @ts-expect-error we're just shoving in the necessary structures from the game
+global.FIND_MY_STRUCTURES = 107;
+// @ts-expect-error we're just shoving in the necessary structures from the game
+global.FIND_STRUCTURES = 111;
+// @ts-expect-error we're just shoving in the necessary structures from the game
+global.STRUCTURE_SPAWN = "spawn";
+// @ts-expect-error we're just shoving in the necessary structures from the game
+global.STRUCTURE_EXTENSION = "extension";
+// @ts-expect-error we're just shoving in the necessary structures from the game
+global.STRUCTURE_CONTAINER = "container";
+// @ts-expect-error we're just shoving in the necessary structures from the game
+global.STRUCTURE_STORAGE = "storage";
+// @ts-expect-error we're just shoving in the necessary structures from the game
+global.STRUCTURE_TOWER = "tower";
+// @ts-expect-error we're just shoving in the necessary structures from the game
 global.RESOURCE_ENERGY = "energy";
+// @ts-expect-error we're just shoving in the necessary structures from the game
+global.OK = 0;
 
 describe("DepositEnergyTask", () => {
   beforeEach(() => {
@@ -29,7 +45,13 @@ describe("DepositEnergyTask", () => {
 
     beforeEach(() => {
       creep = new Creep("test" as Id<Creep>);
-      spawn = { id: "spawn1" } as StructureSpawn;
+      spawn = { 
+        id: "spawn1",
+        structureType: STRUCTURE_SPAWN,
+        store: {
+          getFreeCapacity: sinon.stub().returns(100)
+        }
+      } as any;
       config = {} as DepositEnergyTaskConfig;
 
       // Set up basic creep mocks
@@ -41,7 +63,14 @@ describe("DepositEnergyTask", () => {
       // @ts-expect-error we're just shoving in the necessary structures from the game
       creep.pos = {
         getRangeTo: sinon.stub() as any,
-        findClosestByRange: sinon.stub() as any
+        findClosestByRange: sinon.stub() as any,
+        findClosestByPath: sinon.stub() as any
+      };
+
+      // @ts-expect-error mocking room
+      creep.room = {
+        find: sinon.stub(),
+        storage: null
       };
 
       // Reset Game.getObjectById stub
@@ -55,6 +84,8 @@ describe("DepositEnergyTask", () => {
       (Game.getObjectById as sinon.SinonStub).withArgs(targetId).returns(spawn);
       // @ts-expect-error mocking
       creep.pos.getRangeTo.withArgs(spawn).returns(1);
+      // @ts-expect-error mocking
+      creep.transfer.withArgs(spawn, RESOURCE_ENERGY).returns(OK);
 
       DepositEnergyTask.run(creep, config);
 
@@ -64,9 +95,13 @@ describe("DepositEnergyTask", () => {
 
     it("should find closest spawn if no target in config", () => {
       // @ts-expect-error mocking
-      creep.pos.findClosestByRange.withArgs(FIND_MY_SPAWNS).returns(spawn);
+      creep.room.find.withArgs(FIND_MY_STRUCTURES).returns([spawn]);
+      // @ts-expect-error mocking
+      creep.pos.findClosestByPath.withArgs([spawn]).returns(spawn);
       // @ts-expect-error mocking
       creep.pos.getRangeTo.withArgs(spawn).returns(1);
+      // @ts-expect-error mocking
+      creep.transfer.withArgs(spawn, RESOURCE_ENERGY).returns(OK);
 
       DepositEnergyTask.run(creep, config);
 
@@ -81,9 +116,13 @@ describe("DepositEnergyTask", () => {
 
       (Game.getObjectById as sinon.SinonStub).withArgs(targetId).returns(null);
       // @ts-expect-error mocking
-      creep.pos.findClosestByRange.withArgs(FIND_MY_SPAWNS).returns(spawn);
+      creep.room.find.withArgs(FIND_MY_STRUCTURES).returns([spawn]);
+      // @ts-expect-error mocking
+      creep.pos.findClosestByPath.withArgs([spawn]).returns(spawn);
       // @ts-expect-error mocking
       creep.pos.getRangeTo.withArgs(spawn).returns(1);
+      // @ts-expect-error mocking
+      creep.transfer.withArgs(spawn, RESOURCE_ENERGY).returns(OK);
 
       DepositEnergyTask.run(creep, config);
 
@@ -94,7 +133,9 @@ describe("DepositEnergyTask", () => {
 
     it("should move to target if not in range", () => {
       // @ts-expect-error mocking
-      creep.pos.findClosestByRange.withArgs(FIND_MY_SPAWNS).returns(spawn);
+      creep.room.find.withArgs(FIND_MY_STRUCTURES).returns([spawn]);
+      // @ts-expect-error mocking
+      creep.pos.findClosestByPath.withArgs([spawn]).returns(spawn);
       // @ts-expect-error mocking
       creep.pos.getRangeTo.withArgs(spawn).returns(3); // Out of range
 
@@ -107,9 +148,13 @@ describe("DepositEnergyTask", () => {
 
     it("should transfer and stop when in range", () => {
       // @ts-expect-error mocking
-      creep.pos.findClosestByRange.withArgs(FIND_MY_SPAWNS).returns(spawn);
+      creep.room.find.withArgs(FIND_MY_STRUCTURES).returns([spawn]);
+      // @ts-expect-error mocking
+      creep.pos.findClosestByPath.withArgs([spawn]).returns(spawn);
       // @ts-expect-error mocking
       creep.pos.getRangeTo.withArgs(spawn).returns(1); // In range
+      // @ts-expect-error mocking
+      creep.transfer.withArgs(spawn, RESOURCE_ENERGY).returns(OK);
 
       DepositEnergyTask.run(creep, config);
 
@@ -120,13 +165,15 @@ describe("DepositEnergyTask", () => {
 
     it("should handle case when no spawn is found", () => {
       // @ts-expect-error mocking
-      creep.pos.findClosestByRange.withArgs(FIND_MY_SPAWNS).returns(null);
+      creep.room.find.withArgs(FIND_MY_STRUCTURES).returns([]);
+      // @ts-expect-error mocking
+      creep.room.find.withArgs(FIND_STRUCTURES).returns([]);
 
       DepositEnergyTask.run(creep, config);
 
       assert.isFalse((creep.moveTo as sinon.SinonStub).called);
       assert.isFalse((creep.transfer as sinon.SinonStub).called);
-      assert.isFalse((creep.stopTask as sinon.SinonStub).called);
+      assert.isTrue((creep.stopTask as sinon.SinonStub).called);
     });
   });
 

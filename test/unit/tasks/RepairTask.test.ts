@@ -4,6 +4,7 @@ import { use } from "chai";
 import sinonChai from "sinon-chai";
 import { RepairTask } from "../../../src/tasks/RepairTask";
 import { TaskHelpers, TaskBehaviorSymbol } from "../../../src/tasks/Task";
+import { globalsSetup, globalsCleanup } from "../../unit/globals";
 
 use(sinonChai);
 
@@ -22,6 +23,7 @@ describe("RepairTask", () => {
   let sandbox: sinon.SinonSandbox;
 
   beforeEach(() => {
+    globalsSetup();
     sandbox = sinon.createSandbox();
     sandbox.stub(TaskHelpers, "start");
     
@@ -61,6 +63,7 @@ describe("RepairTask", () => {
 
   afterEach(() => {
     sandbox.restore();
+    globalsCleanup();
   });
 
   describe("task properties", () => {

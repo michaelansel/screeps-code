@@ -6,5 +6,6 @@ declare global {
   interface CreepMemoryExtension {
     project?: Tasking.CreepProjectMemory; // CreepTaskingExtension
     task?: Tasking.CreepTaskMemory; // CreepTaskingExtension
+    role?: string; // Role name for emergency fallback and debugging
   }
 }

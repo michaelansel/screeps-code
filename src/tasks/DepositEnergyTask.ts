@@ -7,6 +7,9 @@ const DepositEnergyTaskId = "DepositEnergyTask" as TaskId;
 export interface DepositEnergyTaskConfig extends TaskConfig<typeof DepositEnergyTaskId> {
   target?: Id<Structure>;
   prioritizeStorage?: boolean; // When true, prefer storage over spawn/extensions
+  haulerPriority?: boolean; // When true, use hauler-specific priority (spawn/ext > towers > storage)
+  emergencyMode?: boolean; // When true, only target spawn/extensions
+  preferContainers?: boolean; // When true, prefer containers over other targets
 }
 
 const logger = Logger.get("DepositEnergyTask");
@@ -33,7 +36,7 @@ const DepositEnergyTaskBehavior: TaskBehavior<typeof DepositEnergyTaskId> = {
 
     // Find new target if we don't have one
     if (!target) {
-      target = this.findBestEnergyTarget(creep, config?.prioritizeStorage || false);
+      target = this.findBestEnergyTarget(creep, config);
     }
 
     // Save the target if we found one
@@ -62,7 +65,7 @@ const DepositEnergyTaskBehavior: TaskBehavior<typeof DepositEnergyTaskId> = {
   /**
    * Find the best target for energy deposit based on priority rules
    */
-  findBestEnergyTarget(creep: Creep, prioritizeStorage: boolean): Structure | null {
+  findBestEnergyTarget(creep: Creep, config?: DepositEnergyTaskConfig): Structure | null {
     const room = creep.room;
     
     // Handle test environments where room might not have find method
@@ -73,8 +76,67 @@ const DepositEnergyTaskBehavior: TaskBehavior<typeof DepositEnergyTaskId> = {
       }
       return null;
     }
+
+    // Emergency mode: only target spawn/extensions
+    if (config?.emergencyMode) {
+      const spawnsAndExtensions = room.find(FIND_MY_STRUCTURES, {
+        filter: (structure): structure is StructureSpawn | StructureExtension => 
+          (structure.structureType === STRUCTURE_SPAWN || 
+           structure.structureType === STRUCTURE_EXTENSION) &&
+          this.canAcceptEnergy(structure)
+      });
+      return spawnsAndExtensions.length > 0 ? 
+        creep.pos.findClosestByPath(spawnsAndExtensions) : null;
+    }
+
+    // Prefer containers mode (for harvesters when no emergency)
+    if (config?.preferContainers) {
+      const containers = room.find(FIND_STRUCTURES, {
+        filter: (structure): structure is StructureContainer =>
+          structure.structureType === STRUCTURE_CONTAINER &&
+          this.canAcceptEnergy(structure)
+      });
+      if (containers.length > 0) {
+        return creep.pos.findClosestByPath(containers);
+      }
+    }
+
+    // Hauler priority mode: spawn/ext > towers > storage
+    if (config?.haulerPriority) {
+      // Priority 1: Spawns and Extensions
+      const spawnsAndExtensions = room.find(FIND_MY_STRUCTURES, {
+        filter: (structure): structure is StructureSpawn | StructureExtension => 
+          (structure.structureType === STRUCTURE_SPAWN || 
+           structure.structureType === STRUCTURE_EXTENSION) &&
+          this.canAcceptEnergy(structure)
+      });
+
+      if (spawnsAndExtensions.length > 0) {
+        return creep.pos.findClosestByPath(spawnsAndExtensions);
+      }
+
+      // Priority 2: Towers (higher priority for haulers)
+      const towers = room.find(FIND_MY_STRUCTURES, {
+        filter: (structure): structure is StructureTower =>
+          structure.structureType === STRUCTURE_TOWER &&
+          this.canAcceptEnergy(structure)
+      });
+
+      if (towers.length > 0) {
+        return creep.pos.findClosestByPath(towers);
+      }
+
+      // Priority 3: Storage
+      const storage = room.storage;
+      if (storage && this.canAcceptEnergy(storage)) {
+        return storage;
+      }
+
+      return null;
+    }
     
-    if (prioritizeStorage) {
+    // Standard priority mode (existing logic)
+    if (config?.prioritizeStorage) {
       // Check storage first when prioritizing it
       const storage = room.storage;
       if (storage && this.canAcceptEnergy(storage)) {
@@ -107,7 +169,7 @@ const DepositEnergyTaskBehavior: TaskBehavior<typeof DepositEnergyTaskId> = {
     }
 
     // Priority 3: Storage (if not already prioritized)
-    if (!prioritizeStorage) {
+    if (!config?.prioritizeStorage) {
       const storage = room.storage;
       if (storage && this.canAcceptEnergy(storage)) {
         return storage;

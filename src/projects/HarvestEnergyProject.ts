@@ -4,6 +4,7 @@ import { ProjectBehaviorSymbol, ProjectHelpers } from "./Project";
 import { Logger } from "utils/Logger";
 import { shouldHarvesterUseStorage } from "../utils/EnergySourceManager";
 import type { DepositEnergyTaskConfig } from "../tasks/DepositEnergyTask";
+import { EmergencyManager, EmergencyLevel } from "../utils/EmergencyManager";
 
 const logger = Logger.get("HarvestEnergyProject");
 
@@ -21,15 +22,32 @@ const HarvestEnergyProjectBehavior: ProjectBehavior<typeof HarvestEnergyProjectI
     logger.info(`Executing ${this.id} for ${creep.name}`);
 
     if (creep.isFullOfEnergy) {
-      // Determine deposit strategy based on room infrastructure
-      const useStorage = shouldHarvesterUseStorage(creep.room);
+      const emergencyLevel = EmergencyManager.getEmergencyLevel(creep.room);
       
-      if (useStorage) {
-        // Prioritize storage when infrastructure supports it
-        creep.startTask(tasks.DepositEnergyTask, { prioritizeStorage: true } as DepositEnergyTaskConfig);
+      // Emergency mode: harvesters help with spawn/extension energy
+      if (emergencyLevel === EmergencyLevel.CRITICAL) {
+        logger.info(`${creep.name} activating emergency deposit mode`);
+        creep.startTask(tasks.DepositEnergyTask, { 
+          emergencyMode: true 
+        } as DepositEnergyTaskConfig);
       } else {
-        // Default priority: spawn/extensions first
-        creep.startTask(tasks.DepositEnergyTask);
+        // Normal mode: check if we should use containers or storage
+        const useStorage = shouldHarvesterUseStorage(creep.room);
+        
+        if (useStorage) {
+          // Prioritize storage when infrastructure supports it
+          creep.startTask(tasks.DepositEnergyTask, { 
+            prioritizeStorage: true 
+          } as DepositEnergyTaskConfig);
+        } else if (emergencyLevel === EmergencyLevel.NORMAL) {
+          // When haulers are active, prefer containers
+          creep.startTask(tasks.DepositEnergyTask, { 
+            preferContainers: true 
+          } as DepositEnergyTaskConfig);
+        } else {
+          // Default priority: spawn/extensions first
+          creep.startTask(tasks.DepositEnergyTask);
+        }
       }
     } else {
       creep.startTask(tasks.HarvestEnergyTask);

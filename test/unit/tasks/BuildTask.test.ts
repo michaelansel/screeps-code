@@ -4,6 +4,7 @@ import { use } from "chai";
 import sinonChai from "sinon-chai";
 import { BuildTask } from "../../../src/tasks/BuildTask";
 import { TaskHelpers, TaskBehaviorSymbol } from "../../../src/tasks/Task";
+import { globalsSetup, globalsCleanup } from "../../unit/globals";
 
 use(sinonChai);
 
@@ -21,6 +22,7 @@ describe("BuildTask", () => {
   let sandbox: sinon.SinonSandbox;
 
   beforeEach(() => {
+    globalsSetup();
     sandbox = sinon.createSandbox();
     sandbox.stub(TaskHelpers, "start");
     
@@ -60,6 +62,7 @@ describe("BuildTask", () => {
 
   afterEach(() => {
     sandbox.restore();
+    globalsCleanup();
   });
 
   describe("task properties", () => {

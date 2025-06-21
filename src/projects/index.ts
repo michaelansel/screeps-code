@@ -17,3 +17,7 @@ export { UpgradeControllerProject };
 import { BuilderProject } from "./BuilderProject";
 registerProject(BuilderProject);
 export { BuilderProject };
+
+import { HaulerProject } from "./HaulerProject";
+registerProject(HaulerProject);
+export { HaulerProject };

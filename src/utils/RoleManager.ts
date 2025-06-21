@@ -1,17 +1,20 @@
 import { HarvestEnergyProject } from "../projects/HarvestEnergyProject";
 import { UpgradeControllerProject } from "../projects/UpgradeControllerProject";
 import { BuilderProject } from "../projects/BuilderProject";
+import { HaulerProject } from "../projects/HaulerProject";
 
 export interface RoleQuotas {
   harvesters: number;
   upgraders: number;
   builders: number;
+  haulers: number;
 }
 
 export interface RoleCounts {
   harvesters: number;
   upgraders: number;
   builders: number;
+  haulers: number;
 }
 
 export class RoleManager {
@@ -74,7 +77,8 @@ export class RoleManager {
     const quotas: RoleQuotas = {
       harvesters: Math.max(2, sources.length), // At least 2, or 1 per source
       upgraders: 0,
-      builders: 0
+      builders: 0,
+      haulers: 0
     };
 
     // Add upgraders if we have a controller
@@ -105,6 +109,20 @@ export class RoleManager {
           quotas.builders = 1; // Just one builder at low RCL
         }
       }
+
+      // Add haulers when we have containers
+      const containers = room.find(FIND_STRUCTURES, {
+        filter: s => s.structureType === STRUCTURE_CONTAINER
+      });
+      
+      if (containers.length > 0) {
+        // Scale haulers based on number of sources and RCL
+        if (controller.level >= 4) {
+          quotas.haulers = Math.min(sources.length * 2, 4); // 2 per source, max 4
+        } else {
+          quotas.haulers = sources.length; // 1 per source at low RCL
+        }
+      }
     }
 
     return quotas;
@@ -117,7 +135,8 @@ export class RoleManager {
     const counts: RoleCounts = {
       harvesters: 0,
       upgraders: 0,
-      builders: 0
+      builders: 0,
+      haulers: 0
     };
 
     for (const creepName in Game.creeps) {
@@ -129,6 +148,8 @@ export class RoleManager {
           counts.upgraders++;
         } else if (creep.memory.project?.id === BuilderProject.id) {
           counts.builders++;
+        } else if (creep.memory.project?.id === HaulerProject.id) {
+          counts.haulers++;
         }
       }
     }
@@ -143,7 +164,7 @@ export class RoleManager {
     const quotas = this.getDesiredQuotas(room);
     const counts = this.countCreepsByRole(room);
 
-    // Priority order: harvesters first, then builders, then upgraders
+    // Priority order: harvesters first, then haulers, then builders, then upgraders
     if (counts.harvesters < quotas.harvesters) {
       return {
         projectId: HarvestEnergyProject.id,
@@ -151,7 +172,15 @@ export class RoleManager {
       };
     }
 
-    // Builders second priority - construction is important for room development
+    // Haulers second priority - energy distribution is critical
+    if (counts.haulers < quotas.haulers) {
+      return {
+        projectId: HaulerProject.id,
+        roleName: "Hauler"
+      };
+    }
+
+    // Builders third priority - construction is important for room development
     if (counts.builders < quotas.builders) {
       return {
         projectId: BuilderProject.id,
@@ -187,6 +216,8 @@ export class RoleManager {
       return this.getBuilderBody(availableEnergy);
     } else if (projectId === UpgradeControllerProject.id) {
       return this.getUpgraderBody(availableEnergy);
+    } else if (projectId === HaulerProject.id) {
+      return this.getHaulerBody(availableEnergy);
     }
 
     // Fallback to basic body
@@ -194,28 +225,52 @@ export class RoleManager {
   }
 
   /**
-   * Generate optimized harvester body - prioritizes WORK parts for mining
+   * Generate optimized harvester body - static harvester design
    */
   private static getHarvesterBody(availableEnergy: number): BodyPartConstant[] {
     const body: BodyPartConstant[] = [];
     let remainingEnergy = availableEnergy;
 
-    // Start with minimum viable body
-    body.push(WORK, CARRY, MOVE);
-    remainingEnergy -= BODYPART_COST.work + BODYPART_COST.carry + BODYPART_COST.move;
+    // Check if we have containers (enables static harvesters)
+    // In test environments Game.rooms might not exist
+    const rooms = Game.rooms ? Object.values(Game.rooms) : [];
+    const room = rooms[0]; // TODO: Make this room-specific
+    const hasContainers = room && room.find && room.find(FIND_STRUCTURES, {
+      filter: s => s.structureType === STRUCTURE_CONTAINER
+    }).length > 0;
 
-    // Add more WORK parts for faster harvesting (up to 5 WORK parts max - source limit)
-    let workParts = 1;
-    while (remainingEnergy >= BODYPART_COST.work + BODYPART_COST.move && workParts < 5) {
-      body.push(WORK, MOVE);
-      remainingEnergy -= BODYPART_COST.work + BODYPART_COST.move;
-      workParts++;
-    }
+    if (hasContainers && availableEnergy >= 550) {
+      // Static harvester design: 5 WORK + 1 CARRY + 1 MOVE
+      // 5 WORK can fully drain a source (10 energy/tick)
+      // 1 CARRY for occasional container management
+      // 1 MOVE to reach the source
+      body.push(WORK, WORK, WORK, WORK, WORK, CARRY, MOVE);
+      remainingEnergy -= 550;
 
-    // Add extra CARRY parts if we have remaining energy
-    while (remainingEnergy >= BODYPART_COST.carry + BODYPART_COST.move && body.length < 49) {
-      body.push(CARRY, MOVE);
-      remainingEnergy -= BODYPART_COST.carry + BODYPART_COST.move;
+      // If we have extra energy, add another MOVE for better positioning
+      if (remainingEnergy >= 50) {
+        body.push(MOVE);
+        remainingEnergy -= 50;
+      }
+    } else {
+      // Fallback: Traditional harvester for no-container rooms
+      // Start with minimum viable body
+      body.push(WORK, CARRY, MOVE);
+      remainingEnergy -= BODYPART_COST.work + BODYPART_COST.carry + BODYPART_COST.move;
+
+      // Add more WORK parts for faster harvesting (up to 5 WORK parts max)
+      let workParts = 1;
+      while (remainingEnergy >= BODYPART_COST.work + BODYPART_COST.move && workParts < 5) {
+        body.push(WORK, MOVE);
+        remainingEnergy -= BODYPART_COST.work + BODYPART_COST.move;
+        workParts++;
+      }
+
+      // Add extra CARRY parts if we have remaining energy
+      while (remainingEnergy >= BODYPART_COST.carry + BODYPART_COST.move && body.length < 49) {
+        body.push(CARRY, MOVE);
+        remainingEnergy -= BODYPART_COST.carry + BODYPART_COST.move;
+      }
     }
 
     return body;
@@ -268,6 +323,38 @@ export class RoleManager {
     while (remainingEnergy >= BODYPART_COST.carry + BODYPART_COST.move && body.length < 49) {
       body.push(CARRY, MOVE);
       remainingEnergy -= BODYPART_COST.carry + BODYPART_COST.move;
+    }
+
+    return body;
+  }
+
+  /**
+   * Generate optimized hauler body - prioritizes CARRY and MOVE parts
+   */
+  private static getHaulerBody(availableEnergy: number): BodyPartConstant[] {
+    const body: BodyPartConstant[] = [];
+    let remainingEnergy = availableEnergy;
+
+    // Haulers use 2 CARRY + 1 MOVE pattern for efficient transport
+    // Start with minimum viable body (2 CARRY + 1 MOVE = 150 energy)
+    if (remainingEnergy >= 150) {
+      body.push(CARRY, CARRY, MOVE);
+      remainingEnergy -= 150;
+    } else {
+      // Fallback to basic body if can't afford hauler minimum
+      return [WORK, CARRY, MOVE];
+    }
+
+    // Add more 2 CARRY + 1 MOVE units for maximum hauling efficiency
+    while (remainingEnergy >= 150 && body.length <= 47) {
+      body.push(CARRY, CARRY, MOVE);
+      remainingEnergy -= 150;
+    }
+
+    // Use remaining energy for single CARRY + MOVE pairs if possible
+    while (remainingEnergy >= 100 && body.length < 49) {
+      body.push(CARRY, MOVE);
+      remainingEnergy -= 100;
     }
 
     return body;

@@ -6,6 +6,7 @@ import { ProjectId } from "./projects/Project.js";
 import { Logger } from "./utils/Logger.js";
 import { RoleManager } from "./utils/RoleManager.js";
 import { SourcePlanner } from "./planners/SourcePlanner.js";
+import { EmergencyManager } from "./utils/EmergencyManager.js";
 
 // @ts-expect-error Expose in the game console
 global.C = Console;
@@ -60,6 +61,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
   for (const room of Object.values(Game.rooms)) {
     console.log(`🏠 Room ${room.name}: RCL ${room.controller?.level || 0} | Sources: ${room.find(FIND_SOURCES).length} | Structures: ${room.find(FIND_STRUCTURES).length}`);
     SourcePlanner.instance.assignSources(room);
+    
+    // Update emergency state for hauler fallback system
+    EmergencyManager.updateEmergencyState(room);
   }
 
   // ========== SPAWNING SYSTEM ==========
@@ -91,7 +95,8 @@ export const loop = ErrorMapper.wrapLoop(() => {
           project: {
             id: nextRole.projectId as ProjectId,
             config: nextRole.config
-          }
+          },
+          role: nextRole.roleName.toLowerCase()
         };
 
         const newName = `${nextRole.roleName}${(++Memory.creepCounter).toString()}`;

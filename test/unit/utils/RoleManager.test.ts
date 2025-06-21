@@ -61,7 +61,8 @@ describe("RoleManager", () => {
       expect(quotas).to.deep.equal({
         harvesters: 2,
         upgraders: 0,
-        builders: 0
+        builders: 0,
+        haulers: 0
       });
     });
 
