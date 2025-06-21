@@ -27,13 +27,13 @@ export interface CreepTaskingExtension {
   // //// Tasks
 
   get task(): Task | null;
-  startTask(task: Task): void;
+  startTask<T extends TaskId>(task: TaskBehavior<T>, config?: TaskConfig<T>): void;
   stopTask(): void;
 
   // //// Projects
 
   get project(): Project | null;
-  startProject(project: Project): void;
+  startProject<T extends ProjectId>(project: ProjectBehavior<T>, config?: ProjectConfig<T>): void;
   stopProject(): void;
 }
 

@@ -36,8 +36,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     if (!creep.memory.project || !creep.memory.project.id) {
       console.log(`⚠️  FIXING: Creep ${name} has no project, assigning DoNothingProject`);
       creep.memory.project = {
-        id: "DoNothingProject" as ProjectId,
-        config: {}
+        id: "DoNothingProject" as ProjectId
       };
       creepStats.withoutProject++;
     } else {
@@ -46,7 +45,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
       creepStats.byProject[projectId] = (creepStats.byProject[projectId] || 0) + 1;
     }
 
-    console.log(`🤖 ${name}: ${creep.memory.project.id} | Energy: ${creep.store[RESOURCE_ENERGY]}/${creep.store.getCapacity()}`);
+    console.log(`🤖 ${name}: ${creep.memory.project?.id || 'NO PROJECT'} | Energy: ${creep.store[RESOURCE_ENERGY]}/${creep.store.getCapacity()}`);
     creep.run();
   }
 

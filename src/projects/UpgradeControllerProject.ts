@@ -1,6 +1,8 @@
 import { ProjectBehavior, ProjectBehaviorSymbol, ProjectConfig, ProjectHelpers, ProjectId } from "./Project";
 import { HarvestEnergyTask } from "../tasks/HarvestEnergyTask";
 import { UpgradeControllerTask } from "../tasks/UpgradeControllerTask";
+import type { HarvestEnergyTaskConfig } from "../tasks/HarvestEnergyTask";
+import type { UpgradeControllerTaskConfig } from "../tasks/UpgradeControllerTask";
 
 export const UpgradeControllerProjectId = "UpgradeControllerProject" as ProjectId;
 
@@ -27,7 +29,7 @@ export const UpgradeControllerProject: ProjectBehavior<typeof UpgradeControllerP
         // Just pick the first available source for now
         // TODO: Integrate with SourcePlanner for better assignment
         const source = sources[0];
-        creep.startTask(HarvestEnergyTask, { source: source.id });
+        creep.startTask(HarvestEnergyTask, { source: source.id } as HarvestEnergyTaskConfig);
       } else {
         // No sources available, stay idle
         console.log(`${creep.name}: No sources available for energy`);
@@ -37,7 +39,7 @@ export const UpgradeControllerProject: ProjectBehavior<typeof UpgradeControllerP
       if (config?.controller) {
         const controller = Game.getObjectById(config.controller);
         if (controller) {
-          creep.startTask(UpgradeControllerTask, { controller: config.controller });
+          creep.startTask(UpgradeControllerTask, { controller: config.controller } as UpgradeControllerTaskConfig);
         } else {
           console.log(`${creep.name}: Controller ${config.controller} not found`);
           // Could fall back to harvesting or idle behavior
@@ -46,7 +48,7 @@ export const UpgradeControllerProject: ProjectBehavior<typeof UpgradeControllerP
         // No controller specified in config, try to find room controller
         const controller = creep.room.controller;
         if (controller && controller.my) {
-          creep.startTask(UpgradeControllerTask, { controller: controller.id });
+          creep.startTask(UpgradeControllerTask, { controller: controller.id } as UpgradeControllerTaskConfig);
         } else {
           console.log(`${creep.name}: No controller available to upgrade`);
         }

@@ -13,7 +13,7 @@ const HarvestEnergyProjectBehavior: ProjectBehavior<typeof HarvestEnergyProjectI
   type: ProjectBehaviorSymbol,
   id: HarvestEnergyProjectId,
   start(creep: Creep, config?: HarvestEnergyProjectConfig): void {
-    ProjectHelpers.start(creep, this);
+    ProjectHelpers.start(creep, HarvestEnergyProjectBehavior, config);
   },
   run(creep: Creep, config?: HarvestEnergyProjectConfig): void {
     logger.info(`Executing ${this.id} for ${creep.name}`);
@@ -25,7 +25,7 @@ const HarvestEnergyProjectBehavior: ProjectBehavior<typeof HarvestEnergyProjectI
     }
   },
   stop(creep: Creep): void {
-    ProjectHelpers.stop(creep, this);
+    ProjectHelpers.stop(creep);
   }
 };
 

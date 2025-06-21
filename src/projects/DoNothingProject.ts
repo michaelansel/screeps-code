@@ -9,11 +9,11 @@ const DoNothingProjectBehavior: ProjectBehavior<typeof DoNothingProjectId> = {
   type: ProjectBehaviorSymbol,
   id: DoNothingProjectId,
   start(creep: Creep, config?: DoNothingProjectConfig): void {
-    ProjectHelpers.start(creep, this);
+    ProjectHelpers.start(creep, DoNothingProjectBehavior, config);
   },
   run(creep: Creep, config?: DoNothingProjectConfig): void {},
   stop(creep: Creep): void {
-    ProjectHelpers.stop(creep, this);
+    ProjectHelpers.stop(creep);
   }
 };
 
