@@ -44,6 +44,7 @@ This project uses `FEATURES.md` as the **single source of truth** for all develo
 - ✅ **Infrastructure Assessment**: Analyzes hauler support, energy reserves, and room maturity
 - ✅ **Storage Prioritization**: Harvesters use storage when spawn/extensions are well-supplied (>80%)
 - ✅ **Reliable Hauler Detection**: Identifies mature energy distribution systems
+- ✅ **Opportunistic Energy Collection**: All creeps automatically collect dropped energy and tombstones while moving
 
 ### Road Rebuilding System ✅
 - ✅ **Automatic Detection**: Identifies missing roads on key paths (spawn↔sources, spawn↔controller, spawn↔extensions)

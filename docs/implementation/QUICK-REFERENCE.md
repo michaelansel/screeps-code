@@ -112,6 +112,13 @@ export const MyTask: TaskBehavior<typeof MyTaskId> = {
 
 // 4. Register the task
 registerTask(MyTask);
+
+// Example: PickupEnergyTask with multiple target types
+export interface PickupEnergyTaskConfig extends TaskConfig<typeof PickupEnergyTaskId> {
+  target?: Id<Resource<ResourceConstant> | Tombstone>;
+  targetType?: 'resource' | 'tombstone';
+  maxRange?: number;
+}
 ```
 
 ### Using MemoryBackedClass
@@ -187,6 +194,12 @@ if (shouldHarvesterUseStorage(room)) {
 } else {
   // Default priority: spawn/extensions first
   creep.startTask(DepositEnergyTask);
+}
+
+// Opportunistic energy collection (automatic for all creeps)
+if (typeof creep.checkForNearbyEnergy === 'function' && creep.checkForNearbyEnergy()) {
+  // Pickup task automatically started, will return to primary task when done
+  return;
 }
 ```
 

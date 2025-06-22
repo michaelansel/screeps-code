@@ -37,7 +37,7 @@ Our documentation is organized by concern level:
 
 ## Current Features
 
-- Energy management with storage-aware harvesting and building
+- Energy management with storage-aware harvesting, opportunistic pickup, and building
 - Dynamic role system (harvester, builder, upgrader) with RCL-based scaling
 - Project/Task architecture for organized creep behavior
 - Comprehensive test suite (unit, integration, and functional tests)

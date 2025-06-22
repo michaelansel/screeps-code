@@ -27,6 +27,7 @@ Tasks are specific, short-term actions that make progress toward project goals:
 - **HarvestEnergyTask**: Move to source and harvest energy
 - **DepositEnergyTask**: Transfer energy to spawn, extensions, or storage
 - **WithdrawEnergyTask**: Collect energy from storage or containers
+- **PickupEnergyTask**: Collect dropped energy resources and tombstones opportunistically
 - **BuildTask**: Construct buildings or repair structures
 - **UpgradeControllerTask**: Upgrade room controller with carried energy
 
@@ -56,7 +57,8 @@ The bot implements intelligent energy flow strategies:
 **Energy Acquisition Strategy**:
 - Early game: Direct harvesting from sources
 - Mid game: Storage-based withdrawal when infrastructure supports it
-- Decision factors: Storage levels, hauler reliability, spawn/extension status
+- All phases: Opportunistic collection of dropped energy and tombstones
+- Decision factors: Storage levels, hauler reliability, spawn/extension status, available dropped energy
 
 **Energy Distribution Priority**:
 1. Spawn and Extensions (critical for spawning)

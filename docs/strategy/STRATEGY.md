@@ -1,108 +1,202 @@
 # Game Strategy
 
-This document defines what we want to achieve in the Screeps game world, using game terminology and describing desired behaviors regardless of implementation details.
+This document defines our opinionated approach to Screeps gameplay. Every decision here represents a specific choice with trade-offs we've explicitly accepted.
 
-## Core Game Objectives
+## Core Philosophy: Speed Over Efficiency
 
-### Energy Economy
-- **Harvest energy at generation rate**: Each energy source should have enough harvesters to extract energy as fast as it regenerates (10 energy per tick)
-- **Minimize energy waste**: Energy should flow efficiently from sources to consumers without accumulation bottlenecks
-- **Scale energy capacity with RCL**: Higher room control levels should support larger energy throughput and storage
+We optimize for reaching higher RCLs as fast as possible, even at the cost of energy efficiency. This means:
+- We accept 50% energy waste if it means 20% faster RCL progression
+- We spawn smaller, less efficient creeps if it reduces spawn downtime
+- We delay infrastructure that doesn't directly accelerate RCL advancement
 
-### Room Control Level Progression
-- **Upgrade controllers as fast as possible**: Controllers should receive constant energy flow when resources allow
-- **Build optimal layouts for each RCL**: Structure placement should optimize for current RCL needs and prepare for next level
-- **Prioritize critical structures**: Extensions and spawns first, then storage and infrastructure, finally luxury structures
+## Energy Economy Rules
 
-### Resource Management Strategy
-- **RCL 1-3 (Survival Phase)**: Focus on basic energy harvesting, spawning, and essential construction
-- **RCL 4-6 (Growth Phase)**: Develop infrastructure, roads, containers, and storage systems
-- **RCL 7-8 (Optimization Phase)**: Advanced logistics, terminals, labs, and efficiency maximization
+### Source Harvesting
+- **1 dedicated harvester per source** with exactly 5 WORK parts (once affordable)
+- **No shared harvesters** - each source gets its own dedicated creep
+- **Container mining only after RCL3** - before that, harvesters carry their own energy
+- **Static harvesters after RCL4** - harvesters with no CARRY/MOVE, just WORK parts
+- **Opportunistic energy collection** - all creeps collect dropped energy and tombstones when convenient
 
-### Defensive Strategy
-- **Build fortifications progressively**: Walls and ramparts based on threat level and available resources
-- **Maintain tower energy reserves**: Towers should always have energy available for emergency defense
-- **Scale defensive structures with room value**: More valuable rooms justify stronger defenses
+### Energy Ratios
+- **RCL1-2**: 100% of energy to controller upgrades (survival minimum only)
+- **RCL3-5**: 80% upgrading, 20% construction/defense
+- **RCL6+**: 60% upgrading, 30% construction, 10% defense
+- **Never below 50% to upgrading** until RCL8
 
-## Operational Behaviors
+### Storage Rules
+- **No storage before 10,000 sustained energy/tick income** (typically RCL4)
+- **Storage placement**: Exactly 1 tile from controller, 2 tiles from sources
+- **Minimum storage reserve**: 50,000 energy (tower defense buffer)
+- **Maximum storage**: 500,000 energy (build terminal after this)
 
-### Spawning Priorities
-1. **Harvesters first**: Ensure energy income before other roles
-2. **Builders for infrastructure**: When construction sites exist and energy allows
-3. **Upgraders for progression**: Use excess energy for controller advancement
-4. **Specialized roles**: Haulers, defenders, remote miners as room matures
+## Creep Design Principles
 
-### Construction Strategy
-- **Critical repairs before construction**: Maintain existing infrastructure health
-- **Roads for efficiency**: Build road networks between spawn, sources, and controller
-- **Extensions for larger creeps**: Prioritize extensions to enable bigger, more efficient creeps
-- **Storage when energy accumulates**: Build storage when harvesting exceeds consumption
+### Body Part Ratios
+- **Harvesters**: Maximum WORK, minimal CARRY (1-2), balanced MOVE
+- **Upgraders**: 1:1 WORK:CARRY ratio, 1 MOVE per 2 other parts
+- **Builders**: 1:1:1 WORK:CARRY:MOVE for flexibility
+- **Haulers**: 0 WORK, 2:1 CARRY:MOVE ratio
 
-### Work Assignment Logic
-- **Construction over repair**: Build new infrastructure before repairing unless critical (sub-10% health)
-- **Emergency repairs priority**: Damaged spawns, extensions, or critical structures get immediate attention
-- **Infrastructure before luxury**: Essential structures (spawn, extensions, storage) before walls, decorations
+### Creep Sizes by RCL
+- **RCL1**: 3-part creeps only ([WORK,CARRY,MOVE])
+- **RCL2**: 6-part creeps maximum (300 capacity)
+- **RCL3**: 10-part creeps (550 capacity)
+- **RCL4+**: Scale to available energy, max 15 parts until RCL7
 
-### Energy Flow Strategy
-- **Direct delivery in early game**: Harvesters deliver directly to spawn and extensions
-- **Storage-based logistics in mid game**: Use storage and dedicated haulers when infrastructure supports it
-- **Link networks in late game**: Minimize creep movement with link-based energy distribution
+### Spawn Time Optimization
+- **Never spawn a creep that takes >500 ticks** (except harvesters)
+- **Prefer 2 small creeps over 1 large creep** if spawn time < 75% combined
+- **Emergency rule**: If no harvesters exist, spawn 3-part immediately
 
-## RCL-Specific Goals
+## Construction Priority Algorithm
 
-### RCL 1: Survival
-- Maintain 2+ harvesters for energy security
-- Build 1-2 upgraders for progression
-- Construct essential extensions immediately
-- Begin road network to sources
+1. **Extensions** (100% priority until all built for current RCL)
+2. **Containers at sources** (only after all extensions)
+3. **Roads** in this exact order:
+   - Spawn to sources (straight line only)
+   - Sources to controller
+   - Spawn to controller
+   - Everything else is luxury
+4. **Storage** (only when energy income exceeds 10k/tick)
+5. **Towers** (1 per 100,000 lifetime energy harvested)
+6. **Walls/Ramparts** (never before RCL4, max 10k hits until RCL6)
 
-### RCL 2-3: Foundation
-- Scale to 4-6 total creeps based on energy capacity
-- Complete road network between key structures
-- Build containers at source positions
-- Establish basic construction workflow
+### What We DON'T Build
+- **No containers at controller** - upgraders should pull from storage/spawn
+- **No roads in mineral fields** - not worth the maintenance
+- **No ramparts on non-critical structures** - only spawn, storage, towers
+- **No labs until RCL7** - focus on economy first
 
-### RCL 4-5: Infrastructure
-- Implement storage-based energy economy
-- Build comprehensive road networks
-- Scale creep counts based on infrastructure capacity
-- Begin defensive preparations
+## RCL-Specific Strategies
 
-### RCL 6-8: Optimization
-- Maximize energy throughput efficiency
-- Implement advanced logistics systems
-- Build complete defensive networks
-- Optimize for specific room objectives (economy, military, research)
+### RCL1: The 200-Tick Sprint
+- **Target**: Reach RCL2 in <15,000 ticks (concrete goal)
+- **Creep mix**: 2-3 harvesters, 1-2 upgraders, all 3-part
+- **Zero construction** - not even roads
+- **Spawn pattern**: Harvester → Upgrader → Harvester → repeat
+- **Failure condition**: If not RCL2 by 20,000 ticks, something is wrong
 
-## Victory Conditions
+### RCL2: Extension Rush
+- **First 1,000 ticks**: Build all 5 extensions, nothing else
+- **Creep transition**: Start spawning 6-part creeps immediately
+- **Target creep count**: 4 harvesters, 3 upgraders
+- **First road**: Only after all extensions done
 
-### Short-term Success Metrics
-- **Energy positive**: More energy harvested than consumed
-- **Stable population**: Consistent creep count appropriate for RCL
-- **Infrastructure growth**: New structures built when resources allow
-- **Controller progression**: Regular controller upgrades
+### RCL3: Container Economy
+- **Containers at sources first** (within 2,000 ticks of RCL3)
+- **Static harvesters**: Transition to 5-WORK, 1-CARRY, 3-MOVE design
+- **Add haulers**: 1 hauler per 2 sources minimum
+- **Road network**: Complete spawn-source-controller triangle
 
-### Long-term Success Metrics
-- **RCL advancement**: Progressing through room control levels efficiently
-- **Economic surplus**: Accumulating energy for expansion or advanced operations
-- **Defensive security**: Surviving attacks and protecting assets
-- **Multi-room expansion**: Successfully claiming and developing additional rooms
+### RCL4: Storage Transition
+- **Storage placement**: Pre-plan at RCL3, build immediately at RCL4
+- **Creep redesign**: All creeps pull from storage, not sources
+- **Link preparation**: Plan link placement, don't build yet
+- **Tower placement**: First tower 3 tiles from storage
 
-## Adaptation Strategies
+### RCL5-6: Infrastructure Maturity
+- **Link network**: Source links first, controller link second
+- **Terminal planning**: Identify location but don't build
+- **Rampart critical structures**: 100k hits on spawn/storage
+- **Begin remote mining**: Only rooms ≤2 distance
 
-### Resource Constraints
-- **Low energy**: Prioritize harvesters over all other roles
-- **No construction sites**: Convert builders to upgraders temporarily
-- **Under attack**: Redirect builders to repair and tower supply
+### RCL7-8: Optimization Phase
+- **Lab complex**: 10-lab flower pattern only
+- **Power banking**: Only with dedicated squad design
+- **Market participation**: Energy sales only above 100k storage
+- **Factory integration**: Only for specific commodity chains
 
-### Infrastructure Failure
-- **Spawn damaged**: Emergency repair priority for builders
-- **Sources exhausted**: Implement emergency energy conservation
-- **Storage destroyed**: Revert to direct delivery logistics
+## Combat Philosophy
 
-### Growth Opportunities
-- **Energy surplus**: Increase upgrader count and construction activity
-- **Stable economy**: Begin advanced structure development
-- **Defensive security**: Consider expansion to additional rooms
+### Defense Priorities
+1. **Towers over creeps** - automated defense preferred
+2. **Economic damage mitigation** - protect harvesters/haulers first
+3. **Let them take the walls** - ramparts are renewable
+4. **Safe mode threshold**: Use at <50% spawn health
 
-This strategy focuses purely on game objectives and desired behaviors, providing the foundation for architectural and implementation decisions that achieve these goals in the Screeps game world.
+### Military Spending
+- **0% military budget** until RCL4
+- **Max 10% energy on defense** at RCL4-6
+- **Max 20% at RCL7+** unless under active siege
+- **No preemptive attacks** - defense only until RCL8
+
+## Opportunistic Energy Collection
+
+### Collection Behavior Rules
+- **Haulers**: Always collect dropped energy within 5 tiles - highest priority
+- **Harvesters**: Collect nearby energy within 2 tiles when not full
+- **Upgraders**: Collect energy when they have free capacity within 3 tiles  
+- **Builders**: Collect energy when below 50% capacity within 4 tiles
+- **Minimum threshold**: Only collect >10 energy unless very close (1 tile)
+
+### Target Priority
+1. **Dropped resources** and **tombstones** treated equally
+2. **Closest energy source** wins regardless of type
+3. **Never interrupt critical tasks** - only when idle or moving
+4. **Automatic task switching** - seamlessly return to primary task after collection
+
+### Energy Source Types
+- **Dropped energy resources** - picked up with `pickup()` action
+- **Tombstones with energy** - energy withdrawn with `withdraw()` action
+- **Both types searched simultaneously** within specified range per role
+
+## Anti-Patterns We Explicitly Reject
+
+### Things We DON'T Do
+- **No early remote mining** - not worth it before RCL4
+- **No upgrader containers** - creates unnecessary hauling overhead
+- **No distributed spawning** - centralize around primary spawn
+- **No early market trading** - focus on internal economy
+- **No repairing above 50%** unless critical structure
+- **No aesthetic building** - purely functional layouts
+
+### Common Mistakes We Avoid
+- **Over-defending**: 1 tower is enough until RCL6
+- **Perfectionist road placement**: Straight lines are fine
+- **Creep role proliferation**: Maximum 4 roles until RCL6
+- **Early terminal usage**: Costs too much energy in transfer fees
+
+## Failure Recovery Procedures
+
+### Creep Wipeout Recovery
+1. **Tick 1-300**: Spawn [WORK,CARRY,MOVE] harvester
+2. **Tick 301-600**: Second harvester if energy allows
+3. **Tick 601+**: Resume normal operations
+4. **Never**: Panic-spawn military units
+
+### Economic Collapse
+- **Energy debt**: Sell all non-WORK creep parts for energy
+- **Spawn blocked**: Manually remove construction sites
+- **Controller downgrade**: Accept it, focus on energy first
+
+## Success Metrics
+
+### Hard Numbers We Track
+- **RCL2 by tick**: 15,000 (good), 20,000 (acceptable), 25,000+ (failure)
+- **Energy per tick at RCL4**: 20+ (good), 15+ (acceptable), <15 (failure)
+- **Upgrade rate**: 15 energy/tick minimum at all RCLs
+- **Spawn utilization**: >80% active spawning time
+- **CPU per room**: <10 CPU average, <20 CPU spike
+
+### What We DON'T Measure
+- **Energy efficiency** - speed matters more
+- **Creep lifetime** - they're disposable
+- **Road usage** - approximate placement is fine
+- **Defense success rate** - safe mode exists
+
+## Trade-Off Decisions
+
+### We Choose Speed
+- **Fast spawning over optimal creeps**: 300 tick spawn max
+- **Direct paths over efficient paths**: CPU and simplicity win
+- **More creeps over better creeps**: Until CPU limited
+- **Upgrade constantly over save for burst**: Consistent progress
+
+### We Choose Simplicity
+- **Fixed ratios over dynamic calculation**: 2:1 harvester:upgrader
+- **Hard thresholds over gradual transitions**: RCL4 = storage, period
+- **Central planning over distributed decisions**: One brain model
+- **Predictable over optimal**: Same build order every room
+
+This strategy represents strong opinions loosely held. Every rule can be broken, but only with explicit justification.

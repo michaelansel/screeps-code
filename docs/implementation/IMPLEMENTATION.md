@@ -79,6 +79,12 @@ export interface TaskBehavior<T extends TaskId> {
 export interface HarvestEnergyTaskConfig extends TaskConfig<typeof HarvestEnergyTaskId> {
   source: Id<Source>;
 }
+
+export interface PickupEnergyTaskConfig extends TaskConfig<typeof PickupEnergyTaskId> {
+  target?: Id<Resource<ResourceConstant> | Tombstone>;
+  targetType?: 'resource' | 'tombstone';
+  maxRange?: number;
+}
 ```
 
 ### Memory System
