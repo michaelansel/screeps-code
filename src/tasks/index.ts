@@ -36,3 +36,8 @@ import { WithdrawEnergyTask } from "./WithdrawEnergyTask";
 registerTask(WithdrawEnergyTask);
 export { WithdrawEnergyTask };
 export type { WithdrawEnergyTaskConfig } from "./WithdrawEnergyTask";
+
+import { PickupEnergyTask } from "./PickupEnergyTask";
+registerTask(PickupEnergyTask);
+export { PickupEnergyTask };
+export type { PickupEnergyTaskConfig } from "./PickupEnergyTask";

@@ -168,6 +168,13 @@ export const BuilderProject: ProjectBehavior<typeof BuilderProjectId> = {
   },
 
   run(creep: Creep, config?: BuilderProjectConfig): void {
+    // Builders should pick up nearby energy when low on energy
+    if (typeof creep.checkForNearbyEnergy === 'function' && 
+        creep.store.getUsedCapacity(RESOURCE_ENERGY) < creep.store.getCapacity() * 0.5 && 
+        creep.checkForNearbyEnergy(4)) {
+      return; // Let the pickup task run
+    }
+
     // Determine what task the creep should be doing
     if (creep.store[RESOURCE_ENERGY] === 0) {
       // Creep needs energy - choose between harvesting and withdrawing from storage

@@ -26,6 +26,11 @@ export const HaulerProject: ProjectBehavior<typeof HaulerProjectId> = {
       return;
     }
 
+    // Check for nearby dropped energy first (haulers should always pick up free energy)
+    if (typeof creep.checkForNearbyEnergy === 'function' && creep.checkForNearbyEnergy()) {
+      return; // Let the pickup task run
+    }
+
     // If we have energy, find somewhere to deposit it
     if (creep.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
       // Haulers prioritize spawn/extensions, then towers, then storage

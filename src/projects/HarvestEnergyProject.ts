@@ -21,6 +21,13 @@ const HarvestEnergyProjectBehavior: ProjectBehavior<typeof HarvestEnergyProjectI
   run(creep: Creep, config?: HarvestEnergyProjectConfig): void {
     logger.info(`Executing ${this.id} for ${creep.name}`);
 
+    // Harvesters should pick up nearby energy if they have space
+    if (typeof creep.checkForNearbyEnergy === 'function' && 
+        !creep.isFullOfEnergy && 
+        creep.checkForNearbyEnergy(2)) {
+      return; // Let the pickup task run (smaller range for harvesters)
+    }
+
     if (creep.isFullOfEnergy) {
       const emergencyLevel = EmergencyManager.getEmergencyLevel(creep.room);
       
