@@ -46,6 +46,11 @@ export class CreepCapabilityAnalyzer {
    * Analyze a creep's capabilities based on its body parts
    */
   public static analyzeCapabilities(creep: Creep): CreepCapabilities {
+    // Fail gracefully if essential game constants are missing (integration tests)
+    if (typeof (global as any).WORK === 'undefined') {
+      return this.getEmptyCapabilities();
+    }
+    
     // Check cache first
     const cacheKey = this.getCacheKey(creep);
     const cached = this.capabilityCache.get(cacheKey);
@@ -145,8 +150,47 @@ export class CreepCapabilityAnalyzer {
     this.capabilityCache.clear();
   }
   
+  /**
+   * Get empty capabilities for integration test environments
+   */
+  private static getEmptyCapabilities(): CreepCapabilities {
+    return {
+      canWork: false,
+      workPower: 0,
+      canCarry: false,
+      carryCapacity: 0,
+      moveSpeed: 0,
+      canHarvest: false,
+      canBuild: false,
+      canRepair: false,
+      canUpgrade: false,
+      canHaul: false,
+      canFight: false,
+      canHeal: false,
+      canClaim: false,
+      harvestEfficiency: 0,
+      buildEfficiency: 0,
+      haulEfficiency: 0,
+      upgradeEfficiency: 0,
+      bodyParts: {
+        work: 0,
+        carry: 0,
+        move: 0,
+        attack: 0,
+        ranged_attack: 0,
+        heal: 0,
+        claim: 0,
+        tough: 0
+      }
+    };
+  }
+  
   private static getCacheKey(creep: Creep): string {
     // Cache based on body composition and boost status
+    if (!creep.body || !Array.isArray(creep.body)) {
+      return `${creep.id}_empty`;
+    }
+    
     const bodyKey = creep.body
       .map(part => `${part.type}${part.boost ? ':' + part.boost : ''}`)
       .sort()
@@ -166,6 +210,10 @@ export class CreepCapabilityAnalyzer {
       [TOUGH]: 0
     };
     
+    if (!creep.body || !Array.isArray(creep.body)) {
+      return parts; // Return empty parts if no body
+    }
+    
     for (const part of creep.body) {
       if (part.hits > 0) { // Only count active parts
         parts[part.type]++;
@@ -184,9 +232,11 @@ export class CreepCapabilityAnalyzer {
     let speed = moveParts / totalParts;
     
     // Adjust for carry weight
-    const carryWeight = creep.store.getUsedCapacity() / creep.store.getCapacity();
-    if (carryWeight > 0) {
-      speed *= (1 - carryWeight * 0.5); // Heavy creeps move slower
+    if (creep.store && typeof creep.store.getUsedCapacity === 'function') {
+      const carryWeight = creep.store.getUsedCapacity() / creep.store.getCapacity();
+      if (carryWeight > 0) {
+        speed *= (1 - carryWeight * 0.5); // Heavy creeps move slower
+      }
     }
     
     return Math.min(1, speed);
