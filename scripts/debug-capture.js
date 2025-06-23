@@ -68,6 +68,12 @@ async function captureConsole() {
   const config = await loadConfig();
   
   // Initialize API with server configuration - token auth is automatic
+  // Fix PTR endpoint for screeps-api
+  if (server === 'ptr') {
+    config.host = config.host || 'screeps.com';
+    config.path = '/ptr';
+  }
+  
   const api = new ScreepsAPI({
     ...config
   });
@@ -108,41 +114,42 @@ async function captureConsole() {
   const socket = api.socket;
   
   socket.on('console', (data) => {
-    if (data.shard === shard) {
+    if (data.data?.shard === shard) {
+      // Extract messages from the actual format: data.messages.log array
+      const messages = data.data?.messages?.log || [];
+      
       const logEntry = {
         timestamp: new Date().toISOString(),
-        tick: data.data?.tick,
-        messages: data.data?.messages || []
+        tick: null, // Console events don't include tick number
+        messages: messages
       };
       
       logs.push(logEntry);
       tickCount++;
       
       // Count errors
-      const errorMessages = data.data?.messages?.filter(msg => 
+      const errorMessages = messages.filter(msg => 
         msg.includes('Error') || msg.includes('TypeError') || msg.includes('ReferenceError')
       ) || [];
       
       if (errorMessages.length > 0) {
         errorCount += errorMessages.length;
-        console.log(`🚨 Captured ${errorMessages.length} error(s) at tick ${data.data?.tick}`);
+        console.log(`🚨 Captured ${errorMessages.length} error(s)`);
         errorMessages.forEach(msg => console.log(`   ${msg}`));
       }
       
-      // Show progress every 10 ticks
+      // Show progress every 10 console events
       if (tickCount % 10 === 0) {
-        console.log(`📊 Progress: ${tickCount} ticks, ${errorCount} errors captured`);
+        console.log(`📊 Progress: ${tickCount} console events, ${errorCount} errors captured`);
       }
     }
   });
 
   socket.on('auth', async (data) => {
     console.log('🔐 Socket authenticated');
-    // Subscribe to console for the specific shard
-    const userInfo = await api.me();
-    socket.subscribe(`user:${userInfo.username}/console`, () => {
-      console.log(`👂 Subscribed to console logs for ${shard}`);
-    });
+    // Subscribe to console - use simple 'console' channel that works reliably
+    socket.subscribe('console');
+    console.log(`👂 Subscribed to console logs for ${server}/${shard}`);
   });
 
   socket.on('error', (error) => {
@@ -181,7 +188,7 @@ async function captureConsole() {
   
   console.log('\n📋 Capture Complete!');
   console.log(`📊 Summary:`);
-  console.log(`   Ticks captured: ${tickCount}`);
+  console.log(`   Console events captured: ${tickCount}`);
   console.log(`   Errors found: ${errorCount}`);
   console.log(`   Output file: ${outputFile}`);
   

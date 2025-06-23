@@ -51,6 +51,13 @@ async function runSmokeTest() {
   console.log(`🔬 Running smoke test on ${server}/${shard} for ${duration} seconds...`);
   
   const config = await loadConfig();
+  
+  // Fix PTR endpoint for screeps-api
+  if (server === 'ptr') {
+    config.host = config.host || 'screeps.com';
+    config.path = '/ptr';
+  }
+  
   const api = new ScreepsAPI({ ...config });
   
   try {
@@ -82,21 +89,19 @@ async function runSmokeTest() {
 
   return new Promise((resolve, reject) => {
     socket.on('console', (data) => {
-      if (data.shard === shard) {
+      if (data.data?.shard === shard) {
         firstLogSeen = true;
+        const messages = data.data?.messages?.log || [];
         const logEntry = {
           timestamp: new Date().toISOString(),
-          tick: data.data?.tick,
-          messages: data.data?.messages || []
+          tick: null, // Console events don't include tick number
+          messages: messages
         };
         
         tickCount++;
         
-        // Check if we're getting new ticks (code is actively running)
-        if (logEntry.tick && logEntry.tick !== lastTick) {
-          lastTick = logEntry.tick;
-          codeActivelyRunning = true;
-        }
+        // Mark code as actively running if we receive any console output
+        codeActivelyRunning = true;
         
         // Analyze messages for health indicators
         logEntry.messages.forEach(msg => {
@@ -124,24 +129,23 @@ async function runSmokeTest() {
               timestamp: logEntry.timestamp,
               message: msg
             });
-            console.log(`🚨 Error detected at tick ${logEntry.tick}: ${msg}`);
+            console.log(`🚨 Error detected: ${msg}`);
           }
         });
         
-        // Show progress every 10 ticks
+        // Show progress every 10 console events
         if (tickCount % 10 === 0) {
           const elapsed = Math.floor((Date.now() - startTime) / 1000);
-          console.log(`📊 Progress: ${elapsed}s elapsed, ${tickCount} ticks, ${errorCount} errors`);
+          console.log(`📊 Progress: ${elapsed}s elapsed, ${tickCount} console events, ${errorCount} errors`);
         }
       }
     });
 
     socket.on('auth', async (data) => {
       console.log('🔐 Socket authenticated');
-      const userInfo = await api.me();
-      socket.subscribe(`user:${userInfo.username}/console`, () => {
-        console.log(`👂 Subscribed to console logs for ${shard}`);
-      });
+      // Subscribe to console - use simple 'console' channel that works reliably
+      socket.subscribe('console');
+      console.log(`👂 Subscribed to console logs for ${server}/${shard}`);
     });
 
     socket.on('error', (error) => {
@@ -159,7 +163,7 @@ async function runSmokeTest() {
       
       console.log('\n🔬 Smoke Test Results:');
       console.log(`⏰ Duration: ${elapsedTime.toFixed(1)}s`);
-      console.log(`📊 Ticks monitored: ${tickCount}`);
+      console.log(`📊 Console events monitored: ${tickCount}`);
       console.log(`🚨 Errors detected: ${errorCount}`);
       
       // Analyze results
@@ -167,7 +171,7 @@ async function runSmokeTest() {
         success: true,
         summary: {
           duration: elapsedTime,
-          ticksMonitored: tickCount,
+          consoleEventsMonitored: tickCount,
           errorsDetected: errorCount,
           codeActivelyRunning,
           firstLogSeen
