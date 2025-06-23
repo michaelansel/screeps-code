@@ -33,11 +33,17 @@ We optimize for reaching higher RCLs as fast as possible, even at the cost of en
 
 ## Creep Design Principles
 
-### Body Part Ratios
-- **Harvesters**: Maximum WORK, minimal CARRY (1-2), balanced MOVE
-- **Upgraders**: 1:1 WORK:CARRY ratio, 1 MOVE per 2 other parts
-- **Builders**: 1:1:1 WORK:CARRY:MOVE for flexibility
-- **Haulers**: 0 WORK, 2:1 CARRY:MOVE ratio
+### Body Template Philosophy
+- **Energy Specialists**: Maximum WORK for stationary harvesting (5W 1C 3M)
+- **General Workers**: Balanced WORK:CARRY for versatility (2W 2C 2M)
+- **Transport Specialists**: Maximum CARRY for hauling (4C 2M)
+- **Heavy Workers**: Work-focused for building/upgrading (4W 2C 3M)
+
+### Capability-Based Assignment
+- Projects claim creeps based on body capabilities, not predefined roles
+- Any creep with WORK can harvest in emergencies
+- Any creep with CARRY can haul when needed
+- Flexible assignment increases resilience and efficiency
 
 ### Creep Sizes by RCL
 - **RCL1**: 3-part creeps only ([WORK,CARRY,MOVE])

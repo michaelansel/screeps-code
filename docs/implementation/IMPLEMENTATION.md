@@ -6,28 +6,98 @@ This document covers the TypeScript-specific implementation details, including i
 
 ```
 src/
-├── main.ts                 # Main entry point and game loop
+├── main.ts                 # Capability-based entry point
 ├── extensions/             # Runtime extensions for Screeps objects
 │   ├── Creep/             # Creep object extensions
 │   ├── Memory.ts          # Global memory interface extensions
 │   └── CreepMemory.ts     # Creep memory interface extensions
 ├── planners/              # Strategic decision-making modules
 │   └── SourcePlanner.ts   # Source assignment logic
-├── projects/              # Long-term creep roles and behaviors
+├── projects/              # Long-term creep behaviors (capability-based)
 │   ├── HarvestEnergyProject.ts
 │   ├── BuilderProject.ts
 │   └── UpgradeControllerProject.ts
 ├── tasks/                 # Short-term creep actions
 │   ├── HarvestEnergyTask.ts
 │   ├── DepositEnergyTask.ts
+│   ├── PickupEnergyTask.ts
 │   └── WithdrawEnergyTask.ts
 └── utils/                 # Utility classes and helper functions
+    ├── CapabilityManager.ts    # Capability-based spawn management
+    ├── CreepCapabilities.ts    # Creep capability analysis
+    ├── BodyTemplates.ts        # Body template definitions
     ├── MemoryBackedClass.ts
-    ├── RoleManager.ts
+    ├── RoleManager.ts          # Legacy role management
     └── EnergySourceManager.ts
 ```
 
 ## Core Interfaces
+
+### Capability System
+
+```typescript
+// Capability analysis interface
+export interface CreepCapabilities {
+  canWork: boolean;           // has WORK parts
+  workPower: number;          // total WORK parts
+  canCarry: boolean;          // has CARRY parts  
+  carryCapacity: number;      // total carry capacity
+  moveSpeed: number;          // movement capability
+  canHarvest: boolean;        // WORK parts > 0
+  canBuild: boolean;          // WORK + CARRY > 0
+  canHaul: boolean;           // CARRY parts > 0
+  canUpgrade: boolean;        // WORK + CARRY > 0
+  harvestEfficiency: number;  // 0-1 score for harvesting
+  buildEfficiency: number;    // 0-1 score for building
+  haulEfficiency: number;     // 0-1 score for hauling
+  upgradeEfficiency: number;  // 0-1 score for upgrading
+}
+
+// Capability needs analysis
+export interface CapabilityNeeds {
+  harvest: { required: number; current: number; priority: number };
+  build: { required: number; current: number; priority: number };
+  haul: { required: number; current: number; priority: number };
+  upgrade: { required: number; current: number; priority: number };
+}
+
+// Body template definition
+export interface BodyTemplate {
+  name: string;
+  parts: BodyPartConstant[];
+  cost: number;
+  purpose: string;
+  minEnergy: number;
+  capabilities: {
+    harvest: number;    // 0-1 capability score
+    build: number;
+    haul: number;
+    upgrade: number;
+  };
+}
+
+// Spawn request from capability analysis
+export interface SpawnRequest {
+  body: BodyPartConstant[];
+  memory: CreepMemory;
+  priority: number;
+  purpose: string;
+}
+
+// Enhanced creep memory for capabilities
+declare global {
+  interface CreepMemory {
+    project?: CreepProjectMemory;
+    task?: CreepTaskMemory;
+    spawnTime?: number;
+    purpose?: string;
+    capabilities?: {
+      primary: string;
+      secondary: string;
+    };
+  }
+}
+```
 
 ### Project System
 
@@ -119,6 +189,63 @@ interface CreepTaskMemory {
 ```
 
 ## Implementation Patterns
+
+### Using the Capability System
+
+```typescript
+// 1. Analyze room capability needs
+const needs = CapabilityManager.analyzeRoomNeeds(room);
+console.log(`Room needs: ${needs.harvest.required} harvest capability`);
+
+// 2. Get spawn recommendation based on needs
+const spawnRequest = CapabilityManager.getNextSpawnRequest(room);
+if (spawnRequest) {
+  console.log(`Should spawn: ${spawnRequest.purpose} with ${spawnRequest.body.length} parts`);
+}
+
+// 3. Assign project to creep based on capabilities
+const project = CapabilityManager.assignProjectToCreep(creep);
+if (project) {
+  creep.startProject(getProject(project));
+}
+
+// 4. Analyze specific creep capabilities
+const capabilities = CreepCapabilityAnalyzer.analyzeCapabilities(creep);
+console.log(`Creep can harvest: ${capabilities.canHarvest}, efficiency: ${capabilities.harvestEfficiency}`);
+
+// 5. Select body template for specific needs
+const body = BodyTemplateManager.selectTemplate(400, { 
+  harvest: 0.8,  // High harvest need
+  haul: 0.2      // Low haul need
+});
+```
+
+### Creating Custom Body Templates
+
+```typescript
+// Add a new template to BodyTemplateManager
+const CUSTOM_TEMPLATE: BodyTemplate = {
+  name: "CUSTOM_WORKER",
+  parts: [WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE],
+  cost: 400,
+  purpose: "Custom worker for specific tasks",
+  minEnergy: 400,
+  capabilities: {
+    harvest: 0.7,
+    build: 0.8,
+    haul: 0.4,
+    upgrade: 0.6
+  }
+};
+
+// Or generate dynamic body
+const customBody = BodyTemplateManager.generateCustomBody({
+  minWork: 3,
+  minCarry: 2,
+  preferWork: true,
+  fastMove: false
+}, 500);
+```
 
 ### Creating a New Project
 

@@ -1,10 +1,11 @@
 import { discover as discoverExtendables, use as useExtensions } from "./extensions";
 import { Console } from "./utils/Console.js";
 import { ErrorMapper } from "./utils/ErrorMapper.js";
-import { HarvestEnergyProject, UpgradeControllerProject, DoNothingProject } from "./projects/index.js";
+import { HarvestEnergyProject, UpgradeControllerProject, DoNothingProject, BuilderProject, HaulerProject } from "./projects/index.js";
 import { ProjectId } from "./projects/Project.js";
 import { Logger } from "./utils/Logger.js";
-import { RoleManager } from "./utils/RoleManager.js";
+import { CapabilityManager } from "./utils/CapabilityManager.js";
+import { CreepCapabilityAnalyzer } from "./utils/CreepCapabilities.js";
 import { SourcePlanner } from "./planners/SourcePlanner.js";
 import { EmergencyManager } from "./utils/EmergencyManager.js";
 import { SpawnManager } from "./utils/SpawnManager.js";
@@ -23,23 +24,51 @@ export const loop = ErrorMapper.wrapLoop(() => {
   if (Memory.creepCounter === undefined) Memory.creepCounter = 0;
 
   // ========== TICK START LOGGING ==========
-  console.log(`\n🎮 === TICK ${Game.time} START ===`);
+  console.log(`\n🎮 === TICK ${Game.time} START (Capability-Based) ===`);
   console.log(`⚡ Energy: ${Object.values(Game.spawns).reduce((total, spawn) => total + spawn.store[RESOURCE_ENERGY], 0)}`);
   console.log(`🤖 Creeps: ${Object.keys(Game.creeps).length}`);
   console.log(`🏭 Spawns: ${Object.keys(Game.spawns).length} | 🏠 Rooms: ${Object.keys(Game.rooms).length}`);
 
   // ========== CREEP MANAGEMENT ==========
-  const creepStats = { withProject: 0, withoutProject: 0, byProject: {} as Record<string, number> };
+  const creepStats = { 
+    withProject: 0, 
+    withoutProject: 0, 
+    byProject: {} as Record<string, number>,
+    byCapability: {} as Record<string, number>
+  };
+
+  // Clear capability cache at start of tick
+  CreepCapabilityAnalyzer.clearCache();
 
   for (const name in Game.creeps) {
     const creep = Game.creeps[name];
 
-    // Ensure every creep has a project - CRITICAL REQUIREMENT
+    // Analyze creep capabilities
+    const capabilities = CreepCapabilityAnalyzer.analyzeCapabilities(creep);
+    
+    // Track capability distribution
+    if (capabilities.canHarvest) creepStats.byCapability['harvest'] = (creepStats.byCapability['harvest'] || 0) + capabilities.workPower;
+    if (capabilities.canBuild) creepStats.byCapability['build'] = (creepStats.byCapability['build'] || 0) + capabilities.workPower;
+    if (capabilities.canHaul) creepStats.byCapability['haul'] = (creepStats.byCapability['haul'] || 0) + capabilities.carryCapacity / CARRY_CAPACITY;
+    if (capabilities.canUpgrade) creepStats.byCapability['upgrade'] = (creepStats.byCapability['upgrade'] || 0) + capabilities.workPower;
+
+    // Dynamic project assignment based on capabilities and room needs
     if (!creep.memory.project || !creep.memory.project.id) {
-      console.log(`⚠️  FIXING: Creep ${name} has no project, assigning DoNothingProject`);
-      creep.memory.project = {
-        id: "DoNothingProject" as ProjectId
-      };
+      const assignedProject = CapabilityManager.assignProjectToCreep(creep);
+      if (assignedProject) {
+        console.log(`📋 Assigning ${name} (${capabilities.workPower}W ${capabilities.carryCapacity/CARRY_CAPACITY}C) to ${assignedProject}`);
+        creep.memory.project = {
+          id: assignedProject as ProjectId,
+          config: assignedProject === 'UpgradeControllerProject' && creep.room.controller 
+            ? { controller: creep.room.controller.id } 
+            : undefined
+        };
+      } else {
+        // Fallback if no suitable project
+        creep.memory.project = {
+          id: "DoNothingProject" as ProjectId
+        };
+      }
       creepStats.withoutProject++;
     } else {
       creepStats.withProject++;
@@ -47,23 +76,29 @@ export const loop = ErrorMapper.wrapLoop(() => {
       creepStats.byProject[projectId] = (creepStats.byProject[projectId] || 0) + 1;
     }
 
-    console.log(`🤖 ${name}: ${creep.memory.project?.id || 'NO PROJECT'} | Energy: ${creep.store[RESOURCE_ENERGY]}/${creep.store.getCapacity()}`);
+    console.log(`🤖 ${name}: ${creep.memory.project?.id || 'NO PROJECT'} | Body: ${capabilities.workPower}W ${capabilities.carryCapacity/CARRY_CAPACITY}C ${capabilities.bodyParts[MOVE]}M | Energy: ${creep.store[RESOURCE_ENERGY]}/${creep.store.getCapacity()}`);
     creep.run();
   }
 
-  // Log project assignment statistics
-  if (creepStats.withoutProject > 0) {
-    console.log(`🚨 CRITICAL: ${creepStats.withoutProject} creeps were missing projects!`);
-  }
-  console.log(`📊 Project assignments:`, creepStats.byProject);
+  // Log statistics
+  console.log(`📊 Projects:`, creepStats.byProject);
+  console.log(`🔧 Capabilities:`, creepStats.byCapability);
 
   // ========== ROOM MANAGEMENT ==========
   console.log(`\n🏠 === ROOM OPERATIONS ===`);
   for (const room of Object.values(Game.rooms)) {
-    console.log(`🏠 Room ${room.name}: RCL ${room.controller?.level || 0} | Sources: ${room.find(FIND_SOURCES).length} | Structures: ${room.find(FIND_STRUCTURES).length}`);
-    SourcePlanner.instance.assignSources(room);
+    console.log(`🏠 Room ${room.name}: RCL ${room.controller?.level || 0} | Sources: ${room.find(FIND_SOURCES).length}`);
     
-    // Update emergency state for hauler fallback system
+    // Analyze room capability needs
+    const needs = CapabilityManager.analyzeRoomNeeds(room);
+    console.log(`📊 Capability needs:`, {
+      harvest: `${needs.harvest.current.toFixed(1)}/${needs.harvest.required}`,
+      build: `${needs.build.current.toFixed(1)}/${needs.build.required}`,
+      haul: `${needs.haul.current.toFixed(1)}/${needs.haul.required}`,
+      upgrade: `${needs.upgrade.current.toFixed(1)}/${needs.upgrade.required}`
+    });
+    
+    SourcePlanner.instance.assignSources(room);
     EmergencyManager.updateEmergencyState(room);
   }
 
@@ -81,53 +116,35 @@ export const loop = ErrorMapper.wrapLoop(() => {
     }
 
     const room = spawn.room;
-    const nextRole = RoleManager.getNextRoleToSpawn(room);
+    const spawnRequest = CapabilityManager.getNextSpawnRequest(room);
 
-    if (nextRole) {
-      const roomEnergy = RoleManager.getRoomAvailableEnergy(room);
-      const roomCapacity = RoleManager.getRoomEnergyCapacity(room);
+    if (spawnRequest) {
+      const roomEnergy = spawn.store[RESOURCE_ENERGY];
+      const bodyCost = spawnRequest.body.reduce((cost, part) => cost + BODYPART_COST[part], 0);
       
-      // Get minimum viable body for this role
-      const minBodyParts = RoleManager.getBodyPartsForRole(nextRole.projectId, 200); // Minimum energy
-      const minBodyCost = minBodyParts.reduce((cost, part) => cost + BODYPART_COST[part], 0);
+      // Check if we should spawn now or wait
+      const spawnDecision = SpawnManager.getSpawnDecision(room, spawnRequest.purpose, bodyCost);
 
-      // Check if we should spawn now or wait for more energy
-      const spawnDecision = SpawnManager.getSpawnDecision(room, nextRole.projectId, minBodyCost);
+      if (spawnDecision.shouldSpawn && roomEnergy >= bodyCost) {
+        const newName = `Worker${(++Memory.creepCounter).toString()}`;
+        const result = spawn.spawnCreep(spawnRequest.body, newName, { 
+          memory: spawnRequest.memory 
+        });
 
-      if (spawnDecision.shouldSpawn) {
-        // Use current energy to determine body parts
-        const bodyParts = RoleManager.getBodyPartsForRole(nextRole.projectId, roomEnergy);
-
-        if (bodyParts.length > 0) {
-          const bodyCost = bodyParts.reduce((cost, part) => cost + BODYPART_COST[part], 0);
-          
-          const memory: CreepMemory = {
-            project: {
-              id: nextRole.projectId as ProjectId,
-              config: nextRole.config
-            },
-            role: nextRole.roleName.toLowerCase()
-          };
-
-          const newName = `${nextRole.roleName}${(++Memory.creepCounter).toString()}`;
-          const result = spawn.spawnCreep(bodyParts, newName, { memory });
-
-          if (result === OK) {
-            console.log(`🏭 ${spawnName}: Spawning ${newName} (${nextRole.projectId}) - Cost: ${bodyCost}/${roomEnergy} energy, Body: [${bodyParts.join(',')}] - ${spawnDecision.reason}`);
-            SpawnManager.recordSpawn(room, bodyCost);
-            spawnActivity = true;
-          } else {
-            console.log(`🏭 ${spawnName}: Failed to spawn ${nextRole.projectId} - Error: ${result} (Room energy: ${roomEnergy}/${roomCapacity})`);
-          }
+        if (result === OK) {
+          console.log(`🏭 ${spawnName}: Spawning ${newName} for ${spawnRequest.purpose} - Body: [${spawnRequest.body.join(',')}] (${bodyCost} energy) - ${spawnDecision.reason}`);
+          SpawnManager.recordSpawn(room, bodyCost);
+          spawnActivity = true;
         } else {
-          console.log(`🏭 ${spawnName}: Not enough energy for ${nextRole.projectId} (room has ${roomEnergy}/${roomCapacity} energy)`);
+          console.log(`🏭 ${spawnName}: Failed to spawn - Error: ${result}`);
         }
+      } else if (!spawnDecision.shouldSpawn) {
+        console.log(`🏭 ${spawnName}: ${spawnDecision.reason}`);
       } else {
-        // We're waiting for more energy
-        console.log(`🏭 ${spawnName}: ${spawnDecision.reason} (current: ${roomEnergy}/${roomCapacity}${spawnDecision.waitForEnergy ? `, target: ${spawnDecision.waitForEnergy}` : ''})`);
+        console.log(`🏭 ${spawnName}: Not enough energy (${roomEnergy}/${bodyCost})`);
       }
     } else {
-      console.log(`🏭 ${spawnName}: No roles needed to spawn (room energy: ${RoleManager.getRoomAvailableEnergy(room)}/${RoleManager.getRoomEnergyCapacity(room)})`);
+      console.log(`🏭 ${spawnName}: All capability needs met`);
     }
   }
 

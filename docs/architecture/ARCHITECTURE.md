@@ -9,7 +9,7 @@ The bot employs a hierarchical control system with three main layers:
 ### 1. Planners (Strategic Layer)
 At the highest level, planners make strategic decisions and coordinate multiple entities:
 - **SourcePlanner**: Assigns energy sources to creeps based on capacity and efficiency
-- **RoleManager**: Determines optimal creep counts and spawning priorities for each room
+- **CapabilityManager**: Analyzes room needs and determines optimal creep capabilities to spawn
 - **EnergySourceManager**: Analyzes room infrastructure to optimize energy flow strategies
 
 Planners operate on a global or multi-room scale and make decisions that affect entire rooms or multiple creeps simultaneously.
@@ -36,12 +36,12 @@ Tasks focus on one specific action at a time and handle the detailed game mechan
 ## Decision Flow
 
 ### Creep Lifecycle
-1. **Spawning**: RoleManager determines which project type to spawn based on room needs
-2. **Project Assignment**: Newly spawned creep receives initial project based on spawning decision
+1. **Spawning**: CapabilityManager determines which body template to spawn based on room capability needs
+2. **Project Assignment**: Newly spawned creep receives project assignment based on its body capabilities
 3. **Task Selection**: Project evaluates creep state and assigns appropriate task
 4. **Task Execution**: Creep performs specific actions (move, harvest, build, etc.)
 5. **Task Completion**: When task finishes, project selects next appropriate task
-6. **Project Switching**: Creeps can be reassigned to different projects based on changing needs
+6. **Project Switching**: Creeps can be reassigned to different projects based on their capabilities and changing needs
 
 ### Information Flow
 - **Planners** analyze global state and make assignments/recommendations
@@ -71,23 +71,24 @@ The bot implements intelligent energy flow strategies:
 - Determines optimal energy source for builders/upgraders
 - Switches between harvesting and withdrawal strategies
 
-### Role Management
-Dynamic role assignment based on room conditions:
+### Capability Management
+Dynamic creep spawning based on room capability needs:
 
 **Spawning Priority**:
-1. Harvesters (minimum 2 for energy security)
-2. Builders (when construction sites exist)
-3. Upgraders (for controller progression)
+1. Harvest capability (minimum requirements for energy security)
+2. Build capability (when construction sites exist)
+3. Upgrade capability (for controller progression)
+4. Haul capability (when containers/storage exist)
 
-**Body Scaling**:
+**Body Template Selection**:
 - Analyzes total room energy (spawn + extensions)
-- Generates role-appropriate body parts within energy limits
-- Optimizes for movement efficiency and role-specific needs
+- Selects optimal body template based on capability needs
+- Optimizes for movement efficiency and task-specific requirements
 
-**Quota Management**:
-- Calculates desired creep counts based on room state
-- Adjusts for RCL, energy capacity, and infrastructure needs
-- Handles emergency scaling during resource constraints
+**Capability Assessment**:
+- Calculates required capabilities based on room state (sources, construction sites, etc.)
+- Compares current capabilities from existing creeps
+- Spawns templates to fill capability gaps
 
 ### Construction Management
 Intelligent building and repair strategies:
@@ -111,9 +112,9 @@ Intelligent building and repair strategies:
 ## Component Interactions
 
 ### Planner-Project Coordination
-- **SourcePlanner** assigns sources to harvesters
-- **RoleManager** provides spawning recommendations to room logic
-- **EnergySourceManager** influences task selection in builder/upgrader projects
+- **SourcePlanner** assigns sources to harvest-capable creeps
+- **CapabilityManager** provides spawning recommendations based on capability needs
+- **EnergySourceManager** influences task selection in build/upgrade projects
 
 ### Project-Task Coordination
 - Projects evaluate creep state (energy level, position, capacity)

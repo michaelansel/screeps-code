@@ -4,15 +4,34 @@ import { assert, expect } from "chai";
 import { loop } from "main";
 import sinon from "sinon";
 import * as SourcePlannerModule from "planners/SourcePlanner";
+import * as EmergencyManagerModule from "utils/EmergencyManager";
+import * as CapabilityManagerModule from "utils/CapabilityManager";
+import * as CreepCapabilitiesModule from "utils/CreepCapabilities";
 
 // Mock constants that are needed
 (global as any).RESOURCE_ENERGY = 'energy';
-(global as any).FIND_SOURCES = 'sources';
-(global as any).FIND_STRUCTURES = 'structures';
+(global as any).FIND_SOURCES = 105;
+(global as any).FIND_STRUCTURES = 106;
+(global as any).FIND_MY_CONSTRUCTION_SITES = 107;
+(global as any).FIND_MY_CREEPS = 102;
+(global as any).FIND_MY_SPAWNS = 108;
+(global as any).FIND_MY_STRUCTURES = 109;
+(global as any).WORK = 'work';
+(global as any).CARRY = 'carry';
+(global as any).MOVE = 'move';
+(global as any).CARRY_CAPACITY = 50;
+(global as any).BODYPART_COST = {
+  work: 100,
+  carry: 50,
+  move: 50
+};
 
 describe("main", () => {
   let consoleLogStub: sinon.SinonStub;
   let sourcePlannerStub: sinon.SinonStub;
+  let emergencyManagerStub: sinon.SinonStub;
+  let capabilityManagerStub: sinon.SinonStub;
+  let capabilityAnalyzerStub: sinon.SinonStub;
   
   before(() => {
     // runs before all test in this block
@@ -28,8 +47,47 @@ describe("main", () => {
     // Stub console.log to capture logging  
     consoleLogStub = sinon.stub(console, 'log');
     
-    // Mock SourcePlanner to avoid issues with singleton
+    // Mock all the new systems to avoid issues
     sourcePlannerStub = sinon.stub(SourcePlannerModule.SourcePlanner.prototype, 'assignSources');
+    emergencyManagerStub = sinon.stub(EmergencyManagerModule.EmergencyManager, 'updateEmergencyState');
+    capabilityManagerStub = sinon.stub(CapabilityManagerModule.CapabilityManager, 'analyzeRoomNeeds').returns({
+      harvest: { required: 5, current: 0, priority: 10 },
+      build: { required: 0, current: 0, priority: 0 },
+      haul: { required: 0, current: 0, priority: 0 },
+      upgrade: { required: 6, current: 0, priority: 4 }
+    });
+    sinon.stub(CapabilityManagerModule.CapabilityManager, 'assignProjectToCreep').returns(null);
+    sinon.stub(CapabilityManagerModule.CapabilityManager, 'getNextSpawnRequest').returns(null);
+    capabilityAnalyzerStub = sinon.stub(CreepCapabilitiesModule.CreepCapabilityAnalyzer, 'clearCache');
+    sinon.stub(CreepCapabilitiesModule.CreepCapabilityAnalyzer, 'analyzeCapabilities').returns({
+      canWork: true,
+      workPower: 1,
+      canCarry: true,
+      carryCapacity: 50,
+      moveSpeed: 1,
+      canHarvest: true,
+      canBuild: true,
+      canRepair: true,
+      canUpgrade: true,
+      canHaul: true,
+      canFight: false,
+      canHeal: false,
+      canClaim: false,
+      harvestEfficiency: 0.5,
+      buildEfficiency: 0.5,
+      haulEfficiency: 0.5,
+      upgradeEfficiency: 0.5,
+      bodyParts: {
+        work: 1,
+        carry: 1,
+        move: 1,
+        attack: 0,
+        ranged_attack: 0,
+        heal: 0,
+        claim: 0,
+        tough: 0
+      }
+    });
   });
   
   afterEach(() => {
