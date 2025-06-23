@@ -21,7 +21,7 @@ export const UpgradeControllerProject: ProjectBehavior<typeof UpgradeControllerP
     ProjectHelpers.start(creep, UpgradeControllerProject, config);
   },
 
-  run(creep: Creep, config: UpgradeControllerProjectConfig): void {
+  run(creep: Creep, config?: UpgradeControllerProjectConfig): void {
     // Check for nearby dropped energy opportunistically
     if (typeof creep.checkForNearbyEnergy === 'function' && 
         creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0 && 
@@ -64,11 +64,17 @@ export const UpgradeControllerProject: ProjectBehavior<typeof UpgradeControllerP
       }
     } else {
       // Creep has energy - upgrade the controller
-      const controller = Game.getObjectById(config.controller);
+      const controllerId = config?.controller || creep.room.controller?.id;
+      if (!controllerId) {
+        console.log(`${creep.name}: No controller configured and no room controller available`);
+        return;
+      }
+      
+      const controller = Game.getObjectById(controllerId);
       if (controller) {
-        creep.startTask(UpgradeControllerTask, { controller: config.controller } as UpgradeControllerTaskConfig);
+        creep.startTask(UpgradeControllerTask, { controller: controllerId } as UpgradeControllerTaskConfig);
       } else {
-        console.log(`${creep.name}: Controller ${config.controller} not found`);
+        console.log(`${creep.name}: Controller ${controllerId} not found`);
       }
     }
   },

@@ -18,11 +18,11 @@ export const HaulerProject: ProjectBehavior<typeof HaulerProjectId> = {
     ProjectHelpers.start(creep, HaulerProject, config);
   },
 
-  run(creep: Creep, config: HaulerProjectConfig): void {
-    const room = config.targetRoom ? Game.rooms[config.targetRoom] : creep.room;
+  run(creep: Creep, config?: HaulerProjectConfig): void {
+    const room = config?.targetRoom ? Game.rooms[config.targetRoom] : creep.room;
 
     if (!room) {
-      console.log(`Hauler ${creep.name} cannot find room ${config.targetRoom || 'undefined'}`);
+      console.log(`Hauler ${creep.name} cannot find room ${config?.targetRoom || 'undefined'}`);
       return;
     }
 
