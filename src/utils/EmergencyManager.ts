@@ -70,7 +70,25 @@ export class EmergencyManager {
   }
 
   private static calculateEmergencyLevel(room: Room): EmergencyLevel {
-    if (this.hasLivingHaulers(room)) {
+    // CRITICAL FIX: Check harvester health first - they're the foundation
+    const harvesters = this.getHarvesters(room);
+    const sources = room.find(FIND_SOURCES);
+    const minHarvesters = Math.max(2, sources.length);
+    
+    // If harvesters are critically low, always treat as emergency
+    if (harvesters.length === 0) {
+      return EmergencyLevel.CRITICAL;
+    }
+    
+    if (harvesters.length < minHarvesters) {
+      const totalEnergy = this.getTotalSpawnEnergy(room);
+      if (totalEnergy < 550) { // Can't spawn optimal harvester
+        return EmergencyLevel.WARNING;
+      }
+    }
+
+    // Original hauler monitoring logic
+    if (this.hasLivingHaulers(room) && harvesters.length >= minHarvesters) {
       return EmergencyLevel.NORMAL;
     }
 
@@ -129,6 +147,12 @@ export class EmergencyManager {
   private static getHaulers(room: Room): Creep[] {
     return room.find(FIND_MY_CREEPS, {
       filter: c => c.memory.role === 'hauler'
+    });
+  }
+
+  private static getHarvesters(room: Room): Creep[] {
+    return room.find(FIND_MY_CREEPS, {
+      filter: c => c.memory.project?.id === 'HarvestEnergyProject'
     });
   }
 

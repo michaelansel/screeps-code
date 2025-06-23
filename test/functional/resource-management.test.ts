@@ -99,23 +99,25 @@ describe("Resource Management System", function () {
     const objects = await harness.getGameObjects(deployment.userId);
     const memory = await harness.getMemoryState(deployment.userId);
 
-    // Should prioritize harvesters first (minimum 2 before upgraders)
+    // Should prioritize harvesters first (exactly 1 per source before upgraders)
     const harvesterCreeps = objects.creeps.filter(c => c.name.startsWith('Harvester'));
     const upgraderCreeps = objects.creeps.filter(c => c.name.startsWith('Upgrader'));
+    const sources = objects.sources;
 
-    if (objects.creeps.length >= 2) {
-      expect(harvesterCreeps.length).to.be.at.least(2, "Should spawn at least 2 harvesters first");
+    if (objects.creeps.length >= sources.length) {
+      expect(harvesterCreeps.length).to.equal(sources.length, `Should spawn exactly ${sources.length} harvesters first (1 per source)`);
     }
 
     // If we have upgraders, we should have sufficient harvesters
     if (upgraderCreeps.length > 0) {
-      expect(harvesterCreeps.length).to.be.at.least(2, "Harvesters should be spawned before upgraders");
+      expect(harvesterCreeps.length).to.equal(sources.length, "Should have 1 harvester per source before spawning upgraders");
     }
 
     console.log(`⚖️ Spawning priority verification:`, {
+      sources: sources.length,
       harvesters: harvesterCreeps.length,
       upgraders: upgraderCreeps.length,
-      priorityMaintained: harvesterCreeps.length >= 2 || upgraderCreeps.length === 0
+      priorityMaintained: harvesterCreeps.length >= sources.length || upgraderCreeps.length === 0
     });
   });
 
@@ -178,7 +180,7 @@ describe("Resource Management System", function () {
     console.log(`🎯 Project assignment analysis:`, roleAssignments);
   });
 
-  it("should respect role quotas (max 2 harvesters, max 3 upgraders)", async () => {
+  it("should respect role quotas (1 harvester per source, max 3 upgraders)", async () => {
     const deployment = await harness.getLastDeployment();
 
     // Wait for quota limits to potentially be reached
@@ -187,10 +189,10 @@ describe("Resource Management System", function () {
     const objects = await harness.getGameObjects(deployment.userId);
     const harvesterCreeps = objects.creeps.filter(c => c.name.startsWith('Harvester'));
     const upgraderCreeps = objects.creeps.filter(c => c.name.startsWith('Upgrader'));
+    const sources = objects.sources;
 
-    // Note: The actual quota might depend on room sources, but we can check general limits
-    // Harvesters: at least 2, but may scale with sources
-    expect(harvesterCreeps.length).to.be.at.least(2, "Should maintain minimum 2 harvesters");
+    // Harvesters: exactly 1 per source (new optimal allocation)
+    expect(harvesterCreeps.length).to.equal(sources.length, `Should maintain exactly ${sources.length} harvesters for ${sources.length} sources`);
     
     // Upgraders: should not exceed 3 unless quota logic changes
     if (upgraderCreeps.length > 0) {
@@ -198,7 +200,8 @@ describe("Resource Management System", function () {
     }
 
     console.log(`📊 Role quota status:`, {
-      harvesters: `${harvesterCreeps.length} (min: 2)`,
+      sources: sources.length,
+      harvesters: `${harvesterCreeps.length} (target: ${sources.length})`,
       upgraders: `${upgraderCreeps.length} (max: ~3)`,
       totalCreeps: objects.creeps.length
     });

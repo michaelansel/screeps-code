@@ -80,6 +80,9 @@ export interface HarvestEnergyTaskConfig extends TaskConfig<typeof HarvestEnergy
   source: Id<Source>;
 }
 
+// HarvestEnergyTask now integrates with SourcePlanner
+// Ensures proper distribution of harvesters across sources
+
 export interface PickupEnergyTaskConfig extends TaskConfig<typeof PickupEnergyTaskId> {
   target?: Id<Resource<ResourceConstant> | Tombstone>;
   targetType?: 'resource' | 'tombstone';
@@ -446,6 +449,78 @@ describe("HarvestEnergyProject", () => {
 });
 ```
 
+### Functional Testing Strategy
+
+The functional testing strategy uses a Docker-based Screeps server environment to validate end-to-end behavior. This approach tests real bot execution in a controlled environment.
+
+#### Optimal Harvester Allocation Testing
+
+```typescript
+// Test optimal harvester body composition (5 WORK parts)
+it("should spawn optimal harvesters with 5 WORK parts in advanced rooms", async () => {
+  // 1. Deploy bot to test environment
+  // 2. Wait for spawning system to create harvesters
+  // 3. Verify body composition: 5W+1C+1M for 550 energy cost
+  // 4. Confirm energy efficiency: 10 energy/tick matches source regeneration
+});
+
+// Test source distribution (exactly 1 harvester per source)
+it("should assign exactly one harvester per source", async () => {
+  // 1. Wait for SourcePlanner to distribute harvesters
+  // 2. Check SourcePlanner memory for assignment distribution
+  // 3. Verify exactly one harvester assigned per source
+  // 4. Ensure no sources are unassigned or double-assigned
+});
+
+// Test source draining efficiency (sources reach zero energy)
+it("should ensure sources reach zero energy before regeneration", async () => {
+  // 1. Monitor source energy levels over multiple ticks
+  // 2. Track regeneration cycles (energy jumps from low to 3000)
+  // 3. Verify sources reach near-zero before regeneration
+  // 4. Calculate drainage efficiency percentage
+});
+```
+
+#### Testing Framework Components
+
+The functional test harness provides:
+
+- **Environment Management**: Docker-based Screeps server setup and teardown
+- **Bot Deployment**: Code compilation and deployment to test server
+- **State Monitoring**: Real-time game object inspection and memory analysis
+- **Scenario Setup**: Memory preloading for specific test conditions
+- **Timing Control**: Tick-based execution with configurable wait periods
+
+#### Test Data Validation
+
+```typescript
+// Verify harvester body composition
+const workParts = harvester.body.filter(part => part.type === 'work').length;
+expect(workParts).to.equal(5, "Optimal harvester should have 5 WORK parts");
+
+// Verify source assignment distribution
+const assignmentsBySource = groupAssignmentsBySource(sourcePlannerMemory);
+for (const [sourceId, assignedCreeps] of assignmentsBySource.entries()) {
+  expect(assignedCreeps.length).to.equal(1, `Source ${sourceId} should have exactly 1 harvester`);
+}
+
+// Verify source drainage efficiency
+const drainageEfficiency = sourcesReachingZero / totalSources;
+expect(drainageEfficiency).to.be.at.least(0.5, "At least 50% of sources should reach zero energy");
+```
+
+#### Integration Testing with RoleManager
+
+```typescript
+// Test quota system integration
+it("should integrate properly with RoleManager quota system", async () => {
+  // 1. Verify harvester count equals source count (not minimum 2)
+  // 2. Check spawning priority: harvesters before upgraders/builders
+  // 3. Ensure quota compliance across all roles
+  // 4. Test harvester replacement when harvesters die
+});
+```
+
 ### Integration Testing with Mocks
 ```typescript
 describe("Energy Management Integration", () => {
@@ -465,5 +540,24 @@ describe("Energy Management Integration", () => {
   });
 });
 ```
+
+### Testing Strategy Documentation
+
+#### Key Testing Principles
+
+1. **Real Environment Testing**: Use Docker-based Screeps server for end-to-end validation
+2. **Behavioral Verification**: Test actual game behavior, not just code execution
+3. **Performance Measurement**: Monitor energy efficiency and resource utilization
+4. **Edge Case Coverage**: Test harvester death, memory corruption, unusual room layouts
+5. **Integration Validation**: Verify proper interaction between systems (SourcePlanner, RoleManager, Tasks)
+
+#### Test Categories
+
+- **Unit Tests**: Individual component logic (tasks, projects, utilities)
+- **Functional Tests**: End-to-end behavior in controlled environment
+- **Integration Tests**: Cross-system interaction validation
+- **Performance Tests**: Resource efficiency and optimization verification
+
+This comprehensive testing approach ensures the optimal harvester allocation system works correctly in both isolated components and real game scenarios.
 
 This implementation guide provides the TypeScript-specific details needed to work with the codebase, while the architecture and strategy documents provide the higher-level context for why these patterns exist.

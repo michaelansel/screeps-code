@@ -19,7 +19,11 @@ const HarvestEnergyTaskBehavior: HarvestEnergyTaskBehavior = {
   id: HarvestEnergyTaskId,
   start(creep: Creep, config?: HarvestEnergyTaskConfig): void {
     TaskHelpers.start(creep, this);
-    // SourcePlanner.instance.requestSourceAssignment(creep);
+    // Use dynamic import to avoid circular dependency
+    if (global.Game && global.Game.rooms) {
+      const { SourcePlanner } = require("planners/SourcePlanner");
+      SourcePlanner.instance.requestSourceAssignment(creep);
+    }
   },
   run(creep: Creep, config?: HarvestEnergyTaskConfig): void {
     logger.info(`Executing ${String(this.id)} for ${creep.name}`);
@@ -32,8 +36,13 @@ const HarvestEnergyTaskBehavior: HarvestEnergyTaskBehavior = {
 
     if (source === null) {
       logger.debug(`Need a new source`);
+      // First request assignment from SourcePlanner (dynamic import to avoid circular dependency)
+      if (global.Game && global.Game.rooms) {
+        const { SourcePlanner } = require("planners/SourcePlanner");
+        SourcePlanner.instance.requestSourceAssignment(creep);
+      }
+      // Fallback to finding closest source if no assignment yet
       source = creep.pos.findClosestByPath(FIND_SOURCES, { range: 1 });
-      // SourcePlanner.instance.requestSourceAssignment(creep); // TODO return a source object directly
     }
 
     if (source === null) {

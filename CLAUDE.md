@@ -1,0 +1,1 @@
+- Read all the documentation before making plans or changes

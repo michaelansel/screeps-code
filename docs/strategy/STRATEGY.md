@@ -13,9 +13,10 @@ We optimize for reaching higher RCLs as fast as possible, even at the cost of en
 
 ### Source Harvesting
 - **1 dedicated harvester per source** with exactly 5 WORK parts (once affordable)
-- **No shared harvesters** - each source gets its own dedicated creep
+- **No shared harvesters** - each source gets its own dedicated creep via SourcePlanner
 - **Container mining only after RCL3** - before that, harvesters carry their own energy
-- **Static harvesters after RCL4** - harvesters with no CARRY/MOVE, just WORK parts
+- **Static harvesters design**: 5 WORK + 1 CARRY + 1 MOVE (perfectly drains source at 10 energy/tick)
+- **Source assignment coordination** - SourcePlanner ensures proper distribution across sources
 - **Opportunistic energy collection** - all creeps collect dropped energy and tombstones when convenient
 
 ### Energy Ratios
@@ -41,8 +42,9 @@ We optimize for reaching higher RCLs as fast as possible, even at the cost of en
 ### Creep Sizes by RCL
 - **RCL1**: 3-part creeps only ([WORK,CARRY,MOVE])
 - **RCL2**: 6-part creeps maximum (300 capacity)
-- **RCL3**: 10-part creeps (550 capacity)
+- **RCL3**: 10-part creeps (550 capacity) - enables static harvesters
 - **RCL4+**: Scale to available energy, max 15 parts until RCL7
+- **Optimal harvester**: 5W+1C+1M = 550 energy (achievable at RCL3 with containers)
 
 ### Spawn Time Optimization
 - **Never spawn a creep that takes >500 ticks** (except harvesters)
@@ -184,6 +186,26 @@ We optimize for reaching higher RCLs as fast as possible, even at the cost of en
 - **Creep lifetime** - they're disposable
 - **Road usage** - approximate placement is fine
 - **Defense success rate** - safe mode exists
+
+## Dynamic Creep Management
+
+### Harvester Optimization
+- **Exactly 1 harvester per source** - no waste, no overlap
+- **5 WORK parts = 10 energy/tick** - matches source regeneration perfectly
+- **Source assignment via SourcePlanner** - prevents multiple harvesters on same source
+- **Static design at RCL3+** - minimal movement, maximum efficiency
+
+### Hauler Scaling
+- **Storage buffer > 10k**: Only 1 hauler needed (steady state achieved)
+- **Low RCL (1-3)**: 1 hauler per 2 sources (can handle the flow)
+- **Mid RCL (4-6)**: 1.5 haulers per source, max 3 total
+- **Dynamic adjustment** - scales with actual energy flow, not theoretical
+
+### Creep Count Targets
+- **Harvesters**: Exactly 1 per source (not "at least 2")
+- **Haulers**: 1 at steady state, scales up only when needed
+- **Upgraders**: 3 standard (consumes excess energy efficiently)
+- **Builders**: 0-2 based on construction needs and RCL
 
 ## Trade-Off Decisions
 

@@ -75,7 +75,7 @@ export class RoleManager {
     
     // Base quotas - always need harvesters
     const quotas: RoleQuotas = {
-      harvesters: Math.max(2, sources.length), // At least 2, or 1 per source
+      harvesters: sources.length, // Exactly 1 per source with optimal sizing
       upgraders: 0,
       builders: 0,
       haulers: 0
@@ -116,11 +116,19 @@ export class RoleManager {
       });
       
       if (containers.length > 0) {
-        // Scale haulers based on number of sources and RCL
-        if (controller.level >= 4) {
-          quotas.haulers = Math.min(sources.length * 2, 4); // 2 per source, max 4
+        // Dynamic hauler calculation based on actual energy flow needs
+        const storage = room.storage;
+        
+        if (storage && storage.store[RESOURCE_ENERGY] > 10000) {
+          // With good storage buffer, minimize haulers
+          quotas.haulers = 1;
+        } else if (controller.level >= 4) {
+          // Higher RCL with better infrastructure
+          quotas.haulers = Math.min(Math.ceil(sources.length * 1.5), 3); // 1.5 per source, max 3
         } else {
-          quotas.haulers = sources.length; // 1 per source at low RCL
+          // Low RCL - start with minimal haulers and scale up if needed
+          // With optimal harvesters (5 WORK), one hauler can usually handle 2 sources
+          quotas.haulers = Math.max(1, Math.ceil(sources.length / 2));
         }
       }
     }
@@ -163,17 +171,19 @@ export class RoleManager {
   static getNextRoleToSpawn(room: Room): { projectId: string; config?: any; roleName: string } | null {
     const quotas = this.getDesiredQuotas(room);
     const counts = this.countCreepsByRole(room);
+    const sources = room.find(FIND_SOURCES);
 
-    // Priority order: harvesters first, then haulers, then builders, then upgraders
-    if (counts.harvesters < quotas.harvesters) {
+    // CRITICAL: Ensure adequate harvester coverage before other roles
+    const minHarvesters = Math.max(2, sources.length); // At least 2, or 1 per source
+    if (counts.harvesters < minHarvesters) {
       return {
         projectId: HarvestEnergyProject.id,
         roleName: "Harvester"
       };
     }
 
-    // Haulers second priority - energy distribution is critical
-    if (counts.haulers < quotas.haulers) {
+    // Only spawn haulers after adequate harvester coverage
+    if (counts.haulers < quotas.haulers && counts.harvesters >= minHarvesters) {
       return {
         projectId: HaulerProject.id,
         config: { targetRoom: room.name },

@@ -132,12 +132,22 @@ export class SpawnManager {
     }
 
     // Emergency: Below minimum quotas for critical roles
-    if (counts.harvesters < Math.min(2, quotas.harvesters) ||
-        (counts.haulers === 0 && quotas.haulers > 0)) {
+    // CRITICAL FIX: Ensure adequate harvesters before spawning haulers
+    const minHarvesters = Math.max(2, quotas.harvesters); // At least 2, or 1 per source
+    if (counts.harvesters < minHarvesters) {
       memory.consecutiveWaitTicks = 0;
       return {
         shouldSpawn: true,
-        reason: "Below critical role minimums"
+        reason: `Below critical harvester minimum (${counts.harvesters}/${minHarvesters})`
+      };
+    }
+
+    // Only spawn haulers if we have adequate harvesters
+    if (counts.haulers === 0 && quotas.haulers > 0 && counts.harvesters >= minHarvesters) {
+      memory.consecutiveWaitTicks = 0;
+      return {
+        shouldSpawn: true,
+        reason: "Below critical hauler minimum (but harvesters adequate)"
       };
     }
 

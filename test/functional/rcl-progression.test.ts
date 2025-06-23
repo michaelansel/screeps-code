@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { FunctionalTestHarness } from "../config/FunctionalTestHarness";
+import { FunctionalTestHarness } from "./test-harness";
 
 describe("RCL Progression Functional Tests", function() {
   this.timeout(300000); // 5 minutes per test

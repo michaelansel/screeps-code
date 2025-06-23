@@ -76,14 +76,14 @@ describe("RoleManager", () => {
       expect(quotas.harvesters).to.equal(3);
     });
 
-    it("should always have minimum 2 harvesters", () => {
+    it("should have exactly 1 harvester per source", () => {
       room.find.withArgs(FIND_SOURCES).returns([{}]); // 1 source
       room.find.withArgs(FIND_MY_CONSTRUCTION_SITES).returns([]);
       room.find.withArgs(FIND_STRUCTURES).returns([]);
       
       const quotas = RoleManager.getDesiredQuotas(room);
       
-      expect(quotas.harvesters).to.equal(2);
+      expect(quotas.harvesters).to.equal(1);
     });
 
     it("should add upgraders when controller is owned", () => {

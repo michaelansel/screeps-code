@@ -40,19 +40,23 @@ const HarvestEnergyProjectBehavior: ProjectBehavior<typeof HarvestEnergyProjectI
       } else {
         // Normal mode: check if we should use containers or storage
         const useStorage = shouldHarvesterUseStorage(creep.room);
+        const haulers = creep.room?.find(FIND_MY_CREEPS, { 
+          filter: c => c.memory.project?.id === 'HaulerProject' 
+        }) || [];
         
         if (useStorage) {
           // Prioritize storage when infrastructure supports it
           creep.startTask(tasks.DepositEnergyTask, { 
             prioritizeStorage: true 
           } as DepositEnergyTaskConfig);
-        } else if (emergencyLevel === EmergencyLevel.NORMAL) {
-          // When haulers are active, prefer containers
+        } else if (emergencyLevel === EmergencyLevel.NORMAL && haulers.length > 0) {
+          // Only use containers if haulers are available to transport
           creep.startTask(tasks.DepositEnergyTask, { 
             preferContainers: true 
           } as DepositEnergyTaskConfig);
         } else {
-          // Default priority: spawn/extensions first
+          // CRITICAL FIX: If no haulers, go directly to spawn/extensions
+          // This prevents energy from getting trapped in containers
           creep.startTask(tasks.DepositEnergyTask);
         }
       }
