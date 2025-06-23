@@ -14,7 +14,19 @@
     "test:functional:env:setup": "cd test/config && git clone https://github.com/screepers/screeps-launcher.git || true",
     "test:functional:env:clean": "cd test/config && docker compose -f docker-compose.functional.yml down -v && rm -rf screeps-launcher",
     "upload-main": "mv dist/main.js.map dist/main.js.map.js && npx screeps-api upload --server main --branch typescript dist/*",
-    "upload-ptr": "mv dist/main.js.map dist/main.js.map.js && npx screeps-api upload --server ptr --branch typescript dist/*"
+    "upload-ptr": "mv dist/main.js.map dist/main.js.map.js && npx screeps-api upload --server ptr --branch typescript dist/*",
+    "debug:capture": "node scripts/debug-capture.js",
+    "debug:ptr": "node scripts/debug-capture.js ptr 30 shard3",
+    "debug:main": "node scripts/debug-capture.js main 30 shard3",
+    "debug:analyze": "node scripts/debug-analyze.js",
+    "smoke-test": "node scripts/smoke-test.js",
+    "smoke-test:ptr": "node scripts/smoke-test.js ptr 60 shard3",
+    "smoke-test:main": "node scripts/smoke-test.js main 60 shard3",
+    "status": "node scripts/status-check.js",
+    "status:ptr": "node scripts/status-check.js ptr shard3",
+    "status:main": "node scripts/status-check.js main shard3",
+    "deploy:ptr": "npm run build && npm run upload-ptr && npm run smoke-test:ptr",
+    "deploy:main": "npm run build && npm run upload-main && npm run smoke-test:main"
   },
   "repository": {
     "type": "git",
@@ -47,9 +59,11 @@
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-prettier": "^5.1.3",
+    "js-yaml": "^4.1.0",
     "lodash": "*",
     "mocha": "^10.7.3",
     "prettier": "^3.2.5",
+    "screeps-api": "^1.16.1",
     "sinon": "^19.0.2",
     "sinon-chai": "*",
     "source-map-support": "^0.5.21",
@@ -57,7 +71,7 @@
     "typescript": "^5.6.2"
   },
   "dependencies": {
-    "source-map": "~0.6.1",
-    "screeps-functional-test-harness": "file:./screeps-functional-test-harness"
+    "screeps-functional-test-harness": "file:./screeps-functional-test-harness",
+    "source-map": "~0.6.1"
   }
 }
