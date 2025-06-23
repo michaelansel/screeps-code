@@ -51,10 +51,12 @@ npm run build       # Production build
 ## 📋 Key Project Files
 
 - **[`FEATURES.md`](FEATURES.md)** - Current development focus and roadmap (central source of truth)
-- **[`ARCHITECTURE.md`](ARCHITECTURE.md)** - Technical implementation details and patterns
+- **[`DOCUMENTATION-PHILOSOPHY.md`](DOCUMENTATION-PHILOSOPHY.md)** - How our documentation hierarchy works
+- **[`ARCHITECTURE.md`](../architecture/ARCHITECTURE.md)** - Technical implementation details and patterns
+- **[`STRATEGY.md`](../strategy/STRATEGY.md)** - Game strategy and priorities  
 - **[`TESTING.md`](TESTING.md)** - Testing guide and infrastructure  
-- **[`QUICK-REFERENCE.md`](QUICK-REFERENCE.md)** - Code patterns and common tasks
-- **[`README.md`](README.md)** - Project overview and quick start
+- **[`QUICK-REFERENCE.md`](../implementation/QUICK-REFERENCE.md)** - Code patterns and common tasks
+- **[`README.md`](../../README.md)** - Project overview and quick start
 
 ## 🧪 Testing Strategy
 
@@ -71,10 +73,13 @@ npm run build       # Production build
 - Run tests frequently - they're fast!
 - Follow existing patterns and conventions
 
-### Documentation
-- Update [`FEATURES.md`](FEATURES.md) as you progress
-- Document "why" decisions, not just "what"
-- Add new patterns to [`QUICK-REFERENCE.md`](QUICK-REFERENCE.md)
+### Documentation-First Approach
+- **Follow the hierarchy**: Strategy → Architecture → Features → Implementation  
+- **Write timeless documentation**: Describe enduring principles, not historical fixes or "how we got here"
+- **Update [`FEATURES.md`](FEATURES.md)** as you progress
+- **Pause for architecture**: If a feature reveals architectural needs, document them first
+- **Document "why" decisions**, not just "what"
+- **See [`DOCUMENTATION-PHILOSOPHY.md`](DOCUMENTATION-PHILOSOPHY.md)** for detailed workflow
 
 ### Architecture Awareness
 - **Project/Task Framework**: Long-term goals vs short-term actions

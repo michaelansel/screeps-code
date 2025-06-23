@@ -165,18 +165,64 @@ We optimize for reaching higher RCLs as fast as possible, even at the cost of en
 - **Creep role proliferation**: Maximum 4 roles until RCL6
 - **Early terminal usage**: Costs too much energy in transfer fees
 
-## Failure Recovery Procedures
+## Emergency Recovery Strategy
 
-### Creep Wipeout Recovery
-1. **Tick 1-300**: Spawn [WORK,CARRY,MOVE] harvester
-2. **Tick 301-600**: Second harvester if energy allows
-3. **Tick 601+**: Resume normal operations
-4. **Never**: Panic-spawn military units
+### Energy Availability Principles
+**Total Room Energy**: Emergency spawning must consider all available energy (spawn + extensions), not just spawn energy. In emergency situations, the game auto-generates 300 energy distributed across room energy capacity, enabling stronger emergency workers than spawn energy alone would suggest.
 
-### Economic Collapse
-- **Energy debt**: Sell all non-WORK creep parts for energy
-- **Spawn blocked**: Manually remove construction sites
-- **Controller downgrade**: Accept it, focus on energy first
+**Immediate Utilization**: Use total room energy immediately for emergency spawning rather than waiting for optimal energy distribution.
+
+### Multi-Phase Recovery System
+**Phase 1: Emergency (0-2 workers)**
+- Immediate spawning with available energy (often 300 from auto-generation)
+- Emergency worker: [WORK, WORK, CARRY, CARRY, MOVE, MOVE] (300 energy)
+- Don't wait for extensions to fill - spawn immediately
+- Prioritize speed over efficiency
+
+**Phase 2: Rapid (3-6 workers)**  
+- Balanced approach between harvesting and hauling
+- Intelligent energy source selection (storage > containers > sources)
+- Scale up worker count quickly
+- Begin infrastructure recovery
+
+**Phase 3: Normal (7+ workers)**
+- Full capability-based spawning
+- Normal operations with infrastructure development
+- Optimal energy distribution and role specialization
+
+### Recovery Decision Tree
+1. **Energy Assessment**: Check storage (>500), containers (>200), then sources
+2. **Hauling Priority**: If stored energy available, prioritize haulers over harvesters (10x faster energy delivery)
+3. **Emergency Spawning**: Spawn immediately with room energy, don't wait for optimal body designs
+4. **Infrastructure Recovery**: Roads → Containers → Storage → Advanced structures
+
+### Emergency Worker Capabilities
+- **300 energy**: [WORK, WORK, CARRY, CARRY, MOVE, MOVE] - excellent balanced worker
+- **200 energy**: [WORK, CARRY, MOVE] - basic functionality
+- **150 energy**: [WORK, CARRY, MOVE] - minimal viable worker
+- Emergency workers bypass complex spawning logic for guaranteed fast recovery
+
+### Recovery Mathematics (Based on Game Mechanics)
+```
+Emergency worker body: [WORK, WORK, CARRY, CARRY, MOVE, MOVE] (300 energy cost)
+
+Game mechanics:
+- WORK parts harvest 2 energy/tick from sources (2 × 2 = 4 energy/tick)
+- CARRY parts provide 50 capacity each (2 × 50 = 100 capacity)
+- MOVE parts enable movement at 1 tile/tick when carrying (weight = body parts)
+
+Typical harvesting cycle:
+- Harvest time: 100 capacity ÷ 4 energy/tick = 25 ticks to fill
+- Travel time: ~6 ticks round trip (source to spawn)
+- Total cycle: ~31 ticks for 100 energy = 3.2 energy/tick delivered
+
+Time to spawn next 300-energy worker: 300 ÷ 3.2 = ~94 ticks (4.7 minutes)
+
+Hauling comparison (stored energy available):
+- Hauler body: [CARRY, CARRY, MOVE, MOVE] 
+- Cycle: Load 100 energy + ~6 tick travel = ~6 ticks total
+- Rate: 100 energy ÷ 6 ticks = 16.7 energy/tick (5x faster than harvesting)
+```
 
 ## Success Metrics
 

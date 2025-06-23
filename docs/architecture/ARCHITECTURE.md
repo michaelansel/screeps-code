@@ -10,6 +10,8 @@ The bot employs a hierarchical control system with three main layers:
 At the highest level, planners make strategic decisions and coordinate multiple entities:
 - **SourcePlanner**: Assigns energy sources to creeps based on capacity and efficiency
 - **CapabilityManager**: Analyzes room needs and determines optimal creep capabilities to spawn
+- **EmergencyManager**: Manages emergency recovery phases and coordinates disaster response
+- **SpawnManager**: Makes spawning decisions with energy pipeline analysis and emergency prioritization
 - **EnergySourceManager**: Analyzes room infrastructure to optimize energy flow strategies
 
 Planners operate on a global or multi-room scale and make decisions that affect entire rooms or multiple creeps simultaneously.
@@ -72,23 +74,30 @@ The bot implements intelligent energy flow strategies:
 - Switches between harvesting and withdrawal strategies
 
 ### Capability Management
-Dynamic creep spawning based on room capability needs:
+Dynamic creep spawning based on room capability needs and emergency status:
 
-**Spawning Priority**:
+**Emergency Recovery System**:
+- **Emergency Phase** (0-2 workers): Immediate spawning of 300-energy workers with bypass of normal logic
+- **Rapid Phase** (3-6 workers): Balanced approach with hauling priority if stored energy available
+- **Normal Phase** (7+ workers): Full capability-based spawning with optimization
+
+**Spawning Priority** (Normal Operations):
 1. Harvest capability (minimum requirements for energy security)
 2. Build capability (when construction sites exist)
 3. Upgrade capability (for controller progression)
 4. Haul capability (when containers/storage exist)
 
 **Body Template Selection**:
-- Analyzes total room energy (spawn + extensions)
-- Selects optimal body template based on capability needs
+- **Emergency**: Uses `getEmergencyWorker()` for immediate 300-energy [WORK, WORK, CARRY, CARRY, MOVE, MOVE] workers
+- **Normal**: Analyzes total room energy (`room.energyAvailable`) including spawn + extensions
+- Selects optimal body template based on capability needs and available energy
 - Optimizes for movement efficiency and task-specific requirements
 
 **Capability Assessment**:
 - Calculates required capabilities based on room state (sources, construction sites, etc.)
 - Compares current capabilities from existing creeps
-- Spawns templates to fill capability gaps
+- Emergency system overrides normal capability logic when worker count is critically low
+- Spawns templates to fill capability gaps or emergency needs
 
 ### Construction Management
 Intelligent building and repair strategies:
@@ -155,14 +164,23 @@ Architecture supports expansion to multiple rooms:
 
 ## Error Handling and Recovery
 
+### Emergency Recovery System
+- **Automatic Detection**: EmergencyManager continuously monitors worker count and room conditions
+- **Phase-Based Response**: Three distinct recovery phases (Emergency/Rapid/Normal) with different strategies
+- **Energy Calculation Fix**: Uses `room.energyAvailable` instead of `spawn.store[RESOURCE_ENERGY]` to prevent deadlocks
+- **Strong Emergency Workers**: 300-energy workers provide immediate capability restoration
+- **Self-Healing**: No manual intervention required - system automatically resolves emergency states
+
 ### Graceful Degradation
-- Missing infrastructure reverts to simpler strategies
-- Creep loss triggers emergency spawning protocols
-- Resource constraints shift priorities automatically
+- Missing infrastructure reverts to simpler strategies (harvesting vs storage withdrawal)
+- Creep loss triggers emergency spawning protocols with bypass of normal optimization
+- Resource constraints shift priorities automatically (hauling vs harvesting)
+- Emergency workers provide balanced capabilities without specialization complexity
 
 ### State Recovery
 - Memory corruption handling with safe defaults
 - Creep reassignment when projects become invalid
 - Automatic cleanup of orphaned assignments
+- Emergency system overrides capability-based assignments when room is critically under-staffed
 
 This architecture provides a flexible, scalable foundation that can adapt to changing game conditions while maintaining clear separation of concerns between strategic planning, tactical coordination, and operational execution.

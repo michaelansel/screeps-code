@@ -7,7 +7,7 @@ During full creep wipe situations, the colony needs to bootstrap its economy eff
 1. **Harvesting** - Slow but guaranteed, generates ~10 energy/tick per WORK part
 2. **Hauling** - Fast if available, can collect 50+ energy per trip from storage/containers
 
-The current system may get stuck waiting to fill extensions before spawning additional creeps, which is inefficient during recovery.
+The key insight is that emergency recovery should prioritize speed over efficiency, and leverage stored energy when available rather than waiting for optimal spawning conditions.
 
 ## Recovery Decision Tree
 
@@ -23,57 +23,75 @@ Available Energy Sources (priority order):
 ### 2. Spawning Strategy
 
 **Phase 1: Emergency Bootstrap**
-- Use only spawn energy (300)
-- Spawn minimal worker: [WORK, CARRY, MOVE] (200 energy)
-- Don't wait for extensions to fill
+- Use available room energy immediately (including extensions)
+- Emergency worker: [WORK, WORK, CARRY, CARRY, MOVE, MOVE] (300 energy)
+- Strong capabilities: 4 work power, 100 carry capacity, balanced movement
+- Don't wait for extensions to fill or optimal conditions
 
 **Phase 2: Rapid Scaling**
-- As soon as spawn has 200+ energy, spawn another worker
-- Continue until we have 2-3 active workers
-- Only then consider using extension energy for larger creeps
+- Continue emergency spawning until stable worker count (3-6 workers)
+- Begin infrastructure assessment for hauling opportunities
+- Balance harvesting and hauling based on available stored energy
+- Prioritize speed over specialization
 
 **Phase 3: Normal Operations**
-- Transition to capability-based spawning
+- Transition to capability-based spawning with specialization
 - Use full room energy for optimal creep designs
+- Focus on efficiency and long-term sustainability
 
 ## Mathematics
 
-### Extension Filling Analysis
+### Emergency Worker Analysis (Game Mechanics)
 ```
-Scenario: 1 weak harvester [WORK,CARRY,MOVE]
-- Harvest rate: 2 energy/tick
-- Round trip to spawn: ~10 ticks
-- Net energy delivery: ~10 energy per 15 ticks = 0.67 energy/tick to spawn
+Emergency worker design: [WORK, WORK, CARRY, CARRY, MOVE, MOVE] (300 energy cost)
 
-Time to fill 200 energy extensions: 200 / 0.67 = ~300 ticks (15 minutes!)
+Core game mechanics:
+- Each WORK part harvests 2 energy/tick from sources
+- Each CARRY part provides 50 energy capacity  
+- Each MOVE part enables 1 tile/tick movement when total weight ≤ MOVE parts
+- Body weight = total body parts (6 parts = 6 weight)
 
-Alternative: Spawn 3 weak workers immediately
-- Combined harvest: 3 × 0.67 = 2 energy/tick to spawn  
-- Time to spawn 4th worker: 200 / 2 = 100 ticks (5 minutes)
-- Much faster scaling!
+Performance calculation:
+- Harvest rate: 2 WORK × 2 energy/tick = 4 energy/tick
+- Capacity: 2 CARRY × 50 = 100 energy max
+- Time to fill: 100 capacity ÷ 4 energy/tick = 25 ticks
+- Movement: 6 body parts ÷ 2 MOVE = 3 effective speed (moves every 3 ticks)
+- Travel time: ~6 tiles × 3 ticks/tile = ~18 ticks round trip
+- Total cycle: 25 + 18 = 43 ticks for 100 energy = 2.3 energy/tick delivered
+
+Time to accumulate 300 energy for next spawn: 300 ÷ 2.3 = ~130 ticks (6.5 minutes)
 ```
 
-### Hauling vs Harvesting Speed
+### Hauling vs Harvesting Speed (Game Mechanics)
 ```
-Hauling (if energy available):
-- [CARRY,CARRY,MOVE] can move 100 energy per ~15 tick round trip
-- Rate: ~6.7 energy/tick delivered
+Emergency Harvesting (calculated above):
+- 2.3 energy/tick delivered to spawn
+- Self-sufficient, requires only sources
 
-Harvesting:
-- [WORK,CARRY,MOVE] delivers ~0.67 energy/tick  
-- Hauling is 10x faster when energy is available!
+Hauling stored energy:
+- Hauler body: [CARRY, CARRY, MOVE, MOVE] (200 energy cost)
+- Capacity: 2 CARRY × 50 = 100 energy
+- Weight: 4 body parts ÷ 2 MOVE = 2 effective speed (moves every 2 ticks)
+- Travel time: ~6 tiles × 2 ticks/tile = 12 ticks round trip
+- Load time: 1 tick to withdraw from storage
+- Total cycle: 12 + 1 = 13 ticks for 100 energy = 7.7 energy/tick delivered
+
+Hauling advantage: 7.7 ÷ 2.3 = 3.3x faster than harvesting when energy available
 ```
 
 ## Implementation Requirements
 
 1. **Energy Source Detection**: Scan for available energy sources at recovery start
 2. **Dynamic Recovery Mode**: Switch between hauling and harvesting based on availability  
-3. **Rapid Spawning**: Don't wait for extensions during emergency phase
+3. **Rapid Spawning**: Don't wait for optimal conditions during emergency phase
 4. **Recovery Metrics**: Track progress and automatically transition phases
+5. **Strong Emergency Workers**: Design emergency bodies for capability, not just survival
 
 ## Strategic Insights
 
-- **Speed > Efficiency**: During recovery, many weak creeps >> few strong creeps
-- **Energy Source Priority**: Hauling existing energy is much faster than generating new energy
-- **Extension Trap**: Waiting for extensions to fill can create 15+ minute delays
-- **Compound Growth**: Each additional worker accelerates the next spawn exponentially
+- **Speed > Efficiency**: During recovery, rapid worker scaling is more important than optimal energy usage
+- **Emergency Workers Are Capable**: 300-energy balanced workers provide strong recovery foundation, not just survival
+- **Energy Source Priority**: Hauling existing energy is 2-3x faster than generating new energy through harvesting
+- **Compound Growth**: Each emergency worker enables the next spawn in ~70 ticks, creating exponential recovery
+- **Immediate Action**: Don't wait for extensions to fill or optimal spawning conditions during emergency
+- **Baseline + Optimization**: Emergency harvesting provides reliable baseline, hauling provides speed boost when available
