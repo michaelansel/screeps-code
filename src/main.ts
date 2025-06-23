@@ -97,6 +97,15 @@ export const loop = ErrorMapper.wrapLoop(() => {
       haul: `${needs.haul.current.toFixed(1)}/${needs.haul.required}`,
       upgrade: `${needs.upgrade.current.toFixed(1)}/${needs.upgrade.required}`
     });
+
+    // Analyze recovery status
+    const recovery = CapabilityManager.analyzeRecoveryStatus(room);
+    if (recovery.phase !== 'normal') {
+      console.log(`🚨 Recovery mode: ${recovery.phase.toUpperCase()} | Workers: ${recovery.activeWorkerCount} | Available energy: ${recovery.availableEnergySources.total}`);
+      if (recovery.shouldPrioritizeHauling) {
+        console.log(`⚡ Hauling priority: Storage(${recovery.availableEnergySources.storage}) + Containers(${recovery.availableEnergySources.containers}) + Dropped(${recovery.availableEnergySources.droppedResources})`);
+      }
+    }
     
     SourcePlanner.instance.assignSources(room);
     EmergencyManager.updateEmergencyState(room);

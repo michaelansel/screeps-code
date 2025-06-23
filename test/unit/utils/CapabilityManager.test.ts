@@ -2,7 +2,6 @@ import { expect } from "chai";
 import sinon from "sinon";
 import { use } from "chai";
 import sinonChai from "sinon-chai";
-import { CapabilityManager } from "../../../src/utils/CapabilityManager";
 
 use(sinonChai);
 
@@ -13,12 +12,14 @@ global.FIND_STRUCTURES = 106 as any;
 global.FIND_MY_SPAWNS = 108 as any;
 global.FIND_MY_STRUCTURES = 109 as any;
 global.FIND_MY_CREEPS = 102 as any;
+global.FIND_DROPPED_RESOURCES = 104 as any;
 global.STRUCTURE_CONTAINER = "container" as any;
 global.STRUCTURE_WALL = "constructedWall" as any;
 global.STRUCTURE_RAMPART = "rampart" as any;
 global.STRUCTURE_EXTENSION = "extension" as any;
 global.RESOURCE_ENERGY = "energy" as any;
 global.CARRY_CAPACITY = 50;
+global.Game = { time: 1000 } as any;
 
 global.WORK = "work" as any;
 global.CARRY = "carry" as any;
@@ -28,6 +29,9 @@ global.BODYPART_COST = {
   carry: 50,
   move: 50
 } as any;
+
+// Import after globals are defined
+import { CapabilityManager } from "../../../src/utils/CapabilityManager";
 
 describe("CapabilityManager", () => {
   let sandbox: sinon.SinonSandbox;
