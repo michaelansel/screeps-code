@@ -25,7 +25,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
   // ========== TICK START LOGGING ==========
   console.log(`\n🎮 === TICK ${Game.time} START (Capability-Based) ===`);
-  console.log(`⚡ Energy: ${Object.values(Game.spawns).reduce((total, spawn) => total + spawn.store[RESOURCE_ENERGY], 0)}`);
+  console.log(`⚡ Energy: ${Object.values(Game.spawns).reduce((total, spawn) => total + spawn.room.energyAvailable, 0)}`);
   console.log(`🤖 Creeps: ${Object.keys(Game.creeps).length}`);
   console.log(`🏭 Spawns: ${Object.keys(Game.spawns).length} | 🏠 Rooms: ${Object.keys(Game.rooms).length}`);
 
@@ -128,7 +128,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     const spawnRequest = CapabilityManager.getNextSpawnRequest(room);
 
     if (spawnRequest) {
-      const roomEnergy = spawn.store[RESOURCE_ENERGY];
+      const roomEnergy = spawn.room.energyAvailable;
       const bodyCost = spawnRequest.body.reduce((cost, part) => cost + BODYPART_COST[part], 0);
       
       // Check if we should spawn now or wait

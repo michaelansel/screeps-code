@@ -20,12 +20,12 @@ export class BodyTemplateManager {
   // Core templates - ordered by energy cost
   private static getTemplates(): BodyTemplate[] {
     return [
-      // Minimal templates (300 energy)
+      // Minimal templates (200 energy)
       {
         name: "MINIMAL_WORKER",
         parts: [WORK, CARRY, MOVE],
         cost: 200,
-        purpose: "Emergency bootstrap worker",
+        purpose: "Basic bootstrap worker",
         minEnergy: 200,
         capabilities: { harvest: 0.2, build: 0.3, haul: 0.2, upgrade: 0.3 }
       },
@@ -254,17 +254,23 @@ export class BodyTemplateManager {
   }
   
   /**
-   * Get a emergency worker body for the given energy
+   * Get an emergency worker body for the given energy
+   * Prioritizes balanced functionality over specialization
    */
   public static getEmergencyWorker(availableEnergy: number): BodyPartConstant[] {
-    // Minimum viable worker
+    // With 300 energy, use balanced worker
+    if (availableEnergy >= 300) {
+      return [WORK, WORK, CARRY, CARRY, MOVE, MOVE];
+    }
+    
+    // With 200 energy, basic worker
     if (availableEnergy >= 200) {
       return [WORK, CARRY, MOVE];
     }
     
-    // Even more minimal - just move and carry
-    if (availableEnergy >= 100) {
-      return [CARRY, MOVE];
+    // With 150 energy, minimal functionality
+    if (availableEnergy >= 150) {
+      return [WORK, CARRY, MOVE];
     }
     
     return [];
