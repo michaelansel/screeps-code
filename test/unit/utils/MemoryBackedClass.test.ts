@@ -1,7 +1,7 @@
 // TODO figure out linting after the class rewrite
 /* eslint-disable */
 import { assert } from "chai";
-import sinonChai from "sinon-chai";
+// import sinonChai from "sinon-chai"; // Removed: unused import causing ESM/CommonJS mismatch error
 import { BackingMemoryRecord, MemoryBackedClass, SerDeFunctions } from "utils/MemoryBackedClass";
 
 // Types

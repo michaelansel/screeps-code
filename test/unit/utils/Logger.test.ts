@@ -1,5 +1,6 @@
 import { DEFAULT_COMPONENT, Logger } from "utils/Logger";
-import sinon, { assert } from "sinon";
+import { assert } from "chai";
+import sinon from "sinon";
 
 describe("Logger", () => {
   afterEach(() => {
@@ -11,7 +12,7 @@ describe("Logger", () => {
     const consoleLog = sinon.fake();
     Logger.instance.setOutputFunction(consoleLog);
     Logger.instance.debug("test");
-    assert.calledOnce(consoleLog);
+    sinon.assert.calledOnce(consoleLog);
   });
 
   it("should output if component is enabled", () => {
@@ -20,7 +21,7 @@ describe("Logger", () => {
     const consoleLog = sinon.fake();
     Logger.instance.setOutputFunction(consoleLog);
     Logger.get("test").debug("test");
-    assert.calledOnce(consoleLog);
+    sinon.assert.calledOnce(consoleLog);
   });
 
   it("should output if parent component is enabled", () => {
@@ -29,7 +30,7 @@ describe("Logger", () => {
     const consoleLog = sinon.fake();
     Logger.instance.setOutputFunction(consoleLog);
     Logger.get("test").debug("test");
-    assert.calledOnce(consoleLog);
+    sinon.assert.calledOnce(consoleLog);
   });
 
   it("should not output if all components are disabled", () => {
@@ -38,8 +39,27 @@ describe("Logger", () => {
     const consoleLog = sinon.fake();
     Logger.instance.setOutputFunction(consoleLog);
     Logger.get("test").debug("test");
-    assert.notCalled(consoleLog);
+    sinon.assert.notCalled(consoleLog);
   });
 
-  it("should remember the logging configuration across ticks");
+  it("should remember the logging configuration across ticks", () => {
+    // Set up logging configuration
+    Logger.instance.setComponentLogLevel("test", "DEBUG");
+    Logger.instance.setComponentLogLevel("another", "WARN");
+
+    // Simulate tick boundary by creating a new Logger instance
+    // In the real game, the Logger singleton would be recreated each tick
+    // For this test, we need to reset the singleton and verify it loads from Memory
+
+    // Reset the singleton for testing
+    // eslint-disable-next-line no-underscore-dangle, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    (Logger as any)._instance = undefined;
+
+    // Create new instance (should load from memory)
+    const newLogger = Logger.instance;
+
+    // Verify configuration was restored
+    assert.equal(newLogger.getComponentLogLevel("test"), "DEBUG");
+    assert.equal(newLogger.getComponentLogLevel("another"), "WARN");
+  });
 });

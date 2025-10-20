@@ -24,11 +24,19 @@ export class Logger implements LogInterface {
     return new Logger(component, Logger.instance);
   }
 
-  private _componentLogLevels: { [component: string]: LogLevel } = { DEFAULT_COMPONENT: "ERROR" };
+  private _componentLogLevels: { [component: string]: LogLevel } | undefined;
   protected get componentLogLevels(): { [component: string]: LogLevel } {
     if (this.parent) {
       return this.parent.componentLogLevels;
     } else {
+      if (!this._componentLogLevels) {
+        // Load from memory or initialize with defaults
+        if (Memory.Logger?.componentLogLevels) {
+          this._componentLogLevels = Memory.Logger.componentLogLevels;
+        } else {
+          this._componentLogLevels = { DEFAULT_COMPONENT: "ERROR" };
+        }
+      }
       return this._componentLogLevels;
     }
   }
@@ -47,7 +55,17 @@ export class Logger implements LogInterface {
     if (this.parent) {
       this.parent.setComponentLogLevel(component, level);
     } else {
-      this._componentLogLevels[component] = level;
+      this.componentLogLevels[component] = level;
+      this.persistToMemory();
+    }
+  }
+
+  private persistToMemory(): void {
+    if (!this.parent) {
+      if (!Memory.Logger) {
+        Memory.Logger = {};
+      }
+      Memory.Logger.componentLogLevels = this._componentLogLevels;
     }
   }
 

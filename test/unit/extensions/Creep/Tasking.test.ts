@@ -1,4 +1,4 @@
-import { TaskHelpers, TaskId } from "tasks/Task";
+import { TaskBehavior, TaskBehaviorSymbol, TaskHelpers, TaskId } from "tasks/Task";
 import { globalsCleanup, globalsSetup } from "test/unit/globals";
 
 import { DoNothingProject } from "projects";
@@ -41,8 +41,53 @@ describe("CreepTaskingExtension", () => {
     assert.equal(creep.project, DoNothingProject);
   });
 
-  it("handles a task stopping itself right away");
-  it("stops running tasks");
+  it("handles a task stopping itself right away", () => {
+    const creep = new Creep("test" as Id<Creep>);
+    creep.memory = {};
+
+    // Create a task that stops itself during start()
+    const selfStoppingTask: TaskBehavior<TaskId> = {
+      type: TaskBehaviorSymbol,
+      id: "SelfStoppingTask" as TaskId,
+      start(c: Creep, config?: any): void {
+        c.stopTask(); // Stop immediately
+      },
+      run(c: Creep, config?: any): void {},
+      stop(c: Creep): void {}
+    };
+
+    creep.startTask(selfStoppingTask);
+
+    // Task should have been stopped
+    assert.isUndefined(creep.memory.task);
+    assert.isNull(creep.task);
+  });
+
+  it("stops running tasks", () => {
+    const creep = new Creep("test" as Id<Creep>);
+    creep.memory = {};
+
+    let stopCalled = false;
+    const firstTask: TaskBehavior<TaskId> = {
+      type: TaskBehaviorSymbol,
+      id: "FirstTask" as TaskId,
+      start(c: Creep, config?: any): void {},
+      run(c: Creep, config?: any): void {},
+      stop(c: Creep): void {
+        stopCalled = true;
+      }
+    };
+
+    // Start first task
+    creep.startTask(firstTask);
+    assert.equal(creep.memory.task?.id, "FirstTask");
+    assert.isFalse(stopCalled);
+
+    // Start second task (should stop first)
+    creep.startTask(DoNothingTask);
+    assert.isTrue(stopCalled, "First task's stop() method should have been called");
+    assert.equal(creep.memory.task?.id, DoNothingTask.id);
+  });
 
   describe("TaskHelpers", () => {
     describe("#loadConfig", () => {
